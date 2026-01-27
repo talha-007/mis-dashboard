@@ -16,15 +16,21 @@ export function AuthContent({ sx, children, className, ...other }: AuthContentPr
       className={mergeClasses([layoutClasses.content, className])}
       sx={[
         (theme) => ({
-          py: 5,
-          px: 3,
           width: 1,
           zIndex: 2,
-          borderRadius: 2,
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
           maxWidth: 'var(--layout-auth-content-width)',
-          bgcolor: theme.vars.palette.background.default,
+          // Padding and background only for non-card layouts (sign-in, forgot-password, etc)
+          '& > :not(.MuiCard-root)': {
+            py: 5,
+            px: 3,
+            borderRadius: 2,
+            bgcolor: theme.vars.palette.background.default,
+            maxWidth: 420,
+            width: 1,
+          },
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

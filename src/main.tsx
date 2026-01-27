@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Outlet, RouterProvider, createBrowserRouter } from 'react-router';
 
 import App from './app';
+import { AppProviders } from './providers';
 import { routesSection } from './routes/sections';
 import { ErrorBoundary } from './routes/components';
 
@@ -24,6 +25,8 @@ const root = createRoot(document.getElementById('root')!);
 
 root.render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
   </StrictMode>
 );

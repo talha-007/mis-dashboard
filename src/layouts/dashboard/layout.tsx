@@ -1,3 +1,4 @@
+import type { UserRole } from 'src/types/auth.types';
 import type { Breakpoint } from '@mui/material/styles';
 
 import { merge } from 'es-toolkit';
@@ -7,13 +8,13 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 
+import { useAppSelector } from 'src/store';
 import { _langs, _notifications } from 'src/_mock';
 
 import { NavMobile, NavDesktop } from './nav';
 import { layoutClasses } from '../core/classes';
 import { _account } from '../nav-config-account';
 import { dashboardLayoutVars } from './css-vars';
-import { navData } from '../nav-config-dashboard';
 import { MainSection } from '../core/main-section';
 import { Searchbar } from '../components/searchbar';
 import { _workspaces } from '../nav-config-workspace';
@@ -23,6 +24,7 @@ import { LayoutSection } from '../core/layout-section';
 import { AccountPopover } from '../components/account-popover';
 import { LanguagePopover } from '../components/language-popover';
 import { NotificationsPopover } from '../components/notifications-popover';
+import { customerNavData, getNavDataByRole } from '../nav-config-dashboard';
 
 import type { MainSectionProps } from '../core/main-section';
 import type { HeaderSectionProps } from '../core/header-section';
@@ -48,8 +50,12 @@ export function DashboardLayout({
   layoutQuery = 'lg',
 }: DashboardLayoutProps) {
   const theme = useTheme();
+  const { user } = useAppSelector((state) => state.auth);
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
+
+  // Get navigation data based on user role
+  const navData = user?.role ? getNavDataByRole(user.role as UserRole) : customerNavData;
 
   const renderHeader = () => {
     const headerSlotProps: HeaderSectionProps['slotProps'] = {

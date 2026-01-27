@@ -16,7 +16,10 @@ export const DashboardPage = lazy(() => import('src/pages/dashboard'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
-export const ProductsPage = lazy(() => import('src/pages/products'));
+export const RegisterPage = lazy(() => import('src/pages/register'));
+export const ForgotPasswordPage = lazy(() => import('src/pages/forgot-password'));
+export const VerifyOtpPage = lazy(() => import('src/pages/verify-otp'));
+export const UnauthorizedPage = lazy(() => import('src/pages/unauthorized'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
@@ -51,7 +54,6 @@ export const routesSection: RouteObject[] = [
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'user', element: <UserPage /> },
-      { path: 'products', element: <ProductsPage /> },
       { path: 'blog', element: <BlogPage /> },
     ],
   },
@@ -62,6 +64,34 @@ export const routesSection: RouteObject[] = [
         <SignInPage />
       </AuthLayout>
     ),
+  },
+  {
+    path: 'register',
+    element: (
+      <AuthLayout>
+        <RegisterPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'forgot-password',
+    element: (
+      <AuthLayout>
+        <ForgotPasswordPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'verify-otp',
+    element: (
+      <AuthLayout>
+        <VerifyOtpPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: 'unauthorized',
+    element: <UnauthorizedPage />,
   },
   {
     path: '404',

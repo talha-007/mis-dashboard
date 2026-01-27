@@ -1,5 +1,6 @@
-import { Label } from 'src/components/label';
 import { SvgColor } from 'src/components/svg-color';
+
+import { UserRole, Permission } from 'src/types/auth.types';
 
 // ----------------------------------------------------------------------
 
@@ -10,42 +11,52 @@ export type NavItem = {
   path: string;
   icon: React.ReactNode;
   info?: React.ReactNode;
+  requiredRole?: UserRole;
+  requiredPermission?: Permission;
 };
 
-export const navData = [
+// Navigation for Super Admin
+export const superAdminNavData: NavItem[] = [
   {
     title: 'Dashboard',
     path: '/',
     icon: icon('ic-analytics'),
   },
   {
-    title: 'User',
+    title: 'Customers',
     path: '/user',
     icon: icon('ic-user'),
+    requiredPermission: Permission.VIEW_USERS,
   },
   {
-    title: 'Product',
-    path: '/products',
-    icon: icon('ic-cart'),
-    info: (
-      <Label color="error" variant="inverted">
-        +3
-      </Label>
-    ),
-  },
-  {
-    title: 'Blog',
+    title: 'Announcements',
     path: '/blog',
     icon: icon('ic-blog'),
   },
+];
+
+// Navigation for Customer
+export const customerNavData: NavItem[] = [
   {
-    title: 'Sign in',
-    path: '/sign-in',
-    icon: icon('ic-lock'),
+    title: 'Dashboard',
+    path: '/',
+    icon: icon('ic-analytics'),
   },
   {
-    title: 'Not found',
-    path: '/404',
-    icon: icon('ic-disabled'),
+    title: 'Announcements',
+    path: '/blog',
+    icon: icon('ic-blog'),
   },
 ];
+
+// Get navigation based on user role
+export const getNavDataByRole = (role: UserRole): NavItem[] => {
+  switch (role) {
+    case UserRole.SUPER_ADMIN:
+      return superAdminNavData;
+    case UserRole.CUSTOMER:
+      return customerNavData;
+    default:
+      return customerNavData;
+  }
+};

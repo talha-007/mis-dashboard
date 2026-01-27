@@ -90,10 +90,12 @@ export function AuthLayout({
       sx={[
         (theme) => ({
           alignItems: 'center',
-          p: theme.spacing(3, 2, 10, 2),
+          justifyContent: 'center',
+          p: theme.spacing(3, 2),
+          height: '100vh',
+          overflow: 'hidden', // Prevent body scroll
           [theme.breakpoints.up(layoutQuery)]: {
-            justifyContent: 'center',
-            p: theme.spacing(10, 0, 10, 0),
+            p: theme.spacing(5, 2),
           },
         }),
         ...(Array.isArray(slotProps?.main?.sx)
@@ -118,10 +120,12 @@ export function AuthLayout({
       /** **************************************
        * @Styles
        *************************************** */
-      cssVars={{ '--layout-auth-content-width': '420px', ...cssVars }}
+      cssVars={{ '--layout-auth-content-width': '100%', ...cssVars }}
       sx={[
         (theme) => ({
           position: 'relative',
+          height: '100vh',
+          overflow: 'hidden', // Prevent page scroll
           '&::before': backgroundStyles(),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),

@@ -92,6 +92,73 @@ src/
 └── _mock/          # Mock data
 ```
 
+## Documentation
+
+Comprehensive documentation is available in the `docs/` folder:
+
+- **[Setup Guide](docs/SETUP.md)** - Installation and configuration
+- **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
+- **[Usage Examples](docs/USAGE_EXAMPLES.md)** - Code examples and patterns
+- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Quick lookup for common tasks
+
+## Features
+
+### ✅ Implemented
+
+- **Redux Toolkit** - Modern state management
+- **API Services** - Scalable REST API integration with axios
+- **Socket.io** - Real-time WebSocket communication
+- **Authentication** - Complete auth flow with JWT
+- **Notifications** - Real-time notification system
+- **Statistics** - Live dashboard metrics and analytics
+- **TypeScript** - Full type safety
+- **Error Handling** - Centralized error management
+- **Custom Hooks** - Reusable React hooks
+
+### 🎯 Enterprise Ready
+
+- Scalable architecture
+- Modular service layer
+- Generic API service pattern
+- Real-time data synchronization
+- Environment-based configuration
+- Type-safe throughout
+- Production-ready build
+
+## State Management
+
+The application uses Redux Toolkit with the following slices:
+- `auth` - User authentication and profile
+- `notifications` - Real-time notifications
+- `stats` - Live statistics and analytics
+- `ui` - UI state (sidebar, modals, theme)
+
+## Real-time Features
+
+Socket.io integration provides:
+- Live notifications
+- Real-time statistics updates
+- User presence tracking
+- System alerts
+- Auto-reconnection
+
+## API Services
+
+Modular API service architecture:
+- `authService` - Authentication endpoints
+- `usersService` - User management
+- `BaseApiService` - Generic CRUD operations
+
+Add new services by extending `BaseApiService`:
+
+```typescript
+class ProductsService extends BaseApiService<Product> {
+  constructor() {
+    super('/products');
+  }
+}
+```
+
 ## License
 
 Distributed under the MIT license.

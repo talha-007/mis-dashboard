@@ -1,0 +1,112 @@
+/**
+ * Axios Instance Configuration
+ * Configured with interceptors for request/response handling
+ */
+
+import type { AxiosError, AxiosResponse, AxiosRequestConfig } from 'axios';
+
+import axios from 'axios';
+
+import { getAuthToken, clearAuthToken } from 'src/utils/auth-storage';
+
+import ENV from 'src/config/environment';
+
+import type { ApiError, ApiResponse } from './types';
+
+// Create axios instance with default config
+const axiosInstance = axios.create({
+  baseURL: ENV.API.BASE_URL,
+  timeout: ENV.API.TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request Interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Add authentication token if available
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Add request timestamp for logging
+    if (ENV.IS_DEV) {
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
+        params: config.params,
+        data: config.data,
+      });
+    }
+
+    return config;
+  },
+  (error) => {
+    if (ENV.IS_DEV) {
+      console.error('[API Request Error]', error);
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Response Interceptor
+axiosInstance.interceptors.response.use(
+  (response: AxiosResponse<ApiResponse>) => {
+    // Log successful responses in development
+    if (ENV.IS_DEV) {
+      console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+        status: response.status,
+        data: response.data,
+      });
+    }
+
+    return response;
+  },
+  async (error: AxiosError<ApiError>) => {
+    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+
+    // Log errors in development
+    if (ENV.IS_DEV) {
+      console.error('[API Response Error]', {
+        url: error.config?.url,
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message,
+      });
+    }
+
+    // Handle 401 Unauthorized - Token expired or invalid
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Clear invalid token
+      clearAuthToken();
+
+      // Redirect to login or dispatch logout action
+      window.location.href = '/sign-in';
+
+      return Promise.reject(error);
+    }
+
+    // Handle 403 Forbidden
+    if (error.response?.status === 403) {
+      console.error('[API] Access forbidden:', error.response.data?.message);
+    }
+
+    // Handle 500 Internal Server Error
+    if (error.response?.status === 500) {
+      console.error('[API] Server error:', error.response.data?.message);
+    }
+
+    // Transform error for consistent handling
+    const apiError: ApiError = {
+      message: error.response?.data?.message || error.message || 'An unexpected error occurred',
+      status: error.response?.status,
+      code: error.code,
+      errors: error.response?.data?.errors,
+    };
+
+    return Promise.reject(apiError);
+  }
+);
+
+export default axiosInstance;

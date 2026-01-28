@@ -99,10 +99,17 @@ axiosInstance.interceptors.response.use(
           const newToken = response.data.data.token;
           const newRefreshToken = response.data.data.refreshToken;
           
-          // Store new tokens
+          // Store new tokens in localStorage
           setAuthToken(newToken);
           if (newRefreshToken) {
             setRefreshToken(newRefreshToken);
+          }
+          
+          // CRITICAL: Update Redux state with new token to keep state synchronized
+          // This ensures socket provider and other components use the refreshed token
+          if (storeDispatch) {
+            const { updateToken } = await import('src/store/slices/auth.slice');
+            storeDispatch(updateToken(newToken));
           }
           
           // Update original request with new token

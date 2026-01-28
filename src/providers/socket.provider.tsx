@@ -5,7 +5,7 @@
 
 import type { StatsUpdatePayload, NotificationPayload } from 'src/services/socket';
 
-import { useEffect, useContext, createContext, type ReactNode } from 'react';
+import { useMemo, useEffect, useContext, createContext, type ReactNode } from 'react';
 
 import ENV from 'src/config/environment';
 import { useAppDispatch, useAppSelector } from 'src/store';
@@ -39,79 +39,80 @@ export function SocketProvider({ children }: SocketProviderProps) {
   const { isAuthenticated, token, isInitialized } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    // Only connect if authenticated, initialized, and real-time is enabled
-    if (!isInitialized) {
+    // Early return if not ready
+    if (!isInitialized || !isAuthenticated || !token || !ENV.FEATURES.REAL_TIME) {
       return undefined;
     }
 
-    if (isAuthenticated && token && ENV.FEATURES.REAL_TIME) {
-      // Update socket auth token before connecting
-      socketService.updateAuth(token);
-      socketService.connect();
+    // Connect socket with auth
+    socketService.updateAuth(token);
+    socketService.connect();
 
-      // Setup global event handlers
-      setupEventHandlers();
+    // Setup event handlers
+    const unsubscribers: Array<() => void> = [];
 
-      return () => {
-        socketService.disconnect();
-      };
-    }
-
-    return undefined;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isInitialized, token]);
-
-const setupEventHandlers = () => {
-    // Handle incoming notifications
+    // Notifications
     if (ENV.FEATURES.NOTIFICATIONS) {
-      socketService.on<NotificationPayload>(SocketEvent.NOTIFICATION, (notification) => {
-        dispatch(
-          addNotification({
-            ...notification,
-            createdAt: notification.createdAt || new Date().toISOString(),
-          })
-        );
-      });
-    }
-
-    // Handle stats updates
-    if (ENV.FEATURES.ANALYTICS) {
-      socketService.on<StatsUpdatePayload>(SocketEvent.STATS_UPDATE, (stats) => {
-        dispatch(updateMetric(stats));
-      });
-
-      socketService.on<any>(SocketEvent.ANALYTICS_UPDATE, (data) => {
-        dispatch(updateAnalytics(data));
-      });
-    }
-
-    // Handle system messages
-    socketService.on<any>(SocketEvent.SYSTEM_MESSAGE, (message) => {
-      console.log('[System Message]', message);
-    });
-
-    // Handle system alerts
-    socketService.on<any>(SocketEvent.SYSTEM_ALERT, (alert) => {
-      dispatch(
-        addNotification({
-          id: `alert-${Date.now()}`,
-          title: 'System Alert',
-          message: alert.message || 'System alert received',
-          type: alert.type || 'warning',
-          read: false,
-          createdAt: new Date().toISOString(),
-          data: alert,
+      unsubscribers.push(
+        socketService.on<NotificationPayload>(SocketEvent.NOTIFICATION, (notification) => {
+          dispatch(
+            addNotification({
+              ...notification,
+              createdAt: notification.createdAt || new Date().toISOString(),
+            })
+          );
         })
       );
-    });
-  };
+    }
 
-  const contextValue: SocketContextValue = {
-    isConnected: socketService.isConnected(),
-    emit: socketService.emit.bind(socketService),
-    on: socketService.on.bind(socketService),
-    off: socketService.off.bind(socketService),
-  };
+    // Analytics
+    if (ENV.FEATURES.ANALYTICS) {
+      unsubscribers.push(
+        socketService.on<StatsUpdatePayload>(SocketEvent.STATS_UPDATE, (stats) => {
+          dispatch(updateMetric(stats));
+        }),
+        socketService.on<any>(SocketEvent.ANALYTICS_UPDATE, (data) => {
+          dispatch(updateAnalytics(data));
+        })
+      );
+    }
+
+    // System messages & alerts
+    unsubscribers.push(
+      socketService.on<any>(SocketEvent.SYSTEM_MESSAGE, (message) => {
+        console.log('[System Message]', message);
+      }),
+      socketService.on<any>(SocketEvent.SYSTEM_ALERT, (alert) => {
+        dispatch(
+          addNotification({
+            id: `alert-${Date.now()}`,
+            title: 'System Alert',
+            message: alert.message || 'System alert received',
+            type: alert.type || 'warning',
+            read: false,
+            createdAt: new Date().toISOString(),
+            data: alert,
+          })
+        );
+      })
+    );
+
+    // Cleanup on unmount or auth/token change
+    return () => {
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+      socketService.disconnect();
+    };
+  }, [dispatch, isAuthenticated, isInitialized, token]);
+
+  const contextValue: SocketContextValue = useMemo(
+    () => ({
+      isConnected: socketService.isConnected(),
+      emit: socketService.emit.bind(socketService),
+      on: socketService.on.bind(socketService),
+      off: socketService.off.bind(socketService),
+    }),
+    [isAuthenticated, token]
+  );
 
   return <SocketContext.Provider value={contextValue}>{children}</SocketContext.Provider>;
 }

@@ -6,6 +6,8 @@
 import type { ReactNode } from 'react';
 import type { UserRole, Permission } from 'src/types/auth.types';
 
+import { Navigate } from 'react-router-dom';
+
 import { useAppSelector } from 'src/store';
 
 import { hasRole, hasPermission } from 'src/types/auth.types';
@@ -19,6 +21,7 @@ interface MultiRoleGuardProps {
 
 /**
  * Renders children if user has ANY of the allowed roles or permissions
+ * Redirects to /unauthorized if access is denied
  */
 export function MultiRoleGuard({ 
   children, 
@@ -29,14 +32,14 @@ export function MultiRoleGuard({
   const { user } = useAppSelector((state) => state.auth);
 
   if (!user) {
-    return fallback ? <>{fallback}</> : null;
+    return fallback ? <>{fallback}</> : <Navigate to="/unauthorized" replace />;
   }
 
   // Check if user has any of the allowed roles
   if (allowedRoles && allowedRoles.length > 0) {
     const hasAnyRole = allowedRoles.some(role => hasRole(user, role));
     if (!hasAnyRole) {
-      return fallback ? <>{fallback}</> : null;
+      return fallback ? <>{fallback}</> : <Navigate to="/unauthorized" replace />;
     }
   }
 
@@ -46,7 +49,7 @@ export function MultiRoleGuard({
       hasPermission(user, permission)
     );
     if (!hasAnyPermission) {
-      return fallback ? <>{fallback}</> : null;
+      return fallback ? <>{fallback}</> : <Navigate to="/unauthorized" replace />;
     }
   }
 

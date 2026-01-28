@@ -6,6 +6,8 @@
 import type { ReactNode } from 'react';
 import type { UserRole, Permission } from 'src/types/auth.types';
 
+import { Navigate } from 'react-router-dom';
+
 import { useAppSelector } from 'src/store';
 
 import { hasRole, hasPermission } from 'src/types/auth.types';
@@ -19,18 +21,19 @@ interface RoleGuardProps {
 
 /**
  * Renders children only if user has required role or permission
+ * Redirects to /unauthorized if access is denied
  */
 export function RoleGuard({ children, requiredRole, requiredPermission, fallback }: RoleGuardProps) {
   const { user } = useAppSelector((state) => state.auth);
 
   // Check role requirement
   if (requiredRole && !hasRole(user, requiredRole)) {
-    return fallback ? <>{fallback}</> : null;
+    return fallback ? <>{fallback}</> : <Navigate to="/unauthorized" replace />;
   }
 
   // Check permission requirement
   if (requiredPermission && !hasPermission(user, requiredPermission)) {
-    return fallback ? <>{fallback}</> : null;
+    return fallback ? <>{fallback}</> : <Navigate to="/unauthorized" replace />;
   }
 
   return <>{children}</>;

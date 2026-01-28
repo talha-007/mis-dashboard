@@ -8,7 +8,7 @@ import type { RegisterData, LoginCredentials } from 'src/services/api';
 import { useCallback } from 'react';
 
 import { useAppDispatch, useAppSelector } from 'src/store';
-import { login, logout, register, getCurrentUser } from 'src/store/slices/auth.slice';
+import { login, logout, register, getCurrentUser, initializeAuth } from 'src/store/slices/auth.slice';
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
@@ -38,17 +38,24 @@ export const useAuth = () => {
     [dispatch]
   );
 
+  const initialize = useCallback(
+    async () => dispatch(initializeAuth()).unwrap(),
+    [dispatch]
+  );
+
   return {
     // State
     user: auth.user,
     isAuthenticated: auth.isAuthenticated,
     isLoading: auth.isLoading,
     error: auth.error,
+    isInitialized: auth.isInitialized,
     
     // Actions
     login: handleLogin,
     register: handleRegister,
     logout: handleLogout,
     refreshUser,
+    initialize,
   };
 };

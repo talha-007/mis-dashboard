@@ -10,6 +10,10 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
+import { RoleGuard, ProtectedRoute, MultiRoleGuard, GuestOnlyRoute } from 'src/components/auth';
+
+import { UserRole } from 'src/types/auth.types';
+
 // ----------------------------------------------------------------------
 
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
@@ -45,48 +49,72 @@ const renderFallback = () => (
 export const routesSection: RouteObject[] = [
   {
     element: (
-      <DashboardLayout>
-        <Suspense fallback={renderFallback()}>
-          <Outlet />
-        </Suspense>
-      </DashboardLayout>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <Suspense fallback={renderFallback()}>
+            <Outlet />
+          </Suspense>
+        </DashboardLayout>
+      </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'user', element: <UserPage /> },
+      { 
+        index: true, 
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.CUSTOMER]}>
+            <DashboardPage />
+          </MultiRoleGuard>
+        )
+      },
+      { 
+        path: 'user', 
+        element: (
+          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+            <UserPage />
+          </RoleGuard>
+        )
+      },
       { path: 'blog', element: <BlogPage /> },
     ],
   },
   {
     path: 'sign-in',
     element: (
-      <AuthLayout>
-        <SignInPage />
-      </AuthLayout>
+      <GuestOnlyRoute>
+        <AuthLayout>
+          <SignInPage />
+        </AuthLayout>
+      </GuestOnlyRoute>
     ),
   },
   {
     path: 'register',
     element: (
-      <AuthLayout>
-        <RegisterPage />
-      </AuthLayout>
+      <GuestOnlyRoute>
+        <AuthLayout>
+          <RegisterPage />
+        </AuthLayout>
+      </GuestOnlyRoute>
     ),
   },
   {
     path: 'forgot-password',
     element: (
-      <AuthLayout>
-        <ForgotPasswordPage />
-      </AuthLayout>
+      <GuestOnlyRoute>
+        <AuthLayout>
+          <ForgotPasswordPage />
+        </AuthLayout>
+      </GuestOnlyRoute>
     ),
   },
   {
     path: 'verify-otp',
     element: (
-      <AuthLayout>
-        <VerifyOtpPage />
-      </AuthLayout>
+      <GuestOnlyRoute>
+        <AuthLayout>
+          <VerifyOtpPage />
+        </AuthLayout>
+      </GuestOnlyRoute>
     ),
   },
   {

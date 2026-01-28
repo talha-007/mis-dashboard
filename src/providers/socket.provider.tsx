@@ -36,24 +36,30 @@ interface SocketProviderProps {
 
 export function SocketProvider({ children }: SocketProviderProps) {
   const dispatch = useAppDispatch();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, token, isInitialized } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    // Only connect if authenticated and real-time is enabled
-    if (isAuthenticated && ENV.FEATURES.REAL_TIME) {
+    // Only connect if authenticated, initialized, and real-time is enabled
+    if (!isInitialized) {
+      return undefined;
+    }
+
+    if (isAuthenticated && token && ENV.FEATURES.REAL_TIME) {
+      // Update socket auth token before connecting
+      socketService.updateAuth(token);
       socketService.connect();
 
       // Setup global event handlers
       setupEventHandlers();
 
       return () => {
-      socketService.disconnect();
-    };
-  }
+        socketService.disconnect();
+      };
+    }
 
-  return undefined;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [isAuthenticated]);
+    return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isInitialized, token]);
 
 const setupEventHandlers = () => {
     // Handle incoming notifications

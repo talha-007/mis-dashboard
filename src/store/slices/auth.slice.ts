@@ -13,8 +13,10 @@ import type {
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
+import { MOCK_TOKEN, getMockUser } from 'src/utils/mock-auth';
 import { setUserData, getUserData, setAuthToken, getAuthToken, clearAuthToken, setRefreshToken } from 'src/utils/auth-storage';
 
+import ENV from 'src/config/environment';
 import { authService } from 'src/services/api';
 import { socketService } from 'src/services/socket';
 
@@ -27,17 +29,21 @@ interface AuthState {
   isInitialized: boolean;
 }
 
-// Initialize state from localStorage
+// Initialize state from localStorage or use mock data in dev mode
 const storedToken = getAuthToken();
 const storedUser = getUserData<User>();
 
+// Use mock data if bypass auth is enabled (for development without backend)
+const mockUser = ENV.DEV.BYPASS_AUTH ? getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'customer') : null;
+const mockToken = ENV.DEV.BYPASS_AUTH ? MOCK_TOKEN : null;
+
 const initialState: AuthState = {
-  user: storedUser,
-  token: storedToken,
-  isAuthenticated: !!(storedToken && storedUser),
+  user: ENV.DEV.BYPASS_AUTH ? mockUser : storedUser,
+  token: ENV.DEV.BYPASS_AUTH ? mockToken : storedToken,
+  isAuthenticated: ENV.DEV.BYPASS_AUTH ? true : !!(storedToken && storedUser),
   isLoading: false,
   error: null,
-  isInitialized: false,
+  isInitialized: ENV.DEV.BYPASS_AUTH ? true : false,
 };
 
 // Async thunks
@@ -146,11 +152,19 @@ export const getCurrentUser = createAsyncThunk(
 /**
  * Initialize auth state on app startup
  * Validates stored token and fetches current user
+ * In development mode with BYPASS_AUTH, returns mock data immediately
  */
 export const initializeAuth = createAsyncThunk(
   'auth/initialize',
   async (_, { rejectWithValue }) => {
     try {
+      // Bypass auth in development mode
+      if (ENV.DEV.BYPASS_AUTH) {
+        const user = getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'customer');
+        const token = MOCK_TOKEN;
+        return { user, token };
+      }
+
       const token = getAuthToken();
       
       if (!token) {

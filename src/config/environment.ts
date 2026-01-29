@@ -32,6 +32,12 @@ export const ENV = {
     ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
   },
 
+  // Development flags
+  DEV: {
+    BYPASS_AUTH: import.meta.env.VITE_BYPASS_AUTH === 'true',
+    MOCK_USER: import.meta.env.VITE_MOCK_USER || 'superadmin',
+  },
+
   // Derived flags
   IS_DEV: import.meta.env.DEV,
   IS_PROD: import.meta.env.PROD,

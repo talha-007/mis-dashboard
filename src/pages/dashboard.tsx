@@ -1,20 +1,20 @@
 import { CONFIG } from 'src/config-global';
 
-import { OverviewAnalyticsView as DashboardView } from 'src/sections/overview/view';
+import { PortfolioOverviewView } from 'src/sections/portfolio/view';
 
 // ----------------------------------------------------------------------
 
 export default function Page() {
   return (
     <>
-      <title>{`Dashboard - ${CONFIG.appName}`}</title>
+      <title>{`Portfolio Overview - ${CONFIG.appName}`}</title>
       <meta
         name="description"
-        content="The starting point for your next project with Minimal UI Kit, built on the newest version of Material-UI ©, ready to be customized to your style"
+        content="Portfolio overview and metrics for microfinance operations"
       />
-      <meta name="keywords" content="react,material,kit,application,dashboard,admin,template" />
+      <meta name="keywords" content="portfolio,loans,borrowers,microfinance,dashboard" />
 
-      <DashboardView />
+      <PortfolioOverviewView />
     </>
   );
 }

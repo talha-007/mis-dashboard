@@ -17,6 +17,9 @@ import { UserRole } from 'src/types/auth.types';
 // ----------------------------------------------------------------------
 
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
+export const BorrowerManagementPage = lazy(() => import('src/pages/borrower-management'));
+export const LoanApplicationPage = lazy(() => import('src/pages/loan-application'));
+export const RecoveryPage = lazy(() => import('src/pages/recovery'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
@@ -65,6 +68,30 @@ export const routesSection: RouteObject[] = [
             <DashboardPage />
           </MultiRoleGuard>
         )
+      },
+      {
+        path: 'borrower-management',
+        element: (
+          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+            <BorrowerManagementPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'loan-applications',
+        element: (
+          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+            <LoanApplicationPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'recoveries-overdues',
+        element: (
+          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+            <RecoveryPage />
+          </RoleGuard>
+        ),
       },
       { 
         path: 'user', 

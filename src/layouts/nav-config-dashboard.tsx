@@ -18,20 +18,40 @@ export type NavItem = {
 // Navigation for Super Admin
 export const superAdminNavData: NavItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Portfolio Overview',
     path: '/',
     icon: icon('ic-analytics'),
   },
   {
-    title: 'Customers',
-    path: '/user',
-    icon: icon('ic-user'),
+    title: 'Borrower Management',
+    path: '/borrower-management',
+    icon: icon('borrowers'),
     requiredPermission: Permission.VIEW_USERS,
   },
   {
-    title: 'Announcements',
-    path: '/blog',
-    icon: icon('ic-blog'),
+    title: 'Loan Applications',
+    path: '/loan-applications',
+    icon: icon('applications'),
+  },
+  {
+    title: 'Recoveries & Overdues',
+    path: '/recoveries-overdues',
+    icon: icon('recoveries'),
+  },
+  {
+    title: 'Payments & Ledger',
+    path: '/payments-ledger',
+    icon: icon('payments'),
+  },
+  {
+    title: 'Credit Ratings',
+    path: '/credit-ratings',
+    icon: icon('ratings'),
+  },
+  {
+    title: 'MIS & Reports',
+    path: '/mis-reports',
+    icon: icon('reports'),
   },
 ];
 

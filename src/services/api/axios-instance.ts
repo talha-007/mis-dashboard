@@ -16,6 +16,10 @@ import type { ApiError, ApiResponse } from './types';
 // Store reference will be set later to avoid circular dependency
 let storeDispatch: any = null;
 
+// Shared promise to coordinate concurrent token refresh attempts
+// This prevents multiple simultaneous refresh requests when several API calls fail with 401
+let refreshTokenPromise: Promise<string> | null = null;
+
 export const setStoreDispatch = (dispatch: any) => {
   storeDispatch = dispatch;
 };
@@ -85,68 +89,79 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Try to refresh token first
       const refreshToken = getRefreshToken();
       
-      if (refreshToken) {
-        try {
-          // Attempt token refresh
-          const response = await axios.post<ApiResponse<{ token: string; refreshToken: string }>>(
-            `${ENV.API.BASE_URL}/auth/refresh`,
-            { refreshToken }
-          );
-          
-          const newToken = response.data.data.token;
-          const newRefreshToken = response.data.data.refreshToken;
-          
-          // Store new tokens in localStorage
-          setAuthToken(newToken);
-          if (newRefreshToken) {
-            setRefreshToken(newRefreshToken);
-          }
-          
-          // CRITICAL: Update Redux state with new token to keep state synchronized
-          // This ensures socket provider and other components use the refreshed token
-          if (storeDispatch) {
-            const { updateToken } = await import('src/store/slices/auth.slice');
-            storeDispatch(updateToken(newToken));
-          }
-          
-          // Update original request with new token
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          }
-          
-          // Retry original request
-          return axiosInstance(originalRequest);
-        } catch {
-          // Refresh failed, clear auth and redirect
-          clearAuthToken();
-          
-          // Dispatch logout action if store is available
-          if (storeDispatch) {
-            const { clearAuth } = await import('src/store/slices/auth.slice');
-            storeDispatch(clearAuth());
-          }
-          
-          // Redirect to login
-          if (typeof window !== 'undefined') {
-            window.location.href = '/sign-in';
-          }
-          
-          return Promise.reject(error);
-        }
-      } else {
-        // No refresh token, clear auth and redirect
+      if (!refreshToken) {
+        // No refresh token available, clear auth and redirect
         clearAuthToken();
         
-        // Dispatch logout action if store is available
         if (storeDispatch) {
           const { clearAuth } = await import('src/store/slices/auth.slice');
           storeDispatch(clearAuth());
         }
         
-        // Redirect to login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/sign-in';
+        }
+        
+        return Promise.reject(error);
+      }
+
+      try {
+        // Check if a refresh is already in progress
+        if (!refreshTokenPromise) {
+          // Initiate a new token refresh and store the promise
+          // This ensures only ONE refresh request is made even if multiple API calls fail simultaneously
+          refreshTokenPromise = (async () => {
+            try {
+              const response = await axios.post<ApiResponse<{ token: string; refreshToken: string }>>(
+                `${ENV.API.BASE_URL}/auth/refresh`,
+                { refreshToken }
+              );
+              
+              const newToken = response.data.data.token;
+              const newRefreshToken = response.data.data.refreshToken;
+              
+              // Store new tokens in localStorage
+              setAuthToken(newToken);
+              if (newRefreshToken) {
+                setRefreshToken(newRefreshToken);
+              }
+              
+              // CRITICAL: Update Redux state with new token to keep state synchronized
+              // This ensures socket provider and other components use the refreshed token
+              if (storeDispatch) {
+                const { updateToken } = await import('src/store/slices/auth.slice');
+                storeDispatch(updateToken(newToken));
+              }
+              
+              return newToken;
+            } finally {
+              // Clear the promise when done (success or failure)
+              refreshTokenPromise = null;
+            }
+          })();
+        }
+
+        // Wait for the refresh to complete (either this request initiated it or another did)
+        const newToken = await refreshTokenPromise;
+        
+        // Update original request with new token
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
+        
+        // Retry original request
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed, clear auth and redirect
+        clearAuthToken();
+        
+        if (storeDispatch) {
+          const { clearAuth } = await import('src/store/slices/auth.slice');
+          storeDispatch(clearAuth());
+        }
+        
         if (typeof window !== 'undefined') {
           window.location.href = '/sign-in';
         }

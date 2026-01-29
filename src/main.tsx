@@ -6,6 +6,7 @@ import App from './app';
 import { AppProviders } from './providers';
 import { routesSection } from './routes/sections';
 import { ErrorBoundary } from './routes/components';
+import { AuthInitializer } from './components/auth';
 
 // ----------------------------------------------------------------------
 
@@ -26,7 +27,9 @@ const root = createRoot(document.getElementById('root')!);
 root.render(
   <StrictMode>
     <AppProviders>
-      <RouterProvider router={router} />
+      <AuthInitializer>
+        <RouterProvider router={router} />
+      </AuthInitializer>
     </AppProviders>
   </StrictMode>
 );

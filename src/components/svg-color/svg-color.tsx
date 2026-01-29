@@ -27,8 +27,8 @@ export function SvgColor({ src, className, sx, ...other }: SvgColorProps) {
 // ----------------------------------------------------------------------
 
 const SvgRoot = styled('span')(() => ({
-  width: 24,
-  height: 24,
+  width: 28,
+  height: 28,
   flexShrink: 0,
   display: 'inline-flex',
   backgroundColor: 'currentColor',

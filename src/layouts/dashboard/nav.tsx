@@ -15,9 +15,6 @@ import { RouterLink } from 'src/routes/components';
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 
-import { NavUpgrade } from '../components/nav-upgrade';
-import { WorkspacesPopover } from '../components/workspaces-popover';
-
 import type { NavItem } from '../nav-config-dashboard';
 import type { WorkspacesPopoverProps } from '../components/workspaces-popover';
 
@@ -116,7 +113,7 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
 
       {slots?.topArea}
 
-      <WorkspacesPopover data={workspaces} sx={{ my: 2 }} />
+      {/* <WorkspacesPopover data={workspaces} sx={{ my: 2 }} /> */}
 
       <Scrollbar fillContent>
         <Box
@@ -126,6 +123,7 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
               display: 'flex',
               flex: '1 1 auto',
               flexDirection: 'column',
+              my: 4,
             },
             ...(Array.isArray(sx) ? sx : [sx]),
           ]}
@@ -188,7 +186,6 @@ export function NavContent({ data, slots, workspaces, sx }: NavContentProps) {
 
       {slots?.bottomArea}
 
-      <NavUpgrade />
     </>
   );
 }

@@ -7,21 +7,12 @@ export type InputNumberValue = string | number | null | undefined;
 
 type Options = Intl.NumberFormatOptions;
 
-const DEFAULT_LOCALE = { code: 'en-US', currency: 'USD' };
-
-function processInput(inputValue: InputNumberValue): number | null {
-  if (inputValue == null || Number.isNaN(inputValue)) return null;
-  return Number(inputValue);
-}
-
-// ----------------------------------------------------------------------
+const DEFAULT_LOCALE = { code: 'en-PK', currency: 'PKR' };
 
 export function fNumber(inputValue: InputNumberValue, options?: Options) {
   const locale = DEFAULT_LOCALE;
-
-  const number = processInput(inputValue);
+  const number = inputValue == null || Number.isNaN(inputValue) ? null : Number(inputValue);
   if (number === null) return '';
-
   const fm = new Intl.NumberFormat(locale.code, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -36,7 +27,7 @@ export function fNumber(inputValue: InputNumberValue, options?: Options) {
 export function fCurrency(inputValue: InputNumberValue, options?: Options) {
   const locale = DEFAULT_LOCALE;
 
-  const number = processInput(inputValue);
+  const number = inputValue == null || Number.isNaN(inputValue) ? null : Number(inputValue);
   if (number === null) return '';
 
   const fm = new Intl.NumberFormat(locale.code, {
@@ -55,7 +46,7 @@ export function fCurrency(inputValue: InputNumberValue, options?: Options) {
 export function fPercent(inputValue: InputNumberValue, options?: Options) {
   const locale = DEFAULT_LOCALE;
 
-  const number = processInput(inputValue);
+  const number = inputValue == null || Number.isNaN(inputValue) ? null : Number(inputValue);
   if (number === null) return '';
 
   const fm = new Intl.NumberFormat(locale.code, {
@@ -73,7 +64,7 @@ export function fPercent(inputValue: InputNumberValue, options?: Options) {
 export function fShortenNumber(inputValue: InputNumberValue, options?: Options) {
   const locale = DEFAULT_LOCALE;
 
-  const number = processInput(inputValue);
+  const number = inputValue == null || Number.isNaN(inputValue) ? null : Number(inputValue);
   if (number === null) return '';
 
   const fm = new Intl.NumberFormat(locale.code, {

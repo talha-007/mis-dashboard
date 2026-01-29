@@ -13,8 +13,10 @@ import type {
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { setUserData, setAuthToken, clearAuthToken, setRefreshToken } from 'src/utils/auth-storage';
+import { MOCK_TOKEN, getMockUser } from 'src/utils/mock-auth';
+import { setUserData, getUserData, setAuthToken, getAuthToken, clearAuthToken, setRefreshToken } from 'src/utils/auth-storage';
 
+import ENV from 'src/config/environment';
 import { authService } from 'src/services/api';
 import { socketService } from 'src/services/socket';
 
@@ -24,14 +26,24 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  isInitialized: boolean;
 }
 
+// Initialize state from localStorage or use mock data in dev mode
+const storedToken = getAuthToken();
+const storedUser = getUserData<User>();
+
+// Use mock data if bypass auth is enabled (for development without backend)
+const mockUser = ENV.DEV.BYPASS_AUTH ? getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'customer') : null;
+const mockToken = ENV.DEV.BYPASS_AUTH ? MOCK_TOKEN : null;
+
 const initialState: AuthState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
+  user: ENV.DEV.BYPASS_AUTH ? mockUser : storedUser,
+  token: ENV.DEV.BYPASS_AUTH ? mockToken : storedToken,
+  isAuthenticated: ENV.DEV.BYPASS_AUTH ? true : !!(storedToken && storedUser),
   isLoading: false,
   error: null,
+  isInitialized: ENV.DEV.BYPASS_AUTH ? true : false,
 };
 
 // Async thunks
@@ -137,6 +149,46 @@ export const getCurrentUser = createAsyncThunk(
   }
 );
 
+/**
+ * Initialize auth state on app startup
+ * Validates stored token and fetches current user
+ * In development mode with BYPASS_AUTH, returns mock data immediately
+ */
+export const initializeAuth = createAsyncThunk(
+  'auth/initialize',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Bypass auth in development mode
+      if (ENV.DEV.BYPASS_AUTH) {
+        const user = getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'customer');
+        const token = MOCK_TOKEN;
+        return { user, token };
+      }
+
+      const token = getAuthToken();
+      
+      if (!token) {
+        return null;
+      }
+
+      // Validate token and get current user
+      const user = await authService.getCurrentUser();
+      setUserData(user);
+
+      // Reconnect socket if token is valid
+      socketService.updateAuth(token);
+      socketService.connect();
+
+      return { user, token };
+    } catch (error: any) {
+      // Token is invalid, clear storage
+      clearAuthToken();
+      socketService.disconnect();
+      return rejectWithValue(error.message || 'Session expired');
+    }
+  }
+);
+
 // Slice
 const authSlice = createSlice({
   name: 'auth',
@@ -151,12 +203,21 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      clearAuthToken();
+      socketService.disconnect();
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
     clearError: (state) => {
       state.error = null;
+    },
+    setInitialized: (state) => {
+      state.isInitialized = true;
+    },
+    updateToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+      setAuthToken(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -254,8 +315,35 @@ const authSlice = createSlice({
         state.error = action.payload as string;
         state.isAuthenticated = false;
       });
+
+    // Initialize Auth
+    builder
+      .addCase(initializeAuth.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(initializeAuth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isInitialized = true;
+        if (action.payload) {
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+          state.isAuthenticated = true;
+        } else {
+          state.user = null;
+          state.token = null;
+          state.isAuthenticated = false;
+        }
+        state.error = null;
+      })
+      .addCase(initializeAuth.rejected, (state) => {
+        state.isLoading = false;
+        state.isInitialized = true;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+      });
   },
 });
 
-export const { setUser, clearAuth, setError, clearError } = authSlice.actions;
+export const { setUser, clearAuth, setError, clearError, setInitialized, updateToken } = authSlice.actions;
 export default authSlice.reducer;

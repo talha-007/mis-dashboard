@@ -42,6 +42,13 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
   [UserRole.SUPER_ADMIN]: [
     '/',
     '/dashboard',
+    '/bank-management',
+    '/borrower-management',
+    '/loan-applications',
+    '/recoveries-overdues',
+    '/payments-ledger',
+    '/credit-ratings',
+    '/mis-reports',
     '/users',
     '/accounts',
     '/transactions',
@@ -49,7 +56,22 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/reports',
     '/settings',
     '/audit-logs',
-    '/blog', // Keep blog for announcements
+    '/blog',
+  ],
+  [UserRole.ADMIN]: [
+    '/',
+    '/dashboard',
+    '/borrower-management',
+    '/loan-applications',
+    '/recoveries-overdues',
+    '/payments-ledger',
+    '/credit-ratings',
+    '/mis-reports',
+    '/reports',
+    '/accounts',
+    '/transactions',
+    '/loans',
+    '/blog',
   ],
   [UserRole.CUSTOMER]: [
     '/',
@@ -58,13 +80,15 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/transactions',
     '/loans',
     '/profile',
+    '/blog',
   ],
 };
 
 // Default redirects after login based on role
 export const ROLE_DEFAULT_ROUTES: Record<UserRole, string> = {
-  [UserRole.SUPER_ADMIN]: '/dashboard',
-  [UserRole.CUSTOMER]: '/dashboard',
+  [UserRole.SUPER_ADMIN]: '/',
+  [UserRole.ADMIN]: '/',
+  [UserRole.CUSTOMER]: '/',
 };
 
 // Get permissions for a role

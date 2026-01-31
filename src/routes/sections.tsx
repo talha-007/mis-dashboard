@@ -17,12 +17,19 @@ import { UserRole } from 'src/types/auth.types';
 // ----------------------------------------------------------------------
 
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
+export const BankManagementPage = lazy(() => import('src/pages/bank-management'));
 export const BorrowerManagementPage = lazy(() => import('src/pages/borrower-management'));
 export const LoanApplicationPage = lazy(() => import('src/pages/loan-application'));
 export const RecoveryPage = lazy(() => import('src/pages/recovery'));
+export const PaymentPage = lazy(() => import('src/pages/payment'));
+export const CreditRatingsPage = lazy(() => import('src/pages/credit-ratings'));
+export const MISReportsPage = lazy(() => import('src/pages/mis-reports'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
+export const SignInSuperAdminPage = lazy(() => import('src/pages/sign-in-superadmin'));
+export const SignInAdminPage = lazy(() => import('src/pages/sign-in-admin'));
+export const SignInCustomerPage = lazy(() => import('src/pages/sign-in-customer'));
 export const RegisterPage = lazy(() => import('src/pages/register'));
 export const ForgotPasswordPage = lazy(() => import('src/pages/forgot-password'));
 export const VerifyOtpPage = lazy(() => import('src/pages/verify-otp'));
@@ -64,33 +71,65 @@ export const routesSection: RouteObject[] = [
       { 
         index: true, 
         element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.CUSTOMER]}>
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER]}>
             <DashboardPage />
           </MultiRoleGuard>
         )
       },
       {
-        path: 'borrower-management',
+        path: 'bank-management',
         element: (
           <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
-            <BorrowerManagementPage />
+            <BankManagementPage />
           </RoleGuard>
+        ),
+      },
+      {
+        path: 'borrower-management',
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+            <BorrowerManagementPage />
+          </MultiRoleGuard>
         ),
       },
       {
         path: 'loan-applications',
         element: (
-          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
             <LoanApplicationPage />
-          </RoleGuard>
+          </MultiRoleGuard>
         ),
       },
       {
         path: 'recoveries-overdues',
         element: (
-          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
             <RecoveryPage />
-          </RoleGuard>
+          </MultiRoleGuard>
+        ),
+      },
+      {
+        path: 'payments-ledger',
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+            <PaymentPage />
+          </MultiRoleGuard>
+        ),
+      },
+      {
+        path: 'credit-ratings',
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+            <CreditRatingsPage />
+          </MultiRoleGuard>
+        ),
+      },
+      {
+        path: 'mis-reports',
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+            <MISReportsPage />
+          </MultiRoleGuard>
         ),
       },
       { 
@@ -114,6 +153,37 @@ export const routesSection: RouteObject[] = [
       </GuestOnlyRoute>
     ),
   },
+  {
+    path: 'sign-in/superadmin',
+    element: (
+      <GuestOnlyRoute>
+        <AuthLayout>
+          <SignInSuperAdminPage />
+        </AuthLayout>
+      </GuestOnlyRoute>
+    ),
+  },
+  {
+    path: 'sign-in/admin',
+    element: (
+      <GuestOnlyRoute>
+        <AuthLayout>
+          <SignInAdminPage />
+        </AuthLayout>
+      </GuestOnlyRoute>
+    ),
+  },
+  {
+    path: 'sign-in/customer',
+    element: (
+      <GuestOnlyRoute>
+        <AuthLayout>
+          <SignInCustomerPage />
+        </AuthLayout>
+      </GuestOnlyRoute>
+    ),
+  },
+ 
   {
     path: 'register',
     element: (

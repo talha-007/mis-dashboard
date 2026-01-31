@@ -34,7 +34,7 @@ const storedToken = getAuthToken();
 const storedUser = getUserData<User>();
 
 // Use mock data if bypass auth is enabled (for development without backend)
-const mockUser = ENV.DEV.BYPASS_AUTH ? getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'customer') : null;
+const mockUser = ENV.DEV.BYPASS_AUTH ? getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'admin' | 'customer') : null;
 const mockToken = ENV.DEV.BYPASS_AUTH ? MOCK_TOKEN : null;
 
 const initialState: AuthState = {
@@ -160,7 +160,7 @@ export const initializeAuth = createAsyncThunk(
     try {
       // Bypass auth in development mode
       if (ENV.DEV.BYPASS_AUTH) {
-        const user = getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'customer');
+        const user = getMockUser(ENV.DEV.MOCK_USER as 'superadmin' | 'admin' | 'customer');
         const token = MOCK_TOKEN;
         return { user, token };
       }

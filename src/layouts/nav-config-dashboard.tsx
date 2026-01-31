@@ -18,6 +18,26 @@ export type NavItem = {
 // Navigation for Super Admin
 export const superAdminNavData: NavItem[] = [
   {
+    title: 'Dashboard',
+    path: '/',
+    icon: icon('ic-analytics'),
+  },
+  {
+    title: 'Bank Management',
+    path: '/bank-management',
+    icon: icon('ic-user'),
+    requiredPermission: Permission.VIEW_USERS,
+  },
+  {
+    title: 'System Settings',
+    path: '/settings',
+    icon: icon('ic-settings'),
+  },
+];
+
+// Navigation for Admin
+export const adminNavData: NavItem[] = [
+  {
     title: 'Portfolio Overview',
     path: '/',
     icon: icon('ic-analytics'),
@@ -26,7 +46,6 @@ export const superAdminNavData: NavItem[] = [
     title: 'Borrower Management',
     path: '/borrower-management',
     icon: icon('borrowers'),
-    requiredPermission: Permission.VIEW_USERS,
   },
   {
     title: 'Loan Applications',
@@ -74,6 +93,8 @@ export const getNavDataByRole = (role: UserRole): NavItem[] => {
   switch (role) {
     case UserRole.SUPER_ADMIN:
       return superAdminNavData;
+    case UserRole.ADMIN:
+      return adminNavData;
     case UserRole.CUSTOMER:
       return customerNavData;
     default:

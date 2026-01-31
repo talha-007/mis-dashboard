@@ -7,7 +7,7 @@ import type { User } from 'src/types/auth.types';
 
 import { UserRole, Permission } from 'src/types/auth.types';
 
-export const MOCK_USERS: Record<'superadmin' | 'customer', User> = {
+export const MOCK_USERS: Record<'superadmin' | 'admin' | 'customer', User> = {
   superadmin: {
     id: 'mock-superadmin-001',
     email: 'admin@mis.local',
@@ -15,6 +15,35 @@ export const MOCK_USERS: Record<'superadmin' | 'customer', User> = {
     lastName: 'Admin',
     role: UserRole.SUPER_ADMIN,
     permissions: Object.values(Permission), // All permissions
+    isActive: true,
+    isEmailVerified: true,
+    avatar: '/assets/images/avatars/avatar_default.jpg',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  
+  admin: {
+    id: 'mock-admin-001',
+    email: 'admin@example.com',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: UserRole.ADMIN,
+    permissions: [
+      Permission.VIEW_USERS,
+      Permission.VIEW_ACCOUNTS,
+      Permission.CREATE_ACCOUNTS,
+      Permission.EDIT_ACCOUNTS,
+      Permission.APPROVE_ACCOUNTS,
+      Permission.VIEW_TRANSACTIONS,
+      Permission.CREATE_TRANSACTIONS,
+      Permission.APPROVE_TRANSACTIONS,
+      Permission.VIEW_LOANS,
+      Permission.CREATE_LOANS,
+      Permission.APPROVE_LOANS,
+      Permission.REJECT_LOANS,
+      Permission.VIEW_REPORTS,
+      Permission.EXPORT_REPORTS,
+    ],
     isActive: true,
     isEmailVerified: true,
     avatar: '/assets/images/avatars/avatar_default.jpg',
@@ -48,6 +77,6 @@ export const MOCK_USERS: Record<'superadmin' | 'customer', User> = {
 export const MOCK_TOKEN = 'mock-jwt-token-for-development';
 export const MOCK_REFRESH_TOKEN = 'mock-refresh-token-for-development';
 
-export function getMockUser(role: 'superadmin' | 'customer' = 'superadmin'): User {
+export function getMockUser(role: 'superadmin' | 'admin' | 'customer' = 'superadmin'): User {
   return MOCK_USERS[role];
 }

@@ -166,7 +166,8 @@ axiosInstance.interceptors.response.use(
           window.location.href = '/sign-in';
         }
         
-        return Promise.reject(error);
+        // Reject with the actual refresh/retry error, not the original 401
+        return Promise.reject(refreshError);
       }
     }
 

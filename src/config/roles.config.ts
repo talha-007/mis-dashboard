@@ -76,10 +76,16 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
   [UserRole.CUSTOMER]: [
     '/',
     '/dashboard',
+    '/apply-loan',
+    '/profile',
+    '/documents',
+    '/installments',
+    '/my-credit-rating',
+    '/pay-installment',
+    '/payoff-offer',
     '/accounts',
     '/transactions',
     '/loans',
-    '/profile',
     '/blog',
   ],
 };

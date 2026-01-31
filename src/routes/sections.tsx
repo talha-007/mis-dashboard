@@ -26,6 +26,13 @@ export const CreditRatingsPage = lazy(() => import('src/pages/credit-ratings'));
 export const MISReportsPage = lazy(() => import('src/pages/mis-reports'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
+export const ApplyLoanPage = lazy(() => import('src/pages/apply-loan'));
+export const ProfilePage = lazy(() => import('src/pages/profile'));
+export const DocumentsPage = lazy(() => import('src/pages/documents'));
+export const InstallmentsPage = lazy(() => import('src/pages/installments'));
+export const MyCreditRatingPage = lazy(() => import('src/pages/my-credit-rating'));
+export const PayInstallmentPage = lazy(() => import('src/pages/pay-installment'));
+export const PayoffOfferPage = lazy(() => import('src/pages/payoff-offer'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const SignInSuperAdminPage = lazy(() => import('src/pages/sign-in-superadmin'));
 export const SignInAdminPage = lazy(() => import('src/pages/sign-in-admin'));
@@ -138,7 +145,64 @@ export const routesSection: RouteObject[] = [
           <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
             <UserPage />
           </RoleGuard>
-        )
+        ),
+      },
+      // Customer routes
+      {
+        path: 'apply-loan',
+        element: (
+          <RoleGuard requiredRole={UserRole.CUSTOMER}>
+            <ApplyLoanPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <RoleGuard requiredRole={UserRole.CUSTOMER}>
+            <ProfilePage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'documents',
+        element: (
+          <RoleGuard requiredRole={UserRole.CUSTOMER}>
+            <DocumentsPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'installments',
+        element: (
+          <RoleGuard requiredRole={UserRole.CUSTOMER}>
+            <InstallmentsPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'my-credit-rating',
+        element: (
+          <RoleGuard requiredRole={UserRole.CUSTOMER}>
+            <MyCreditRatingPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'pay-installment',
+        element: (
+          <RoleGuard requiredRole={UserRole.CUSTOMER}>
+            <PayInstallmentPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'payoff-offer',
+        element: (
+          <RoleGuard requiredRole={UserRole.CUSTOMER}>
+            <PayoffOfferPage />
+          </RoleGuard>
+        ),
       },
       { path: 'blog', element: <BlogPage /> },
     ],

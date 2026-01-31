@@ -77,14 +77,44 @@ export const adminNavData: NavItem[] = [
 // Navigation for Customer
 export const customerNavData: NavItem[] = [
   {
-    title: 'Dashboard',
+    title: 'My Dashboard',
     path: '/',
     icon: icon('ic-analytics'),
   },
   {
-    title: 'Announcements',
-    path: '/blog',
-    icon: icon('ic-blog'),
+    title: 'Apply for Loan',
+    path: '/apply-loan',
+    icon: icon('ic-invoice'),
+  },
+  {
+    title: 'My Installments',
+    path: '/installments',
+    icon: icon('ic-calendar'),
+  },
+  {
+    title: 'Pay Installment',
+    path: '/pay-installment',
+    icon: icon('ic-cart'),
+  },
+  {
+    title: 'My Credit Rating',
+    path: '/my-credit-rating',
+    icon: icon('ic-analytics'),
+  },
+  {
+    title: 'Payoff Offer',
+    path: '/payoff-offer',
+    icon: icon('ic-invoice'),
+  },
+  {
+    title: 'Update Profile',
+    path: '/profile',
+    icon: icon('ic-user'),
+  },
+  {
+    title: 'Upload Documents',
+    path: '/documents',
+    icon: icon('ic-file'),
   },
 ];
 

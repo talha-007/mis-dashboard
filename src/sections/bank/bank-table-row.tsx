@@ -34,9 +34,19 @@ type BankTableRowProps = {
   row: BankProps;
   selected: boolean;
   onSelectRow: () => void;
+  onView?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
-export function BankTableRow({ row, selected, onSelectRow }: BankTableRowProps) {
+export function BankTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onView,
+  onEdit,
+  onDelete,
+}: BankTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: MouseEvent<HTMLButtonElement>) => {
@@ -109,17 +119,33 @@ export function BankTableRow({ row, selected, onSelectRow }: BankTableRowProps) 
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              onView?.();
+            }}
+          >
             <Iconify icon="solar:eye-bold" />
             View
           </MenuItem>
 
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              onEdit?.();
+            }}
+          >
             <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
 
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              onDelete?.();
+            }}
+            sx={{ color: 'error.main' }}
+          >
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>

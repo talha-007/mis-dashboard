@@ -19,8 +19,13 @@ import { TableNoData } from '../table-no-data';
 import { BankTableRow } from '../bank-table-row';
 import { BankTableHead } from '../bank-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
+import { BankFormDialog } from '../bank-form-dialog';
+import { BankViewDialog } from '../bank-view-dialog';
 import { BankTableToolbar } from '../bank-table-toolbar';
+import { BankDeleteDialog } from '../bank-delete-dialog';
 import { emptyRows, applyFilter, getComparator } from '../utils';
+
+import type { BankProps } from '../bank-table-row';
 
 // ----------------------------------------------------------------------
 
@@ -28,14 +33,65 @@ export function BankView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
+  const [banks, setBanks] = useState<BankProps[]>(_banks);
+  const [openFormDialog, setOpenFormDialog] = useState(false);
+  const [openViewDialog, setOpenViewDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedBank, setSelectedBank] = useState<BankProps | null>(null);
 
   const dataFiltered = applyFilter({
-    inputData: _banks,
+    inputData: banks,
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
 
   const notFound = !dataFiltered.length && !!filterName;
+
+  const handleOpenFormDialog = (bank?: BankProps) => {
+    setSelectedBank(bank || null);
+    setOpenFormDialog(true);
+  };
+
+  const handleCloseFormDialog = () => {
+    setOpenFormDialog(false);
+    setSelectedBank(null);
+  };
+
+  const handleOpenViewDialog = (bank: BankProps) => {
+    setSelectedBank(bank);
+    setOpenViewDialog(true);
+  };
+
+  const handleCloseViewDialog = () => {
+    setOpenViewDialog(false);
+    setSelectedBank(null);
+  };
+
+  const handleOpenDeleteDialog = (bank: BankProps) => {
+    setSelectedBank(bank);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setSelectedBank(null);
+  };
+
+  const handleSubmitForm = (data: BankProps) => {
+    if (selectedBank) {
+      // Update existing bank
+      setBanks((prev) => prev.map((bank) => (bank.id === data.id ? data : bank)));
+    } else {
+      // Add new bank
+      setBanks((prev) => [...prev, data]);
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedBank) {
+      setBanks((prev) => prev.filter((bank) => bank.id !== selectedBank.id));
+    }
+  };
 
   return (
     <DashboardContent>
@@ -47,6 +103,7 @@ export function BankView() {
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={() => handleOpenFormDialog()}
         >
           New Bank
         </Button>
@@ -68,13 +125,13 @@ export function BankView() {
               <BankTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={_banks.length}
+                rowCount={banks.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    _banks.map((bank) => bank.id)
+                    banks.map((bank) => bank.id)
                   )
                 }
                 headLabel={[
@@ -100,12 +157,15 @@ export function BankView() {
                       row={row}
                       selected={table.selected.includes(row.id)}
                       onSelectRow={() => table.onSelectRow(row.id)}
+                      onView={() => handleOpenViewDialog(row)}
+                      onEdit={() => handleOpenFormDialog(row)}
+                      onDelete={() => handleOpenDeleteDialog(row)}
                     />
                   ))}
 
                 <TableEmptyRows
                   height={68}
-                  emptyRows={emptyRows(table.page, table.rowsPerPage, _banks.length)}
+                  emptyRows={emptyRows(table.page, table.rowsPerPage, banks.length)}
                 />
 
                 {notFound && <TableNoData searchQuery={filterName} />}
@@ -117,13 +177,37 @@ export function BankView() {
         <TablePagination
           component="div"
           page={table.page}
-          count={_banks.length}
+          count={banks.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
           onRowsPerPageChange={table.onChangeRowsPerPage}
         />
       </Card>
+
+      <BankFormDialog
+        open={openFormDialog}
+        onClose={handleCloseFormDialog}
+        onSubmit={handleSubmitForm}
+        bank={selectedBank}
+      />
+
+      <BankViewDialog
+        open={openViewDialog}
+        onClose={handleCloseViewDialog}
+        bank={selectedBank}
+        onEdit={() => {
+          handleCloseViewDialog();
+          handleOpenFormDialog(selectedBank || undefined);
+        }}
+      />
+
+      <BankDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onDelete={handleDelete}
+        bank={selectedBank}
+      />
     </DashboardContent>
   );
 }

@@ -17,7 +17,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
-import { authService } from 'src/services/api';
+import authService from 'src/redux/services/auth.services';
 
 import { Iconify } from 'src/components/iconify';
 

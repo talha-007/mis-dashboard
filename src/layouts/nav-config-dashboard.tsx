@@ -89,12 +89,12 @@ export const customerNavData: NavItem[] = [
   {
     title: 'My Installments',
     path: '/installments',
-    icon: icon('ic-calendar'),
+    icon: icon('ic-payments'),
   },
   {
     title: 'Pay Installment',
     path: '/pay-installment',
-    icon: icon('ic-cart'),
+    icon: icon('ic-pay'),
   },
   {
     title: 'My Credit Rating',
@@ -104,12 +104,12 @@ export const customerNavData: NavItem[] = [
   {
     title: 'Payoff Offer',
     path: '/payoff-offer',
-    icon: icon('ic-invoice'),
+    icon: icon('ic-payoff'),
   },
   {
     title: 'Update Profile',
     path: '/profile',
-    icon: icon('ic-user'),
+    icon: icon('ic-profile'),
   },
   {
     title: 'Upload Documents',

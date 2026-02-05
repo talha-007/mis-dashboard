@@ -3,9 +3,9 @@
  * Handle secure storage of authentication tokens
  */
 
-const AUTH_TOKEN_KEY = 'mis_auth_token';
-const REFRESH_TOKEN_KEY = 'mis_refresh_token';
-const USER_DATA_KEY = 'mis_user_data';
+// Use 'token' to match http-common.tsx which uses localStorage.getItem("token")
+const AUTH_TOKEN_KEY = 'token';
+const USER_DATA_KEY = 'userData';
 
 /**
  * Get authentication token from storage
@@ -31,35 +31,11 @@ export const setAuthToken = (token: string): void => {
 };
 
 /**
- * Get refresh token from storage
- */
-export const getRefreshToken = (): string | null => {
-  try {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
-  } catch (error) {
-    console.error('Error getting refresh token:', error);
-    return null;
-  }
-};
-
-/**
- * Set refresh token in storage
- */
-export const setRefreshToken = (token: string): void => {
-  try {
-    localStorage.setItem(REFRESH_TOKEN_KEY, token);
-  } catch (error) {
-    console.error('Error setting refresh token:', error);
-  }
-};
-
-/**
  * Clear authentication tokens
  */
 export const clearAuthToken = (): void => {
   try {
     localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_DATA_KEY);
   } catch (error) {
     console.error('Error clearing auth tokens:', error);

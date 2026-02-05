@@ -3,12 +3,20 @@
  * Custom hook for authentication operations
  */
 
-import type { RegisterData, LoginCredentials } from 'src/services/api';
+import type { LoginCredentials, RegisterData } from 'src/types/auth.types';
 
 import { useCallback } from 'react';
 
 import { useAppDispatch, useAppSelector } from 'src/store';
-import { login, logout, register, getCurrentUser, initializeAuth } from 'src/store/slices/auth.slice';
+import {
+  superAdminLogin,
+  adminLogin,
+  userLogin,
+  register,
+  logout,
+  getCurrentUser,
+  initializeAuth,
+} from 'src/redux/slice/authSlice';
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
@@ -16,22 +24,28 @@ export const useAuth = () => {
 
   // .unwrap() returns a Promise that will reject if the async thunk was rejected
   // This allows proper error handling in components
-  const handleLogin = useCallback(
+  const handleSuperAdminLogin = useCallback(
     async (credentials: LoginCredentials) =>
-      dispatch(login(credentials)).unwrap(),
+      dispatch(superAdminLogin(credentials)).unwrap(),
+    [dispatch]
+  );
+
+  const handleAdminLogin = useCallback(
+    async (credentials: LoginCredentials) => dispatch(adminLogin(credentials)).unwrap(),
+    [dispatch]
+  );
+
+  const handleUserLogin = useCallback(
+    async (credentials: LoginCredentials) => dispatch(userLogin(credentials)).unwrap(),
     [dispatch]
   );
 
   const handleRegister = useCallback(
-    async (data: RegisterData) =>
-      dispatch(register(data)).unwrap(),
+    async (data: RegisterData) => dispatch(register(data)).unwrap(),
     [dispatch]
   );
 
-  const handleLogout = useCallback(
-    async () => dispatch(logout()).unwrap(),
-    [dispatch]
-  );
+  const handleLogout = useCallback(async () => dispatch(logout({})).unwrap(), [dispatch]);
 
   const refreshUser = useCallback(
     async () => dispatch(getCurrentUser()).unwrap(),
@@ -50,9 +64,12 @@ export const useAuth = () => {
     isLoading: auth.isLoading,
     error: auth.error,
     isInitialized: auth.isInitialized,
-    
+    isLoggingIn: auth.isLoggingIn,
+
     // Actions
-    login: handleLogin,
+    loginSuperAdmin: handleSuperAdminLogin,
+    loginAdmin: handleAdminLogin,
+    loginUser: handleUserLogin,
     register: handleRegister,
     logout: handleLogout,
     refreshUser,

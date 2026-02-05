@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider as ReduxProvider } from 'react-redux';
 
-import { store } from 'src/store';
+import { store } from 'src/redux/store';
 
 import { SocketProvider } from './socket.provider';
 import { GoogleOAuthWrapper } from './google-oauth.provider';

@@ -43,7 +43,7 @@ export function CustomerDashboardView() {
               <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
                 Active Loan
               </Typography>
-              <Typography variant="h3" sx={{ color: 'primary.main' }}>
+              <Typography variant="h3" sx={{ color: '#000' }}>
                 {fCurrency(stats.activeLoan.amount)}
               </Typography>
             </Card>
@@ -59,7 +59,7 @@ export function CustomerDashboardView() {
                 height: '100%',
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: '#000', mb: 1 }}>
                 Next Installment
               </Typography>
               <Typography variant="h3" sx={{ color: 'warning.main' }}>
@@ -92,7 +92,7 @@ export function CustomerDashboardView() {
         <Card>
           <Scrollbar>
             <TableContainer sx={{ overflow: 'unset' }}>
-              <Table sx={{ minWidth: 800 }}>
+              <Table sx={{ minWidth: 800 }} >
                 <TableHead>
                   <TableRow>
                     <TableCell>Total Tenure</TableCell>
@@ -109,17 +109,17 @@ export function CustomerDashboardView() {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="subtitle2" sx={{ color: 'success.main' }}>
+                      <Typography variant="subtitle2" sx={{ color: '#000' }}>
                         {stats.loanDetails.paid}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="subtitle2" sx={{ color: 'warning.main' }}>
+                      <Typography variant="subtitle2" sx={{ color: '#000' }}>
                         {stats.loanDetails.remaining}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="subtitle2" sx={{ color: 'info.main' }}>
+                      <Typography variant="subtitle2" sx={{ color: '#000' }}>
                         {stats.loanDetails.status}
                       </Typography>
                     </TableCell>

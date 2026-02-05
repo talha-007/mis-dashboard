@@ -10,8 +10,6 @@ import { useMemo, useEffect, useContext, createContext, type ReactNode } from 'r
 import ENV from 'src/config/environment';
 import { useAppDispatch, useAppSelector } from 'src/store';
 import { SocketEvent, socketService } from 'src/services/socket';
-import { addNotification } from 'src/store/slices/notifications.slice';
-import { updateMetric, updateAnalytics } from 'src/store/slices/stats.slice';
 
 interface SocketContextValue {
   isConnected: boolean;
@@ -55,12 +53,9 @@ export function SocketProvider({ children }: SocketProviderProps) {
     if (ENV.FEATURES.NOTIFICATIONS) {
       unsubscribers.push(
         socketService.on<NotificationPayload>(SocketEvent.NOTIFICATION, (notification) => {
-          dispatch(
-            addNotification({
-              ...notification,
-              createdAt: notification.createdAt || new Date().toISOString(),
-            })
-          );
+          console.log('[Socket] Notification received:', notification);
+          // TODO: Add notification slice when needed
+          // dispatch(addNotification({ ...notification, createdAt: notification.createdAt || new Date().toISOString() }));
         })
       );
     }
@@ -69,10 +64,14 @@ export function SocketProvider({ children }: SocketProviderProps) {
     if (ENV.FEATURES.ANALYTICS) {
       unsubscribers.push(
         socketService.on<StatsUpdatePayload>(SocketEvent.STATS_UPDATE, (stats) => {
-          dispatch(updateMetric(stats));
+          console.log('[Socket] Stats update:', stats);
+          // TODO: Add stats slice when needed
+          // dispatch(updateMetric(stats));
         }),
         socketService.on<any>(SocketEvent.ANALYTICS_UPDATE, (data) => {
-          dispatch(updateAnalytics(data));
+          console.log('[Socket] Analytics update:', data);
+          // TODO: Add analytics slice when needed
+          // dispatch(updateAnalytics(data));
         })
       );
     }
@@ -80,20 +79,12 @@ export function SocketProvider({ children }: SocketProviderProps) {
     // System messages & alerts
     unsubscribers.push(
       socketService.on<any>(SocketEvent.SYSTEM_MESSAGE, (message) => {
-        console.log('[System Message]', message);
+        console.log('[Socket] System message:', message);
       }),
       socketService.on<any>(SocketEvent.SYSTEM_ALERT, (alert) => {
-        dispatch(
-          addNotification({
-            id: `alert-${Date.now()}`,
-            title: 'System Alert',
-            message: alert.message || 'System alert received',
-            type: alert.type || 'warning',
-            read: false,
-            createdAt: new Date().toISOString(),
-            data: alert,
-          })
-        );
+        console.log('[Socket] System alert:', alert);
+        // TODO: Add notification slice when needed
+        // dispatch(addNotification({ id: `alert-${Date.now()}`, title: 'System Alert', message: alert.message || 'System alert received', type: alert.type || 'warning', read: false, createdAt: new Date().toISOString(), data: alert }));
       })
     );
 

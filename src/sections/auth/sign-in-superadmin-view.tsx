@@ -5,8 +5,6 @@
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -19,6 +17,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from 'src/routes/hooks';
 
 import { useAuth } from 'src/hooks';
+import { useAppDispatch } from 'src/store';
+import { setLoggingIn } from 'src/redux/slice/authSlice';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -26,33 +26,61 @@ import { Iconify } from 'src/components/iconify';
 
 export function SignInSuperAdminView() {
   const router = useRouter();
-  const { login, isLoading, error } = useAuth();
+  const dispatch = useAppDispatch();
+  const { loginSuperAdmin, isLoading, error } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
   const handleSignIn = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+    async (e?: React.FormEvent | React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      if (submitting || isLoading) return;
+
+      setSubmitting(true);
       try {
-        await login({
+        await loginSuperAdmin({
           email: formData.email,
           password: formData.password,
           rememberMe: true,
         });
+        // Wait a bit to ensure Redux state has fully updated and UI has rendered
+        // This prevents layout from changing before API response is fully processed
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Clear the logging in flag and navigate
+        dispatch(setLoggingIn(false));
         router.push('/');
       } catch (err) {
         console.error('Login failed:', err);
+        // Clear the logging in flag on error
+        dispatch(setLoggingIn(false));
+        // Don't navigate on error - stay on login page
+      } finally {
+        setSubmitting(false);
       }
     },
-    [formData, login, router]
+    [formData, loginSuperAdmin, router, submitting, isLoading, dispatch]
   );
 
   const renderForm = (
-    <Stack spacing={3} component="form" onSubmit={handleSignIn}>
+    <Stack 
+      spacing={3} 
+      component="form" 
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSignIn(e);
+      }}
+      noValidate
+    >
       {error && (
         <Alert 
           severity="error"
@@ -74,7 +102,7 @@ export function SignInSuperAdminView() {
         placeholder="admin@mis.local"
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        disabled={isLoading}
+        disabled={submitting || isLoading}
         slotProps={{
           input: {
             startAdornment: (
@@ -101,7 +129,7 @@ export function SignInSuperAdminView() {
           placeholder="••••••••"
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          disabled={isLoading}
+          disabled={submitting || isLoading}
           slotProps={{
             input: {
               startAdornment: (
@@ -125,7 +153,7 @@ export function SignInSuperAdminView() {
           }}
         />
 
-        <Box textAlign="right">
+        {/* <Box textAlign="right">
           <Link
             variant="body2"
             fontWeight={600}
@@ -134,15 +162,16 @@ export function SignInSuperAdminView() {
           >
             Forgot password?
           </Link>
-        </Box>
+        </Box> */}
       </Stack>
 
       <Button
         fullWidth
         size="large"
-        type="submit"
+        type="button"
         variant="contained"
-        disabled={isLoading}
+        disabled={submitting || isLoading}
+        onClick={handleSignIn}
         sx={{
           mt: 1,
           py: 1.5,
@@ -156,7 +185,7 @@ export function SignInSuperAdminView() {
           },
         }}
       >
-        {isLoading ? (
+        {submitting ? (
           <Stack direction="row" spacing={1} alignItems="center">
             <CircularProgress size={20} color="inherit" />
             <span>Signing in...</span>
@@ -171,20 +200,7 @@ export function SignInSuperAdminView() {
   return (
     <Stack spacing={4}>
       {/* Back Button */}
-      <Button
-        startIcon={<Iconify icon="eva:arrow-back-fill" />}
-        onClick={() => router.push('/sign-in')}
-        sx={{
-          alignSelf: 'flex-start',
-          color: 'text.secondary',
-          textTransform: 'none',
-          '&:hover': {
-            bgcolor: 'action.hover',
-          },
-        }}
-      >
-        Back to role selection
-      </Button>
+     
 
       {/* Header */}
       <Stack spacing={2} alignItems="center">
@@ -208,16 +224,14 @@ export function SignInSuperAdminView() {
             <Typography variant="h4" fontWeight={700}>
               Super Admin Login
             </Typography>
-            <Chip 
+            {/* <Chip 
               label="Full Access" 
               size="small" 
               color="primary" 
               sx={{ fontWeight: 600 }}
-            />
+            /> */}
           </Stack>
-          <Typography variant="body2" color="text.secondary">
-            Sign in with your super admin credentials
-          </Typography>
+        
         </Stack>
       </Stack>
 

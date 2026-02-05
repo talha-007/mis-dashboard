@@ -10,7 +10,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
-import { RoleGuard, ProtectedRoute, MultiRoleGuard, GuestOnlyRoute } from 'src/components/auth';
+import { RoleGuard, ProtectedRoute, MultiRoleGuard, AuthRouteGuard } from 'src/components/auth';
 
 import { UserRole } from 'src/types/auth.types';
 
@@ -33,6 +33,7 @@ export const InstallmentsPage = lazy(() => import('src/pages/installments'));
 export const MyCreditRatingPage = lazy(() => import('src/pages/my-credit-rating'));
 export const PayInstallmentPage = lazy(() => import('src/pages/pay-installment'));
 export const PayoffOfferPage = lazy(() => import('src/pages/payoff-offer'));
+export const SettingsPage = lazy(() => import('src/pages/settings'));
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const SignInSuperAdminPage = lazy(() => import('src/pages/sign-in-superadmin'));
 export const SignInAdminPage = lazy(() => import('src/pages/sign-in-admin'));
@@ -88,6 +89,14 @@ export const routesSection: RouteObject[] = [
         element: (
           <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
             <BankManagementPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'settings',
+        element: (
+          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+            <SettingsPage />
           </RoleGuard>
         ),
       },
@@ -210,72 +219,72 @@ export const routesSection: RouteObject[] = [
   {
     path: 'sign-in',
     element: (
-      <GuestOnlyRoute>
+      <AuthRouteGuard>
         <AuthLayout>
-          <SignInPage />
+          <SignInCustomerPage />
         </AuthLayout>
-      </GuestOnlyRoute>
+      </AuthRouteGuard>
     ),
   },
   {
     path: 'sign-in/superadmin',
     element: (
-      <GuestOnlyRoute>
+      <AuthRouteGuard>
         <AuthLayout>
           <SignInSuperAdminPage />
         </AuthLayout>
-      </GuestOnlyRoute>
+      </AuthRouteGuard>
     ),
   },
   {
     path: 'sign-in/admin',
     element: (
-      <GuestOnlyRoute>
+      <AuthRouteGuard>
         <AuthLayout>
           <SignInAdminPage />
         </AuthLayout>
-      </GuestOnlyRoute>
+      </AuthRouteGuard>
     ),
   },
   {
     path: 'sign-in/customer',
     element: (
-      <GuestOnlyRoute>
+      <AuthRouteGuard>
         <AuthLayout>
           <SignInCustomerPage />
         </AuthLayout>
-      </GuestOnlyRoute>
+      </AuthRouteGuard>
     ),
   },
  
   {
     path: 'register',
     element: (
-      <GuestOnlyRoute>
+      <AuthRouteGuard>
         <AuthLayout>
           <RegisterPage />
         </AuthLayout>
-      </GuestOnlyRoute>
+      </AuthRouteGuard>
     ),
   },
   {
     path: 'forgot-password',
     element: (
-      <GuestOnlyRoute>
+      <AuthRouteGuard>
         <AuthLayout>
           <ForgotPasswordPage />
         </AuthLayout>
-      </GuestOnlyRoute>
+      </AuthRouteGuard>
     ),
   },
   {
     path: 'verify-otp',
     element: (
-      <GuestOnlyRoute>
+      <AuthRouteGuard>
         <AuthLayout>
           <VerifyOtpPage />
         </AuthLayout>
-      </GuestOnlyRoute>
+      </AuthRouteGuard>
     ),
   },
   {

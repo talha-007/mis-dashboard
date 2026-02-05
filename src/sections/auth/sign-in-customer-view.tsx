@@ -19,6 +19,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from 'src/routes/hooks';
 
 import { useAuth } from 'src/hooks';
+import { useAppDispatch } from 'src/store';
+import { setLoggingIn } from 'src/redux/slice/authSlice';
 
 import { Iconify } from 'src/components/iconify';
 import { GoogleLoginButton } from 'src/components/auth';
@@ -27,7 +29,8 @@ import { GoogleLoginButton } from 'src/components/auth';
 
 export function SignInCustomerView() {
   const router = useRouter();
-  const { login, isLoading, error } = useAuth();
+  const dispatch = useAppDispatch();
+  const { loginUser, isLoading, error } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,21 +38,35 @@ export function SignInCustomerView() {
     password: '',
   });
 
+  const [submitting, setSubmitting] = useState(false);
+
   const handleSignIn = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+    async (e?: React.FormEvent | React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      if (submitting || isLoading) return;
+
+      setSubmitting(true);
       try {
-        await login({
+        await loginUser({
           email: formData.email,
           password: formData.password,
           rememberMe: true,
         });
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        dispatch(setLoggingIn(false));
         router.push('/');
       } catch (err) {
         console.error('Login failed:', err);
+        dispatch(setLoggingIn(false));
+      } finally {
+        setSubmitting(false);
       }
     },
-    [formData, login, router]
+    [formData, loginUser, router, submitting, isLoading, dispatch]
   );
 
   const handleGoogleSuccess = useCallback(() => {
@@ -57,7 +74,16 @@ export function SignInCustomerView() {
   }, [router]);
 
   const renderForm = (
-    <Stack spacing={3} component="form" onSubmit={handleSignIn}>
+    <Stack
+      spacing={3}
+      component="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSignIn(e);
+      }}
+      noValidate
+    >
       {error && (
         <Alert 
           severity="error"
@@ -145,9 +171,10 @@ export function SignInCustomerView() {
       <Button
         fullWidth
         size="large"
-        type="submit"
+        type="button"
         variant="contained"
-        disabled={isLoading}
+        disabled={submitting || isLoading}
+        onClick={handleSignIn}
         sx={{
           mt: 1,
           py: 1.5,
@@ -158,7 +185,7 @@ export function SignInCustomerView() {
           boxShadow: 'none',
         }}
       >
-        {isLoading ? (
+        {submitting ? (
           <Stack direction="row" spacing={1} alignItems="center">
             <CircularProgress size={20} color="inherit" />
             <span>Signing in...</span>

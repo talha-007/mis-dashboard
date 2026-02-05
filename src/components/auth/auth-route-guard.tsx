@@ -10,6 +10,7 @@ import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 
 import { useAppSelector } from 'src/store';
+import { getUserHomePath } from 'src/utils/role-home-path';
 
 interface AuthRouteGuardProps {
   children: ReactNode;
@@ -17,10 +18,11 @@ interface AuthRouteGuardProps {
 }
 
 export function AuthRouteGuard({ children, redirectTo = '/' }: AuthRouteGuardProps) {
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
 
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    const target = redirectTo || getUserHomePath(user);
+    return <Navigate to={target} replace />;
   }
 
   return <>{children}</>;

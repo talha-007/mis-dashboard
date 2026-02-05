@@ -19,7 +19,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from 'src/routes/hooks';
 
 import { useAuth } from 'src/hooks';
-import { useAppDispatch } from 'src/store';
+import { useAppDispatch, useAppSelector } from 'src/store';
+import { getUserHomePath } from 'src/utils/role-home-path';
 import { setLoggingIn } from 'src/redux/slice/authSlice';
 
 import { Iconify } from 'src/components/iconify';
@@ -30,6 +31,7 @@ export function SignInAdminView() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loginAdmin, isLoading, error } = useAuth();
+  const { user } = useAppSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,9 +57,10 @@ export function SignInAdminView() {
           password: formData.password,
           rememberMe: true,
         });
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 50));
         dispatch(setLoggingIn(false));
-        router.push('/');
+        const target = getUserHomePath(user);
+        router.push(target);
       } catch (err) {
         console.error('Login failed:', err);
         dispatch(setLoggingIn(false));

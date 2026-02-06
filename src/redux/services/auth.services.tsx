@@ -1,24 +1,31 @@
 import { callAPi } from "./http-common";
 
+// Super Admin Login
 const superAdminLogin = (data: any) => callAPi.post("/api/users/superadmin-login", data);
 
+// Admin Login
 const adminLogin = (data: any) => callAPi.post(`/api/v1/adminLogin`, data);
 
-const userLogin = (data: any) => callAPi.post(`/api/v1/userLogin`, data);
+// User Login
+const register = (data: any) => callAPi.post(`/api/customers/register`, data);
 
-const register = (data: any) => callAPi.post(`/api/v1/register`, data);
+const userLogin = (data: any) => callAPi.post(`/api/customers/login`, data);
 
-const logout = (data: any) => callAPi.post(`/api/v1/logout`, data);
+const forgotPassword = (data: any) => callAPi.post(`/api/customers/forgot-password`, data);
 
-const getCurrentUser = (data: any) => callAPi.get(`/api/v1/getCurrentUser`, data);
+const resetPassword = (data: any) => callAPi.post(`/api/customers/reset-password`, data);
 
-const forgotPassword = (data: any) => callAPi.post(`/api/v1/forgotPassword`, data);
-const requestPasswordReset = forgotPassword; // Alias for compatibility
+const resendOTP = (data: any) => callAPi.post(`/api/customers/resend-otp`, data);
 
-const verifyOTP = (data: any) => callAPi.post(`/api/v1/verifyOTP`, data);
-const verifyEmail = verifyOTP; // Alias for compatibility
+const verifyOTP = (data: any) => callAPi.post(`/api/customers/verify-otp`, data);
 
-const resetPassword = (data: any) => callAPi.post(`/api/v1/resetPassword`, data);
+const logout = (data: any) => callAPi.post(`/api/customers/logout`, data);
+
+const getCurrentUser = (data: any) => callAPi.get(`/api/customers/me`, data);
+
+const updateProfile=(data: any) => callAPi.put(`/api/customers/${data.id}`, data);
+
+const googleLogin = (data: any) => callAPi.post(`/api/customers/google-login`, data);
 
 const authService = {
   superAdminLogin,
@@ -28,10 +35,11 @@ const authService = {
   logout,
   getCurrentUser,
   forgotPassword,
-  requestPasswordReset, // Alias for forgotPassword
   verifyOTP,
-  verifyEmail, // Alias for verifyOTP
   resetPassword,
+  resendOTP,
+  updateProfile,
+  googleLogin
 };
 
 export default authService;

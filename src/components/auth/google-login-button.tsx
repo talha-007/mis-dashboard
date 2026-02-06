@@ -1,16 +1,36 @@
 /**
- * Google Login Button Component
+ * Google Login Button Component (Firebase)
+ * Uses Firebase Web SDK to get an ID token, then calls backend /api/customers/google-login.
  */
 
-import { useGoogleLogin } from '@react-oauth/google';
+import type { ButtonProps } from '@mui/material';
+import { Button } from '@mui/material';
 
-import { Button, type ButtonProps } from '@mui/material';
+import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
 
-import { useAppDispatch } from 'src/store';
-// TODO: Add Google login support when needed
-// import { loginWithGoogle } from 'src/redux/slice/authSlice';
+import { useAuth } from 'src/hooks';
 
 import { Iconify } from 'src/components/iconify';
+
+// Firebase config provided by user
+const firebaseConfig = {
+  apiKey: 'AIzaSyDatVWe2sdBMudH-Pzy9-qRZNKXgp2_LDg',
+  authDomain: 'mona-ai-8903f.firebaseapp.com',
+  projectId: 'mona-ai-8903f',
+  storageBucket: 'mona-ai-8903f.firebasestorage.app',
+  messagingSenderId: '157321413851',
+  appId: '1:157321413851:web:4091929b2a55a2669b78fe',
+};
+
+let firebaseApp: FirebaseApp | null = null;
+
+const getFirebaseApp = () => {
+  if (!firebaseApp) {
+    firebaseApp = initializeApp(firebaseConfig);
+  }
+  return firebaseApp;
+};
 
 interface GoogleLoginButtonProps extends Omit<ButtonProps, 'onClick'> {
   onSuccess?: () => void;
@@ -23,25 +43,24 @@ export function GoogleLoginButton({
   children,
   ...buttonProps
 }: GoogleLoginButtonProps) {
-  const dispatch = useAppDispatch();
+  const { loginWithGoogle } = useAuth();
 
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        // TODO: Implement Google login when backend supports it
-        console.log('Google login token:', tokenResponse);
-        // await dispatch(loginWithGoogle({ credential: tokenResponse.access_token })).unwrap();
-        onSuccess?.();
-      } catch (error) {
-        console.error('Google login failed:', error);
-        onError?.(error);
-      }
-    },
-    onError: (error) => {
-      console.error('Google login error:', error);
+  const handleClick = async () => {
+    try {
+      const app = getFirebaseApp();
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken();
+
+      await loginWithGoogle(idToken);
+      onSuccess?.();
+    } catch (error) {
+      console.error('Google login failed:', error);
       onError?.(error);
-    },
-  });
+    }
+  };
 
   return (
     <Button
@@ -50,7 +69,7 @@ export function GoogleLoginButton({
       variant="outlined"
       color="inherit"
       startIcon={<Iconify icon="eva:google-fill" width={24} />}
-      onClick={() => handleGoogleLogin()}
+      onClick={handleClick}
       {...buttonProps}
     >
       {children || 'Continue with Google'}

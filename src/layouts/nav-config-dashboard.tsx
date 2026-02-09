@@ -18,6 +18,32 @@ export type NavItem = {
 // Navigation for Super Admin
 export const superAdminNavData: NavItem[] = [
   {
+    title: 'Dashboard',
+    path: '/',
+    icon: icon('ic-analytics'),
+  },
+  {
+    title: 'Bank Management',
+    path: '/bank-management',
+    icon: icon('ic-user'),
+    requiredPermission: Permission.VIEW_USERS,
+  },
+  {
+    title: 'Subscriptions',
+    path: '/subscriptions',
+    icon: icon('ic-payments'),
+    requiredPermission: Permission.VIEW_USERS,
+  },
+  {
+    title: 'System Settings',
+    path: '/settings',
+    icon: icon('ic-settings'),
+  },
+];
+
+// Navigation for Admin
+export const adminNavData: NavItem[] = [
+  {
     title: 'Portfolio Overview',
     path: '/',
     icon: icon('ic-analytics'),
@@ -26,7 +52,6 @@ export const superAdminNavData: NavItem[] = [
     title: 'Borrower Management',
     path: '/borrower-management',
     icon: icon('borrowers'),
-    requiredPermission: Permission.VIEW_USERS,
   },
   {
     title: 'Loan Applications',
@@ -58,14 +83,44 @@ export const superAdminNavData: NavItem[] = [
 // Navigation for Customer
 export const customerNavData: NavItem[] = [
   {
-    title: 'Dashboard',
+    title: 'My Dashboard',
     path: '/',
     icon: icon('ic-analytics'),
   },
   {
-    title: 'Announcements',
-    path: '/blog',
-    icon: icon('ic-blog'),
+    title: 'Apply for Loan',
+    path: '/apply-loan',
+    icon: icon('ic-invoice'),
+  },
+  {
+    title: 'My Installments',
+    path: '/installments',
+    icon: icon('ic-payments'),
+  },
+  {
+    title: 'Pay Installment',
+    path: '/pay-installment',
+    icon: icon('ic-pay'),
+  },
+  {
+    title: 'My Credit Rating',
+    path: '/my-credit-rating',
+    icon: icon('ic-analytics'),
+  },
+  {
+    title: 'Payoff Offer',
+    path: '/payoff-offer',
+    icon: icon('ic-payoff'),
+  },
+  {
+    title: 'Update Profile',
+    path: '/profile',
+    icon: icon('ic-profile'),
+  },
+  {
+    title: 'Upload Documents',
+    path: '/documents',
+    icon: icon('ic-file'),
   },
 ];
 
@@ -74,6 +129,8 @@ export const getNavDataByRole = (role: UserRole): NavItem[] => {
   switch (role) {
     case UserRole.SUPER_ADMIN:
       return superAdminNavData;
+    case UserRole.ADMIN:
+      return adminNavData;
     case UserRole.CUSTOMER:
       return customerNavData;
     default:

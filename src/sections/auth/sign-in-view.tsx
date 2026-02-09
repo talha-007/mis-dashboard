@@ -23,7 +23,9 @@ import { GoogleLoginButton } from 'src/components/auth';
 
 export function SignInView() {
   const router = useRouter();
-  const { login, isLoading, error } = useAuth();
+  // This is the role selector view - no login needed here
+  // Individual role logins are handled by SignInSuperAdminView, SignInAdminView, SignInCustomerView
+  const { isLoading, error } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,21 +33,14 @@ export function SignInView() {
     password: '',
   });
 
+  // This view is just for role selection - actual login happens in role-specific views
   const handleSignIn = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      try {
-        await login({
-          email: formData.email,
-          password: formData.password,
-          rememberMe: true,
-        });
-        router.push('/');
-      } catch (err) {
-        console.error('Login failed:', err);
-      }
+      // This should not be called - role selector should navigate to specific login pages
+      console.warn('SignInView: This should redirect to role-specific login pages');
     },
-    [formData, login, router]
+    []
   );
 
   const handleGoogleSuccess = useCallback(() => {

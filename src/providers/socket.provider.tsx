@@ -1,6 +1,6 @@
 /**
  * Socket Provider
- * Manages socket connection and real-time events
+ * Manages socket connection and real-time events (notifications)
  */
 
 import type { StatsUpdatePayload, NotificationPayload } from 'src/services/socket';
@@ -8,10 +8,8 @@ import type { StatsUpdatePayload, NotificationPayload } from 'src/services/socke
 import { useMemo, useEffect, useContext, createContext, type ReactNode } from 'react';
 
 import ENV from 'src/config/environment';
-import { useAppDispatch, useAppSelector } from 'src/store';
+import { useAppSelector } from 'src/store';
 import { SocketEvent, socketService } from 'src/services/socket';
-import { addNotification } from 'src/store/slices/notifications.slice';
-import { updateMetric, updateAnalytics } from 'src/store/slices/stats.slice';
 
 interface SocketContextValue {
   isConnected: boolean;
@@ -35,74 +33,56 @@ interface SocketProviderProps {
 }
 
 export function SocketProvider({ children }: SocketProviderProps) {
-  const dispatch = useAppDispatch();
   const { isAuthenticated, token, isInitialized } = useAppSelector((state) => state.auth);
 
+  // Connect/disconnect socket based on auth state
   useEffect(() => {
-    // Early return if not ready
+    // If not ready, no token, or feature disabled - disconnect
     if (!isInitialized || !isAuthenticated || !token || !ENV.FEATURES.REAL_TIME) {
+      socketService.disconnect();
       return undefined;
     }
 
-    // Connect socket with auth
+    // Update token and connect
     socketService.updateAuth(token);
     socketService.connect();
 
     // Setup event handlers
     const unsubscribers: Array<() => void> = [];
 
-    // Notifications
+    // Handle notifications
     if (ENV.FEATURES.NOTIFICATIONS) {
       unsubscribers.push(
         socketService.on<NotificationPayload>(SocketEvent.NOTIFICATION, (notification) => {
-          dispatch(
-            addNotification({
-              ...notification,
-              createdAt: notification.createdAt || new Date().toISOString(),
-            })
-          );
+          console.log('[Socket] 📬 Notification:', notification.title);
+          // TODO: Dispatch to Redux notifications slice when created
         })
       );
     }
 
-    // Analytics
+    // Handle system alerts
+    unsubscribers.push(
+      socketService.on<any>(SocketEvent.SYSTEM_ALERT, (alert) => {
+        console.log('[Socket] ⚠️ System Alert:', alert.message);
+        // TODO: Dispatch to Redux notifications slice when created
+      })
+    );
+
+    // Handle stats updates
     if (ENV.FEATURES.ANALYTICS) {
       unsubscribers.push(
         socketService.on<StatsUpdatePayload>(SocketEvent.STATS_UPDATE, (stats) => {
-          dispatch(updateMetric(stats));
-        }),
-        socketService.on<any>(SocketEvent.ANALYTICS_UPDATE, (data) => {
-          dispatch(updateAnalytics(data));
+          console.log('[Socket] 📊 Stats Update:', stats.metric, '=', stats.value);
+          // TODO: Dispatch to Redux stats slice when created
         })
       );
     }
-
-    // System messages & alerts
-    unsubscribers.push(
-      socketService.on<any>(SocketEvent.SYSTEM_MESSAGE, (message) => {
-        console.log('[System Message]', message);
-      }),
-      socketService.on<any>(SocketEvent.SYSTEM_ALERT, (alert) => {
-        dispatch(
-          addNotification({
-            id: `alert-${Date.now()}`,
-            title: 'System Alert',
-            message: alert.message || 'System alert received',
-            type: alert.type || 'warning',
-            read: false,
-            createdAt: new Date().toISOString(),
-            data: alert,
-          })
-        );
-      })
-    );
 
     // Cleanup on unmount or auth/token change
     return () => {
       unsubscribers.forEach((unsubscribe) => unsubscribe());
-      socketService.disconnect();
     };
-  }, [dispatch, isAuthenticated, isInitialized, token]);
+  }, [isAuthenticated, isInitialized, token]);
 
   const contextValue: SocketContextValue = useMemo(
     () => ({

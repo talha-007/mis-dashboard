@@ -5,39 +5,48 @@
 
 import { useCallback } from 'react';
 
-import { useAppDispatch, useAppSelector } from 'src/store';
-import {
-  markAsRead,
-  markAllAsRead,
-  removeNotification,
-  clearNotifications,
-} from 'src/store/slices/notifications.slice';
+import { useAppDispatch } from 'src/store';
+// TODO: Add notifications slice when needed
+// import {
+//   markAsRead,
+//   markAllAsRead,
+//   removeNotification,
+//   clearNotifications,
+// } from 'src/redux/slice/notificationsSlice';
 
 export const useNotifications = () => {
   const dispatch = useAppDispatch();
-  const { items, unreadCount, isLoading } = useAppSelector((state) => state.notifications);
+  // TODO: Add notifications slice to store
+  // const { items, unreadCount, isLoading } = useAppSelector((state) => state.notifications);
+  const items: any[] = [];
+  const unreadCount = 0;
+  const isLoading = false;
 
   const markRead = useCallback(
     (notificationId: string) => {
-      dispatch(markAsRead(notificationId));
+      // TODO: Implement when notifications slice is added
+      console.log('Mark as read:', notificationId);
     },
-    [dispatch]
+    []
   );
 
   const markAllRead = useCallback(() => {
-    dispatch(markAllAsRead());
-  }, [dispatch]);
+    // TODO: Implement when notifications slice is added
+    console.log('Mark all as read');
+  }, []);
 
   const removeNotif = useCallback(
     (notificationId: string) => {
-      dispatch(removeNotification(notificationId));
+      // TODO: Implement when notifications slice is added
+      console.log('Remove notification:', notificationId);
     },
-    [dispatch]
+    []
   );
 
   const clearAll = useCallback(() => {
-    dispatch(clearNotifications());
-  }, [dispatch]);
+    // TODO: Implement when notifications slice is added
+    console.log('Clear all notifications');
+  }, []);
 
   return {
     // State

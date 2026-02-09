@@ -11,7 +11,7 @@ import Box from '@mui/material/Box';
 import { CircularProgress } from '@mui/material';
 
 import { useAppDispatch, useAppSelector } from 'src/store';
-import { initializeAuth } from 'src/store/slices/auth.slice';
+import { initializeAuth } from 'src/redux/slice/authSlice';
 
 interface AuthInitializerProps {
   children: ReactNode;

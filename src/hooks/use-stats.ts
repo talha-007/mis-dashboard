@@ -5,12 +5,18 @@
 
 import { useCallback } from 'react';
 
-import { useAppDispatch, useAppSelector } from 'src/store';
-import { clearMetric, clearAllMetrics } from 'src/store/slices/stats.slice';
+import { useAppDispatch } from 'src/store';
+// TODO: Add stats slice when needed
+// import { clearMetric, clearAllMetrics } from 'src/redux/slice/statsSlice';
 
 export const useStats = () => {
   const dispatch = useAppDispatch();
-  const { metrics, analytics, isLoading, lastUpdate } = useAppSelector((state) => state.stats);
+  // TODO: Add stats slice to store
+  // const { metrics, analytics, isLoading, lastUpdate } = useAppSelector((state) => state.stats);
+  const metrics: Record<string, any> = {};
+  const analytics: Record<string, any> = {};
+  const isLoading = false;
+  const lastUpdate: string | null = null;
 
   const getMetric = useCallback(
     (metricName: string) => metrics[metricName] || null,
@@ -24,14 +30,16 @@ export const useStats = () => {
 
   const removeMetric = useCallback(
     (metricName: string) => {
-      dispatch(clearMetric(metricName));
+      // TODO: Implement when stats slice is added
+      console.log('Clear metric:', metricName);
     },
-    [dispatch]
+    []
   );
 
   const clearAll = useCallback(() => {
-    dispatch(clearAllMetrics());
-  }, [dispatch]);
+    // TODO: Implement when stats slice is added
+    console.log('Clear all metrics');
+  }, []);
 
   return {
     // State

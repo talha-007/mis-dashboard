@@ -99,13 +99,13 @@ export function BankViewDialog({ open, onClose, bank, onEdit }: BankViewDialogPr
                 <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
                   Total Borrowers
                 </Typography>
-                <Typography variant="h6">{bank.totalBorrowers.toLocaleString()}</Typography>
+                <Typography variant="h6">{bank.totalBorrowers?.toLocaleString()}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
                   Total Loans
                 </Typography>
-                <Typography variant="h6">{bank.totalLoans.toLocaleString()}</Typography>
+                <Typography variant="h6">{bank.totalLoans?.toLocaleString()}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>

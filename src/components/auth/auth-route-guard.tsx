@@ -9,8 +9,9 @@ import type { ReactNode } from 'react';
 
 import { Navigate } from 'react-router-dom';
 
-import { useAppSelector } from 'src/store';
 import { getUserHomePath } from 'src/utils/role-home-path';
+
+import { useAppSelector } from 'src/store';
 
 interface AuthRouteGuardProps {
   children: ReactNode;

@@ -16,10 +16,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { useAuth } from 'src/hooks';
-import { useAppDispatch, useAppSelector } from 'src/store';
 import { getUserHomePath } from 'src/utils/role-home-path';
+
+import { useAuth } from 'src/hooks';
 import { setLoggingIn } from 'src/redux/slice/authSlice';
+import { useAppDispatch, useAppSelector } from 'src/store';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -67,7 +68,7 @@ export function SignInSuperAdminView() {
         setSubmitting(false);
       }
     },
-    [formData, loginSuperAdmin, router, submitting, isLoading, dispatch]
+    [formData, loginSuperAdmin, router, dispatch]
   );
 
   const renderForm = (

@@ -6,13 +6,13 @@
 export const ENV = {
   // API Configuration
   API: {
-    BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+    BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
     TIMEOUT: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
   },
 
   // WebSocket Configuration
   SOCKET: {
-    URL: import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000',
+    URL: import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000',
     PATH: import.meta.env.VITE_SOCKET_PATH || '/socket.io',
     RECONNECTION_ATTEMPTS: Number(import.meta.env.VITE_SOCKET_RECONNECTION_ATTEMPTS) || 5,
     RECONNECTION_DELAY: Number(import.meta.env.VITE_SOCKET_RECONNECTION_DELAY) || 3000,

@@ -17,7 +17,7 @@ import type { BankProps } from './bank-table-row';
 type BankFormDialogProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: BankProps) => void;
+  onSubmit: (data: BankProps) => void | Promise<void>;
   bank?: BankProps | null;
 };
 
@@ -61,16 +61,23 @@ export function BankFormDialog({ open, onClose, onSubmit, bank }: BankFormDialog
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    onSubmit({
+    const bankData: BankProps = {
+      _id: bank?._id || String(Date.now()),
       id: bank?.id || String(Date.now()),
-      ...formData,
+      name: formData.name,
+      code: formData.code,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      status: formData.status,
       totalBorrowers: bank?.totalBorrowers || 0,
       totalLoans: bank?.totalLoans || 0,
       totalAmount: bank?.totalAmount || 0,
-    });
-    onClose();
+    };
+    await onSubmit(bankData);
+    // Don't close here - let parent handle it after success
   };
 
   return (

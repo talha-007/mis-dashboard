@@ -18,10 +18,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { useAuth } from 'src/hooks';
-import { useAppDispatch, useAppSelector } from 'src/store';
 import { getUserHomePath } from 'src/utils/role-home-path';
+
+import { useAuth } from 'src/hooks';
 import { setLoggingIn } from 'src/redux/slice/authSlice';
+import { useAppDispatch, useAppSelector } from 'src/store';
 
 import { Iconify } from 'src/components/iconify';
 import { GoogleLoginButton } from 'src/components/auth';
@@ -69,7 +70,7 @@ export function SignInCustomerView() {
         setSubmitting(false);
       }
     },
-    [formData, loginUser, router, submitting, isLoading, dispatch]
+    [formData, loginUser, router, dispatch]
   );
 
   const handleGoogleSuccess = useCallback(() => {

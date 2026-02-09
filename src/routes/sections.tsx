@@ -18,6 +18,8 @@ import { UserRole } from 'src/types/auth.types';
 
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
 export const BankManagementPage = lazy(() => import('src/pages/bank-management'));
+export const BankFormPage = lazy(() => import('src/pages/bank-form'));
+export const BankPaymentsPage = lazy(() => import('src/pages/bank-payments'));
 export const BorrowerManagementPage = lazy(() => import('src/pages/borrower-management'));
 export const LoanApplicationPage = lazy(() => import('src/pages/loan-application'));
 export const RecoveryPage = lazy(() => import('src/pages/recovery'));
@@ -40,7 +42,9 @@ export const SignInAdminPage = lazy(() => import('src/pages/sign-in-admin'));
 export const SignInCustomerPage = lazy(() => import('src/pages/sign-in-customer'));
 export const RegisterPage = lazy(() => import('src/pages/register'));
 export const ForgotPasswordPage = lazy(() => import('src/pages/forgot-password'));
+export const ForgotPasswordAdminPage = lazy(() => import('src/pages/forgot-password-admin'));
 export const VerifyOtpPage = lazy(() => import('src/pages/verify-otp'));
+export const VerifyOtpAdminPage = lazy(() => import('src/pages/verify-otp-admin'));
 export const UnauthorizedPage = lazy(() => import('src/pages/unauthorized'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
@@ -89,6 +93,22 @@ export const routesSection: RouteObject[] = [
         element: (
           <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
             <BankManagementPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'bank-management/form',
+        element: (
+          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+            <BankFormPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'subscriptions',
+        element: (
+          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+            <BankPaymentsPage />
           </RoleGuard>
         ),
       },
@@ -268,11 +288,31 @@ export const routesSection: RouteObject[] = [
     ),
   },
   {
+    path: 'admin/forgot-password',
+    element: (
+      <AuthRouteGuard>
+        <AuthLayout>
+          <ForgotPasswordAdminPage />
+        </AuthLayout>
+      </AuthRouteGuard>
+    ),
+  },
+  {
     path: 'forgot-password',
     element: (
       <AuthRouteGuard>
         <AuthLayout>
           <ForgotPasswordPage />
+        </AuthLayout>
+      </AuthRouteGuard>
+    ),
+  },
+  {
+    path: 'admin/verify-otp',
+    element: (
+      <AuthRouteGuard>
+        <AuthLayout>
+          <VerifyOtpAdminPage />
         </AuthLayout>
       </AuthRouteGuard>
     ),

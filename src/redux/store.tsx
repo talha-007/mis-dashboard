@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { useDispatch, useSelector, useStore, type TypedUseSelectorHook } from 'react-redux';
+import { useStore, useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux';
 
 import authReducer from './slice/authSlice';
 

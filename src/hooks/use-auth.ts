@@ -3,20 +3,20 @@
  * Custom hook for authentication operations
  */
 
-import type { LoginCredentials, RegisterData } from 'src/types/auth.types';
+import type { RegisterData, LoginCredentials } from 'src/types/auth.types';
 
 import { useCallback } from 'react';
 
 import { useAppDispatch, useAppSelector } from 'src/store';
 import {
-  superAdminLogin,
-  adminLogin,
-  userLogin,
-  register,
   logout,
+  register,
+  userLogin,
+  adminLogin,
+  googleLogin,
   getCurrentUser,
   initializeAuth,
-  googleLogin,
+  superAdminLogin,
 } from 'src/redux/slice/authSlice';
 
 export const useAuth = () => {

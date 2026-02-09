@@ -5,12 +5,15 @@
 
 import type { CardProps } from '@mui/material/Card';
 
+import { useState } from 'react';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -19,9 +22,15 @@ import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 import TableContainer from '@mui/material/TableContainer';
 
+import { useAuth } from 'src/hooks/use-auth';
+
 import { fNumber, fCurrency } from 'src/utils/format-number';
 
 import { Iconify } from 'src/components/iconify';
+
+import { BankPaymentDialog } from 'src/sections/bank/payments/bank-payment-dialog';
+
+import { UserRole } from 'src/types/auth.types';
 
 // ----------------------------------------------------------------------
 
@@ -111,13 +120,30 @@ const PORTFOLIO_METRICS = [
 
 export function PortfolioOverviewView() {
   const theme = useTheme();
+  const { user } = useAuth();
+  const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+
+  const handlePaymentSuccess = () => {
+    // Optionally refresh data or show success message
+    setOpenPaymentDialog(false);
+  };
 
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        Portfolio Overview
-      </Typography>
+      <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+        <Typography variant="h4">Portfolio Overview</Typography>
+        {isSuperAdmin && (
+          <Button
+            variant="contained"
+            startIcon={<Iconify icon="solar:wallet-money-bold" />}
+            onClick={() => setOpenPaymentDialog(true)}
+          >
+            Record Bank Payment
+          </Button>
+        )}
+      </Box>
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -213,6 +239,15 @@ export function PortfolioOverviewView() {
           </TableContainer>
         </Box>
       </Card>
+
+      {/* Bank Payment Dialog */}
+      {isSuperAdmin && (
+        <BankPaymentDialog
+          open={openPaymentDialog}
+          onClose={() => setOpenPaymentDialog(false)}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </Box>
   );
 }

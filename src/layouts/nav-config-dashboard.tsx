@@ -29,6 +29,12 @@ export const superAdminNavData: NavItem[] = [
     requiredPermission: Permission.VIEW_USERS,
   },
   {
+    title: 'Subscriptions',
+    path: '/subscriptions',
+    icon: icon('ic-payments'),
+    requiredPermission: Permission.VIEW_USERS,
+  },
+  {
     title: 'System Settings',
     path: '/settings',
     icon: icon('ic-settings'),

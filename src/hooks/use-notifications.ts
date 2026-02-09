@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 
-import { useAppDispatch, useAppSelector } from 'src/store';
+import { useAppDispatch } from 'src/store';
 // TODO: Add notifications slice when needed
 // import {
 //   markAsRead,

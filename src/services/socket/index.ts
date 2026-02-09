@@ -1,6 +1,7 @@
 /**
  * Socket Service
  * Manages Socket.io connection and real-time communication
+ * Simple and seamless setup for notifications
  */
 
 import { io, type Socket } from 'socket.io-client';
@@ -9,7 +10,7 @@ import ENV from 'src/config/environment';
 
 // Socket Events
 export enum SocketEvent {
-  CONNECT = 'connect',
+  CONNECT = 'connection',
   DISCONNECT = 'disconnect',
   NOTIFICATION = 'notification',
   STATS_UPDATE = 'stats_update',
@@ -38,8 +39,7 @@ export interface StatsUpdatePayload {
 class SocketService {
   private socket: Socket | null = null;
   private authToken: string | null = null;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = ENV.SOCKET.RECONNECTION_ATTEMPTS;
+  private isConnecting = false;
 
   /**
    * Update authentication token
@@ -52,10 +52,17 @@ class SocketService {
   }
 
   /**
-   * Connect to socket server
+   * Connect to socket server (idempotent - safe to call multiple times)
    */
   connect() {
+    // Already connected or connecting
     if (this.socket?.connected) {
+      console.log('[Socket] Already connected');
+      return;
+    }
+
+    if (this.isConnecting) {
+      console.log('[Socket] Already connecting...');
       return;
     }
 
@@ -64,36 +71,45 @@ class SocketService {
       return;
     }
 
-    // Disconnect existing connection if any
-    this.disconnect();
+    this.isConnecting = true;
 
-    // Create new socket connection
-    this.socket = io(ENV.SOCKET.URL, {
-      path: ENV.SOCKET.PATH,
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: ENV.SOCKET.RECONNECTION_DELAY,
-      auth: this.authToken ? { token: this.authToken } : undefined,
-    });
-
-    // Connection event handlers
-    this.socket.on(SocketEvent.CONNECT, () => {
-      console.log('[Socket] Connected');
-      this.reconnectAttempts = 0;
-    });
-
-    this.socket.on(SocketEvent.DISCONNECT, (reason) => {
-      console.log('[Socket] Disconnected:', reason);
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('[Socket] Connection error:', error);
-      this.reconnectAttempts++;
-      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('[Socket] Max reconnection attempts reached');
+    try {
+      // Disconnect any existing connection
+      if (this.socket) {
+        this.socket.disconnect();
       }
-    });
+
+      // Create new socket connection
+      this.socket = io(ENV.SOCKET.URL, {
+        path: ENV.SOCKET.PATH,
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: ENV.SOCKET.RECONNECTION_ATTEMPTS,
+        reconnectionDelay: ENV.SOCKET.RECONNECTION_DELAY,
+        reconnectionDelayMax: 10000,
+        auth: this.authToken ? { token: this.authToken } : undefined,
+      });
+
+      // Connection event handlers
+      this.socket.on(SocketEvent.CONNECT, () => {
+        console.log('[Socket] ✅ Connected successfully');
+        this.isConnecting = false;
+      });
+
+      this.socket.on(SocketEvent.DISCONNECT, (reason) => {
+        console.log('[Socket] ❌ Disconnected:', reason);
+        this.isConnecting = false;
+      });
+
+      this.socket.on('connect_error', (error) => {
+        console.warn('[Socket] ⚠️ Connection error:', error.message);
+      });
+
+      console.log('[Socket] 🔄 Initiating connection...');
+    } catch (error) {
+      console.error('[Socket] 💥 Failed to create socket:', error);
+      this.isConnecting = false;
+    }
   }
 
   /**
@@ -101,8 +117,10 @@ class SocketService {
    */
   disconnect() {
     if (this.socket) {
+      console.log('[Socket] 🔌 Disconnecting...');
       this.socket.disconnect();
       this.socket = null;
+      this.isConnecting = false;
     }
   }
 
@@ -120,12 +138,13 @@ class SocketService {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
     } else {
-      console.warn('[Socket] Cannot emit: socket not connected');
+      console.warn('[Socket] Cannot emit - socket not connected:', event);
     }
   }
 
   /**
    * Listen to an event from the server
+   * Returns unsubscribe function
    */
   on<T = any>(event: string, callback: (data: T) => void): () => void {
     if (this.socket) {

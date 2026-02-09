@@ -2,6 +2,7 @@
  * Admin Sign In View
  */
 
+import { toast } from 'react-toastify';
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -18,10 +19,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { useAuth } from 'src/hooks';
-import { useAppDispatch, useAppSelector } from 'src/store';
 import { getUserHomePath } from 'src/utils/role-home-path';
+
+import { useAuth } from 'src/hooks';
 import { setLoggingIn } from 'src/redux/slice/authSlice';
+import { useAppDispatch, useAppSelector } from 'src/store';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -48,27 +50,29 @@ export function SignInAdminView() {
         e.stopPropagation();
       }
 
-      if (submitting || isLoading) return;
-
-      setSubmitting(true);
       try {
-        await loginAdmin({
+        setSubmitting(true);
+        const response = await loginAdmin({
           email: formData.email,
           password: formData.password,
           rememberMe: true,
         });
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        
+        // loginAdmin returns { user, token }
+        if (response && response.user) {
+          const target = getUserHomePath(response.user);
+          router.push(target);
+        }
         dispatch(setLoggingIn(false));
-        const target = getUserHomePath(user);
-        router.push(target);
-      } catch (err) {
-        console.error('Login failed:', err);
-        dispatch(setLoggingIn(false));
-      } finally {
+      } catch (err: any) {
         setSubmitting(false);
+        console.error('Login failed:', err);
+        const errorMessage = err?.message || 'Login failed. Please try again.';
+        toast.error(errorMessage);
+        dispatch(setLoggingIn(false));
       }
     },
-    [formData, loginAdmin, router, submitting, isLoading, dispatch]
+    [formData, loginAdmin, router, dispatch]
   );
 
   const renderForm = (
@@ -158,7 +162,7 @@ export function SignInAdminView() {
           <Link
             variant="body2"
             fontWeight={600}
-            onClick={() => router.push('/forgot-password')}
+            onClick={() => router.push('/admin/forgot-password')}
             sx={{ cursor: 'pointer' }}
           >
             Forgot password?
@@ -181,11 +185,8 @@ export function SignInAdminView() {
           fontWeight: 600,
           textTransform: 'none',
           boxShadow: 'none',
-          bgcolor: '#1877F2',
-          '&:hover': {
-            boxShadow: 'none',
-            bgcolor: '#0C44AE',
-          },
+          
+          
         }}
       >
         {submitting ? (
@@ -202,21 +203,7 @@ export function SignInAdminView() {
 
   return (
     <Stack spacing={4}>
-      {/* Back Button */}
-      <Button
-        startIcon={<Iconify icon="eva:arrow-back-fill" />}
-        onClick={() => router.push('/sign-in')}
-        sx={{
-          alignSelf: 'flex-start',
-          color: 'text.secondary',
-          textTransform: 'none',
-          '&:hover': {
-            bgcolor: 'action.hover',
-          },
-        }}
-      >
-        Back to role selection
-      </Button>
+      
 
       {/* Header */}
       <Stack spacing={2} alignItems="center">
@@ -228,8 +215,8 @@ export function SignInAdminView() {
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: 2,
-            bgcolor: 'rgba(24, 119, 242, 0.08)',
-            color: '#1877F2',
+            bgcolor: '#4D0CE7',
+            color: '#ffffff',
           }}
         >
           <Iconify icon="solar:user-id-bold-duotone" width={40} />
@@ -244,7 +231,7 @@ export function SignInAdminView() {
               label="Operations" 
               size="small" 
               sx={{ 
-                bgcolor: '#1877F2', 
+                bgcolor: '#4D0CE7', 
                 color: 'white',
                 fontWeight: 600 
               }}

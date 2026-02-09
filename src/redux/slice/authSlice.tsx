@@ -1,21 +1,10 @@
+import type { User, RegisterData, LoginCredentials } from 'src/types/auth.types';
+
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
-import type { User, LoginCredentials, AuthResponse, UserRole, RegisterData } from 'src/types/auth.types';
+import { setUserData, getUserData, setAuthToken, getAuthToken, clearAuthToken } from 'src/utils/auth-storage';
 
 import authService from '../services/auth.services';
-import { setAuthToken, getAuthToken, clearAuthToken, setUserData, getUserData } from 'src/utils/auth-storage';
-
-// Socket service will be imported dynamically to avoid circular dependencies
-let socketService: any = null;
-
-// Initialize socket service lazily
-const getSocketService = async () => {
-  if (!socketService) {
-    const { socketService: service } = await import('src/services/socket');
-    socketService = service;
-  }
-  return socketService;
-};
 
 interface AuthState {
   user: User | null;
@@ -57,13 +46,6 @@ export const superAdminLogin = createAsyncThunk(
         setUserData(data.user);
       }
 
-      // Connect socket with auth token
-      if (data.token) {
-        const socket = await getSocketService();
-        socket.updateAuth(data.token);
-        socket.connect();
-      }
-
       return {
         user: data.user,
         token: data.token,
@@ -89,13 +71,6 @@ export const adminLogin = createAsyncThunk(
       }
       if (data.user) {
         setUserData(data.user);
-      }
-
-      // Connect socket with auth token
-      if (data.token) {
-        const socket = await getSocketService();
-        socket.updateAuth(data.token);
-        socket.connect();
       }
 
       return {
@@ -125,13 +100,6 @@ export const userLogin = createAsyncThunk(
         setUserData(data.user);
       }
 
-      // Connect socket with auth token
-      if (data.token) {
-        const socket = await getSocketService();
-        socket.updateAuth(data.token);
-        socket.connect();
-      }
-
       return {
         user: data.user,
         token: data.token,
@@ -157,12 +125,6 @@ export const googleLogin = createAsyncThunk(
       }
       if (resp.user) {
         setUserData(resp.user);
-      }
-
-      if (resp.token) {
-        const socket = await getSocketService();
-        socket.updateAuth(resp.token);
-        socket.connect();
       }
 
       return {
@@ -192,13 +154,6 @@ export const register = createAsyncThunk(
         setUserData(responseData.user);
       }
 
-      // Connect socket with auth token if available
-      if (responseData.token) {
-        const socket = await getSocketService();
-        socket.updateAuth(responseData.token);
-        socket.connect();
-      }
-
       return {
         user: responseData.user,
         token: responseData.token,
@@ -215,17 +170,10 @@ export const logout = createAsyncThunk('auth/logout', async (data?: any, { rejec
   try {
     await authService.logout(data || {});
     clearAuthToken();
-
-    // Disconnect socket
-    const socket = await getSocketService();
-    socket.disconnect();
-
     return null;
   } catch (error: any) {
     // Even if API call fails, clear local data
     clearAuthToken();
-    const socket = await getSocketService();
-    socket.disconnect();
     return rejectWithValue(error.message || 'Logout failed');
   }
 });
@@ -246,25 +194,22 @@ export const getCurrentUser = createAsyncThunk(
 
 /**
  * Initialize auth state on app startup
- * Restores session from localStorage and (optionally) validates with backend
+ * Restores session from localStorage
  */
 export const initializeAuth = createAsyncThunk(
   'auth/initialize',
   async () => {
     try {
       const token = getAuthToken();
-      const storedUser = getUserData<User>();
+      const cachedUser = getUserData<User>();
 
       if (!token) {
         return null;
       }
 
-      // If we already have user data in localStorage, trust it and reconnect socket.
-      if (storedUser) {
-        const socket = await getSocketService();
-        socket.updateAuth(token);
-        socket.connect();
-        return { user: storedUser, token };
+      // If we already have user data in localStorage, trust it
+      if (cachedUser) {
+        return { user: cachedUser, token };
       }
 
       // Fallback: try to fetch current user from backend when userData is missing
@@ -272,12 +217,10 @@ export const initializeAuth = createAsyncThunk(
       const data = response.data?.data || response.data;
       setUserData(data);
 
-      const socket = await getSocketService();
-      socket.updateAuth(token);
-      socket.connect();
-
       return { user: data, token };
     } catch (error: any) {
+      console.log(error);
+      
       // Backend validation failed or network error.
       // Do NOT clear token or local state – just signal "no update".
       return null;
@@ -344,7 +287,7 @@ const authSlice = createSlice({
     // Admin Login
     builder
       .addCase(adminLogin.pending, (state) => {
-        state.isLoading = true;
+        // state.isLoading = true;
         state.isLoggingIn = true;
         state.error = null;
       })

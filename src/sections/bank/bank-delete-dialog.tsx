@@ -12,14 +12,14 @@ import type { BankProps } from './bank-table-row';
 type BankDeleteDialogProps = {
   open: boolean;
   onClose: () => void;
-  onDelete: () => void;
+  onDelete: () => void | Promise<void>;
   bank: BankProps | null;
 };
 
 export function BankDeleteDialog({ open, onClose, onDelete, bank }: BankDeleteDialogProps) {
-  const handleDelete = () => {
-    onDelete();
-    onClose();
+  const handleDelete = async () => {
+    await onDelete();
+    // Don't close here - let parent handle it after success
   };
 
   return (

@@ -5,7 +5,7 @@
 
 import { useCallback } from 'react';
 
-import { useAppDispatch, useAppSelector } from 'src/store';
+import { useAppDispatch } from 'src/store';
 // TODO: Add stats slice when needed
 // import { clearMetric, clearAllMetrics } from 'src/redux/slice/statsSlice';
 

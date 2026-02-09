@@ -7,9 +7,11 @@ import type { ReactNode } from 'react';
 
 import { Navigate } from 'react-router-dom';
 
-import { useAppSelector } from 'src/store';
-import { UserRole } from 'src/types/auth.types';
 import { isAuthenticated as hasStoredToken } from 'src/utils/auth-storage';
+
+import { useAppSelector } from 'src/store';
+
+import { UserRole } from 'src/types/auth.types';
 
 interface GuestOnlyRouteProps {
   children: ReactNode;

@@ -4,10 +4,11 @@
  */
 
 import type { ButtonProps } from '@mui/material';
-import { Button } from '@mui/material';
 
-import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth';
 import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+
+import { Button } from '@mui/material';
 
 import { useAuth } from 'src/hooks';
 

@@ -43,6 +43,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/',
     '/dashboard',
     '/bank-management',
+    '/subscriptions',
     '/borrower-management',
     '/loan-applications',
     '/recoveries-overdues',

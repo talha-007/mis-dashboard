@@ -4,7 +4,7 @@
  */
 
 export { store } from '../redux/store';
-export type { RootState, AppDispatch } from '../redux/store';
-
 // Re-export hooks with proper typing
-export { useAppDispatch, useAppSelector, useAppStore } from '../redux/store';
+export { useAppStore, useAppDispatch, useAppSelector } from '../redux/store';
+
+export type { RootState, AppDispatch } from '../redux/store';

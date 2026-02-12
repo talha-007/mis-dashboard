@@ -9,5 +9,4 @@ export const _workspaces: WorkspacesPopoverProps['data'] = [
     plan: 'Pro',
     logo: '/assets/icons/workspaces/logo-1.webp',
   },
- 
 ];

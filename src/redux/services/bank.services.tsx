@@ -26,7 +26,7 @@ const getBankById = (id: string) => callAPi.get(`/api/banks/${id}`);
 const searchBankByCode = (code: string) => callAPi.get(`/api/banks/search?code=${code}`);
 
 // Get bank subscription details (last payment, next payment)
-const getBankSubscriptionDetails = (bankId: string) => 
+const getBankSubscriptionDetails = (bankId: string) =>
   callAPi.get(`/api/banks/${bankId}/subscription-details`);
 
 // Create a new bank
@@ -38,6 +38,9 @@ const updateBank = (id: string, data: any) => callAPi.put(`/api/banks/${id}`, da
 // Delete a bank
 const deleteBank = (id: string) => callAPi.delete(`/api/banks/${id}`);
 
+const changeBankStatus = (id: string, status: string) =>
+  callAPi.put(`/api/banks/${id}/status`, { status });
+
 const bankService = {
   getBanks,
   getBankById,
@@ -46,6 +49,7 @@ const bankService = {
   addBank,
   updateBank,
   deleteBank,
+  changeBankStatus,
 };
 
 export default bankService;

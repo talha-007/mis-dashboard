@@ -92,7 +92,7 @@ export function CustomerDashboardView() {
         <Card>
           <Scrollbar>
             <TableContainer sx={{ overflow: 'unset' }}>
-              <Table sx={{ minWidth: 800 }} >
+              <Table sx={{ minWidth: 800 }}>
                 <TableHead>
                   <TableRow>
                     <TableCell>Total Tenure</TableCell>
@@ -104,9 +104,7 @@ export function CustomerDashboardView() {
                 <TableBody>
                   <TableRow hover>
                     <TableCell>
-                      <Typography variant="subtitle2">
-                        {stats.loanDetails.totalTenure}
-                      </Typography>
+                      <Typography variant="subtitle2">{stats.loanDetails.totalTenure}</Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="subtitle2" sx={{ color: '#000' }}>

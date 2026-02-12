@@ -19,7 +19,6 @@ import bankService from 'src/redux/services/bank.services';
 
 import { Iconify } from 'src/components/iconify';
 
-
 // ----------------------------------------------------------------------
 
 type BankFormViewProps = {
@@ -45,25 +44,25 @@ export function BankFormView({ bankId }: BankFormViewProps) {
     licenseNumber: '',
     bankType: '',
     establishedDate: '',
-    
+
     // Contact Information
     email: '',
     phone: '',
     website: '',
     fax: '',
-    
+
     // Address Information
     address: '',
     city: '',
     state: '',
     zipCode: '',
     country: '',
-    
+
     // Admin Credentials (only for new banks)
     adminEmail: '',
     password: '',
     confirmPassword: '',
-    
+
     // Status
     status: 'active',
   });
@@ -72,14 +71,14 @@ export function BankFormView({ bankId }: BankFormViewProps) {
   useEffect(() => {
     const fetchBank = async () => {
       if (!bankId) return;
-      
+
       try {
         setFetching(true);
         setError(null);
         const response = await bankService.getBankById(bankId);
         console.log('response', response);
         const bank = response.data?.bank;
-        
+
         if (bank) {
           setFormData({
             name: bank.name || '',
@@ -143,7 +142,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
       setError('Address is required');
       return false;
     }
-    
+
     // Password validation for new banks only
     if (!isEditMode) {
       if (!formData.adminEmail.trim()) {
@@ -163,13 +162,13 @@ export function BankFormView({ bankId }: BankFormViewProps) {
         return false;
       }
     }
-    
+
     return true;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -241,9 +240,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
             <IconButton onClick={() => router.back()} sx={{ mr: 1 }}>
               <Iconify icon="eva:arrow-back-fill" />
             </IconButton>
-            <Typography variant="h4">
-              {isEditMode ? 'Edit Bank' : 'Register New Bank'}
-            </Typography>
+            <Typography variant="h4">{isEditMode ? 'Edit Bank' : 'Register New Bank'}</Typography>
           </Box>
         </Box>
 
@@ -267,7 +264,10 @@ export function BankFormView({ bankId }: BankFormViewProps) {
             <Stack spacing={4}>
               {/* Basic Information Section */}
               <Box>
-                <Typography variant="h6" sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+                <Typography
+                  variant="h6"
+                  sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}
+                >
                   Basic Information
                 </Typography>
                 <Grid container spacing={3}>
@@ -357,7 +357,10 @@ export function BankFormView({ bankId }: BankFormViewProps) {
 
               {/* Contact Information Section */}
               <Box>
-                <Typography variant="h6" sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+                <Typography
+                  variant="h6"
+                  sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}
+                >
                   Contact Information
                 </Typography>
                 <Grid container spacing={3}>
@@ -410,7 +413,10 @@ export function BankFormView({ bankId }: BankFormViewProps) {
 
               {/* Address Information Section */}
               <Box>
-                <Typography variant="h6" sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+                <Typography
+                  variant="h6"
+                  sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}
+                >
                   Address Information
                 </Typography>
                 <Grid container spacing={3}>
@@ -473,7 +479,10 @@ export function BankFormView({ bankId }: BankFormViewProps) {
               {/* Admin Credentials Section (only for new banks) */}
               {!isEditMode && (
                 <Box>
-                  <Typography variant="h6" sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}
+                  >
                     Admin Credentials
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -506,7 +515,9 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                           endAdornment: (
                             <InputAdornment position="end">
                               <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                                <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                                <Iconify
+                                  icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'}
+                                />
                               </IconButton>
                             </InputAdornment>
                           ),
@@ -526,8 +537,13 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
-                              <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                                <Iconify icon={showConfirmPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                              <IconButton
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                edge="end"
+                              >
+                                <Iconify
+                                  icon={showConfirmPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'}
+                                />
                               </IconButton>
                             </InputAdornment>
                           ),
@@ -540,7 +556,10 @@ export function BankFormView({ bankId }: BankFormViewProps) {
 
               {/* Status Section */}
               <Box>
-                <Typography variant="h6" sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+                <Typography
+                  variant="h6"
+                  sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}
+                >
                   Status
                 </Typography>
                 <Grid container spacing={3}>
@@ -564,18 +583,16 @@ export function BankFormView({ bankId }: BankFormViewProps) {
 
               {/* Action Buttons */}
               <Box display="flex" gap={2} justifyContent="flex-end" sx={{ pt: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => router.back()}
-                  disabled={loading}
-                >
+                <Button variant="outlined" onClick={() => router.back()} disabled={loading}>
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   variant="contained"
                   disabled={loading}
-                  startIcon={loading ? <CircularProgress size={20} /> : <Iconify icon="eva:save-fill" />}
+                  startIcon={
+                    loading ? <CircularProgress size={20} /> : <Iconify icon="eva:save-fill" />
+                  }
                 >
                   {loading ? 'Saving...' : isEditMode ? 'Update Bank' : 'Register Bank'}
                 </Button>

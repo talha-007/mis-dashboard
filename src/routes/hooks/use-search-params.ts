@@ -11,7 +11,7 @@ export function useSearchParams() {
 
   return useMemo(() => {
     const params = new URLSearchParams(location.search);
-    
+
     return {
       get: (key: string) => params.get(key),
       getAll: (key: string) => params.getAll(key),

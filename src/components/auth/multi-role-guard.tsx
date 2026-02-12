@@ -23,11 +23,11 @@ interface MultiRoleGuardProps {
  * Renders children if user has ANY of the allowed roles or permissions
  * Redirects to /unauthorized if access is denied
  */
-export function MultiRoleGuard({ 
-  children, 
-  allowedRoles, 
-  allowedPermissions, 
-  fallback 
+export function MultiRoleGuard({
+  children,
+  allowedRoles,
+  allowedPermissions,
+  fallback,
 }: MultiRoleGuardProps) {
   const { user } = useAppSelector((state) => state.auth);
 
@@ -37,7 +37,7 @@ export function MultiRoleGuard({
 
   // Check if user has any of the allowed roles
   if (allowedRoles && allowedRoles.length > 0) {
-    const hasAnyRole = allowedRoles.some(role => hasRole(user, role));
+    const hasAnyRole = allowedRoles.some((role) => hasRole(user, role));
     if (!hasAnyRole) {
       return fallback ? <>{fallback}</> : <Navigate to="/unauthorized" replace />;
     }
@@ -45,7 +45,7 @@ export function MultiRoleGuard({
 
   // Check if user has any of the allowed permissions
   if (allowedPermissions && allowedPermissions.length > 0) {
-    const hasAnyPermission = allowedPermissions.some(permission => 
+    const hasAnyPermission = allowedPermissions.some((permission) =>
       hasPermission(user, permission)
     );
     if (!hasAnyPermission) {

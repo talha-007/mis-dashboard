@@ -30,6 +30,13 @@ export function ProtectedRoute({
   const location = useLocation();
   const { user, isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
 
+  console.log('[ProtectedRoute] Auth state:', {
+    isAuthenticated,
+    user,
+    isLoading,
+    pathname: location.pathname,
+  });
+
   // Show loading state
   if (isLoading) {
     return (
@@ -48,6 +55,7 @@ export function ProtectedRoute({
 
   // Not authenticated - redirect to login
   if (!isAuthenticated || !user) {
+    console.log('[ProtectedRoute] Not authenticated, redirecting to /sign-in');
     return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 

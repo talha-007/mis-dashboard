@@ -5,7 +5,7 @@
 
 import type { RegisterData } from 'src/types/auth.types';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -23,6 +23,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
+import { useBankContext } from 'src/utils/bank-context';
 
 import { useAuth } from 'src/hooks';
 
@@ -32,6 +33,7 @@ import { GoogleLoginButton } from 'src/components/auth';
 export function RegisterView() {
   const router = useRouter();
   const { register, isLoading, error } = useAuth();
+  const { bankSlug, initializeBankContext } = useBankContext();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -44,6 +46,13 @@ export function RegisterView() {
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState('');
+
+  // Initialize bank context when bank_slug is present
+  useEffect(() => {
+    if (bankSlug) {
+      initializeBankContext();
+    }
+  }, [bankSlug, initializeBankContext]);
 
   const handleRegister = useCallback(
     async (e: React.FormEvent) => {
@@ -79,11 +88,11 @@ export function RegisterView() {
   const renderForm = (
     <Stack spacing={3} component="form" onSubmit={handleRegister}>
       {(error || validationError) && (
-        <Alert 
-          severity="error" 
-          sx={{ 
+        <Alert
+          severity="error"
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {validationError || error}
@@ -137,7 +146,11 @@ export function RegisterView() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <Iconify icon={"eva:email-outline" as any} width={20} sx={{ color: 'text.disabled' }} />
+                <Iconify
+                  icon={'eva:email-outline' as any}
+                  width={20}
+                  sx={{ color: 'text.disabled' }}
+                />
               </InputAdornment>
             ),
           },
@@ -161,7 +174,11 @@ export function RegisterView() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <Iconify icon={"eva:phone-outline" as any} width={20} sx={{ color: 'text.disabled' }} />
+                <Iconify
+                  icon={'eva:phone-outline' as any}
+                  width={20}
+                  sx={{ color: 'text.disabled' }}
+                />
               </InputAdornment>
             ),
           },
@@ -188,7 +205,11 @@ export function RegisterView() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <Iconify icon={"eva:lock-outline" as any} width={20} sx={{ color: 'text.disabled' }} />
+                <Iconify
+                  icon={'eva:lock-outline' as any}
+                  width={20}
+                  sx={{ color: 'text.disabled' }}
+                />
               </InputAdornment>
             ),
             endAdornment: (
@@ -221,7 +242,11 @@ export function RegisterView() {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <Iconify icon={"eva:lock-outline" as any} width={20} sx={{ color: 'text.disabled' }} />
+                <Iconify
+                  icon={'eva:lock-outline' as any}
+                  width={20}
+                  sx={{ color: 'text.disabled' }}
+                />
               </InputAdornment>
             ),
             endAdornment: (
@@ -280,7 +305,6 @@ export function RegisterView() {
   return (
     <Card
       sx={{
-        
         maxWidth: 1200,
         height: '90vh',
         overflow: 'hidden',
@@ -292,8 +316,7 @@ export function RegisterView() {
       <Grid container sx={{ height: '100%', width: '100%' }}>
         {/* Left Column - Image & Text */}
         <Grid
-          
-          size={{xs: 12, md: 5}}
+          size={{ xs: 12, md: 5 }}
           sx={{
             position: 'relative',
             background: (theme) =>
@@ -332,11 +355,11 @@ export function RegisterView() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <Iconify icon={"solar:shield-check-bold" as any} width={40} />
-          </Box>
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <Iconify icon={'solar:shield-check-bold' as any} width={40} />
+            </Box>
 
             {/* Title */}
             <Stack spacing={2}>
@@ -350,38 +373,38 @@ export function RegisterView() {
 
             {/* Features */}
             <Stack spacing={2.5}>
-            {[
-              {
-                icon: 'solar:verified-check-bold' as any,
-                title: 'Secure & Trusted',
-                desc: 'Bank-level security for your data',
-              },
-              {
-                icon: 'solar:wallet-money-bold' as any,
-                title: 'Easy Management',
-                desc: 'Manage your finances with ease',
-              },
-              {
-                icon: 'solar:graph-up-bold' as any,
-                title: 'Grow Your Wealth',
-                desc: 'Access to best financial products',
-              },
-            ].map((feature, index) => (
-              <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
-                <Box
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1.5,
-                    bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Iconify icon={feature.icon as any} width={20} />
-                </Box>
+              {[
+                {
+                  icon: 'solar:verified-check-bold' as any,
+                  title: 'Secure & Trusted',
+                  desc: 'Bank-level security for your data',
+                },
+                {
+                  icon: 'solar:wallet-money-bold' as any,
+                  title: 'Easy Management',
+                  desc: 'Manage your finances with ease',
+                },
+                {
+                  icon: 'solar:graph-up-bold' as any,
+                  title: 'Grow Your Wealth',
+                  desc: 'Access to best financial products',
+                },
+              ].map((feature, index) => (
+                <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 1.5,
+                      bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Iconify icon={feature.icon as any} width={20} />
+                  </Box>
                   <Box>
                     <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                       {feature.title}
@@ -398,8 +421,7 @@ export function RegisterView() {
 
         {/* Right Column - Form */}
         <Grid
-          
-          size={{xs:12, md:7}}
+          size={{ xs: 12, md: 7 }}
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -470,8 +492,8 @@ export function RegisterView() {
                     sx={{ cursor: 'pointer', fontWeight: 500 }}
                   >
                     Terms of Service
-                  </Link>
-                  {' '}and{' '}
+                  </Link>{' '}
+                  and{' '}
                   <Link
                     variant="caption"
                     color="primary"

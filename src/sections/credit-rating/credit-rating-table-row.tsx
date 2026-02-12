@@ -67,18 +67,14 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
 
         <TableCell>{row.borrowerName}</TableCell>
         <TableCell>{row.borrowerId}</TableCell>
-        <TableCell align="right">
-          ${row.loanAmount.toLocaleString()}
-        </TableCell>
+        <TableCell align="right">${row.loanAmount.toLocaleString()}</TableCell>
         <TableCell align="center">{row.creditScore}</TableCell>
         <TableCell>
           <Label color={getRiskColor(row.riskCategory)}>{row.riskCategory}</Label>
         </TableCell>
         <TableCell>{row.lastAssessment}</TableCell>
         <TableCell>
-          <Label color={getStatusColor(row.status)}>
-            {row.status.replace('_', ' ')}
-          </Label>
+          <Label color={getStatusColor(row.status)}>{row.status.replace('_', ' ')}</Label>
         </TableCell>
 
         <TableCell align="right">

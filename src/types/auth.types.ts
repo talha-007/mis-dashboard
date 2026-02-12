@@ -17,29 +17,29 @@ export enum Permission {
   CREATE_USERS = 'create_users',
   EDIT_USERS = 'edit_users',
   DELETE_USERS = 'delete_users',
-  
+
   // Account Management
   VIEW_ACCOUNTS = 'view_accounts',
   CREATE_ACCOUNTS = 'create_accounts',
   EDIT_ACCOUNTS = 'edit_accounts',
   DELETE_ACCOUNTS = 'delete_accounts',
   APPROVE_ACCOUNTS = 'approve_accounts',
-  
+
   // Transaction Management
   VIEW_TRANSACTIONS = 'view_transactions',
   CREATE_TRANSACTIONS = 'create_transactions',
   APPROVE_TRANSACTIONS = 'approve_transactions',
-  
+
   // Loan Management
   VIEW_LOANS = 'view_loans',
   CREATE_LOANS = 'create_loans',
   APPROVE_LOANS = 'approve_loans',
   REJECT_LOANS = 'reject_loans',
-  
+
   // Reports
   VIEW_REPORTS = 'view_reports',
   EXPORT_REPORTS = 'export_reports',
-  
+
   // Settings
   MANAGE_SETTINGS = 'manage_settings',
   VIEW_AUDIT_LOGS = 'view_audit_logs',
@@ -111,7 +111,7 @@ export interface User {
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
-  
+
   // Customer specific fields
   accountNumber?: string;
   customerType?: 'individual' | 'business';

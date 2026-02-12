@@ -28,4 +28,3 @@ export function AuthRouteGuard({ children, redirectTo = '/' }: AuthRouteGuardPro
 
   return <>{children}</>;
 }
-

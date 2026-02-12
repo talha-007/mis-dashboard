@@ -7,46 +7,64 @@ import { varAlpha } from 'minimal-shared/utils';
 import Box from '@mui/material/Box';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
-import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
-import { RoleGuard, ProtectedRoute, MultiRoleGuard, AuthRouteGuard } from 'src/components/auth';
+import { ProtectedRoute, MultiRoleGuard } from 'src/components/auth';
 
 import { UserRole } from 'src/types/auth.types';
 
+import { authRoutes } from './routes-auth';
+import { adminRoutes } from './routes-admin';
+import { errorRoutes } from './routes-error';
+import { customerRoutes } from './routes-customer';
+import { superAdminRoutes } from './routes-super-admin';
+import { bankDynamicRoutes } from './routes-bank-dynamic';
+
 // ----------------------------------------------------------------------
 
-export const DashboardPage = lazy(() => import('src/pages/dashboard'));
-export const BankManagementPage = lazy(() => import('src/pages/bank-management'));
-export const BankFormPage = lazy(() => import('src/pages/bank-form'));
-export const BankPaymentsPage = lazy(() => import('src/pages/bank-payments'));
-export const BorrowerManagementPage = lazy(() => import('src/pages/borrower-management'));
-export const LoanApplicationPage = lazy(() => import('src/pages/loan-application'));
-export const RecoveryPage = lazy(() => import('src/pages/recovery'));
-export const PaymentPage = lazy(() => import('src/pages/payment'));
-export const CreditRatingsPage = lazy(() => import('src/pages/credit-ratings'));
-export const MISReportsPage = lazy(() => import('src/pages/mis-reports'));
-export const BlogPage = lazy(() => import('src/pages/blog'));
-export const UserPage = lazy(() => import('src/pages/user'));
-export const ApplyLoanPage = lazy(() => import('src/pages/apply-loan'));
-export const ProfilePage = lazy(() => import('src/pages/profile'));
-export const DocumentsPage = lazy(() => import('src/pages/documents'));
-export const InstallmentsPage = lazy(() => import('src/pages/installments'));
-export const MyCreditRatingPage = lazy(() => import('src/pages/my-credit-rating'));
-export const PayInstallmentPage = lazy(() => import('src/pages/pay-installment'));
-export const PayoffOfferPage = lazy(() => import('src/pages/payoff-offer'));
-export const SettingsPage = lazy(() => import('src/pages/settings'));
-export const SignInPage = lazy(() => import('src/pages/sign-in'));
-export const SignInSuperAdminPage = lazy(() => import('src/pages/sign-in-superadmin'));
-export const SignInAdminPage = lazy(() => import('src/pages/sign-in-admin'));
-export const SignInCustomerPage = lazy(() => import('src/pages/sign-in-customer'));
-export const RegisterPage = lazy(() => import('src/pages/register'));
-export const ForgotPasswordPage = lazy(() => import('src/pages/forgot-password'));
-export const ForgotPasswordAdminPage = lazy(() => import('src/pages/forgot-password-admin'));
-export const VerifyOtpPage = lazy(() => import('src/pages/verify-otp'));
-export const VerifyOtpAdminPage = lazy(() => import('src/pages/verify-otp-admin'));
-export const UnauthorizedPage = lazy(() => import('src/pages/unauthorized'));
-export const Page404 = lazy(() => import('src/pages/page-not-found'));
+// Dashboard
+export const DashboardPage = lazy(() => import('src/pages/dashboard/dashboard'));
+export const BlogPage = lazy(() => import('src/pages/dashboard/blog'));
+
+// Super Admin
+export const BankManagementPage = lazy(() => import('src/pages/super-admin/bank-management'));
+export const BankFormPage = lazy(() => import('src/pages/super-admin/bank-form'));
+export const BankPaymentsPage = lazy(() => import('src/pages/super-admin/bank-payments'));
+export const SettingsPage = lazy(() => import('src/pages/super-admin/settings'));
+export const UserPage = lazy(() => import('src/pages/super-admin/user'));
+
+// Admin
+export const BorrowerManagementPage = lazy(() => import('src/pages/admin/borrower-management'));
+export const LoanApplicationPage = lazy(() => import('src/pages/admin/loan-application'));
+export const RecoveryPage = lazy(() => import('src/pages/admin/recovery'));
+export const PaymentPage = lazy(() => import('src/pages/admin/payment'));
+export const CreditRatingsPage = lazy(() => import('src/pages/admin/credit-ratings'));
+export const MISReportsPage = lazy(() => import('src/pages/admin/mis-reports'));
+
+// Customer
+export const ApplyLoanPage = lazy(() => import('src/pages/customer/apply-loan'));
+export const ProfilePage = lazy(() => import('src/pages/customer/profile'));
+export const DocumentsPage = lazy(() => import('src/pages/customer/documents'));
+export const InstallmentsPage = lazy(() => import('src/pages/customer/installments'));
+export const MyCreditRatingPage = lazy(() => import('src/pages/customer/my-credit-rating'));
+export const PayInstallmentPage = lazy(() => import('src/pages/customer/pay-installment'));
+export const PayoffOfferPage = lazy(() => import('src/pages/customer/payoff-offer'));
+
+// Auth
+export const SignInSuperAdminPage = lazy(() => import('src/pages/auth/sign-in-superadmin'));
+export const SignInAdminPage = lazy(() => import('src/pages/auth/sign-in-admin'));
+export const SignInCustomerPage = lazy(() => import('src/pages/auth/sign-in-customer'));
+export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
+export const RegisterPage = lazy(() => import('src/pages/auth/register'));
+export const ForgotPasswordPage = lazy(() => import('src/pages/auth/forgot-password'));
+export const ForgotPasswordAdminPage = lazy(() => import('src/pages/auth/forgot-password-admin'));
+export const NewPasswordAdminPage = lazy(() => import('src/pages/auth/new-password-admin'));
+export const VerifyOtpPage = lazy(() => import('src/pages/auth/verify-otp'));
+export const VerifyOtpAdminPage = lazy(() => import('src/pages/auth/verify-otp-admin'));
+
+// Error
+export const UnauthorizedPage = lazy(() => import('src/pages/error/unauthorized'));
+export const Page404 = lazy(() => import('src/pages/error/page-not-found'));
 
 const renderFallback = () => (
   <Box
@@ -69,7 +87,22 @@ const renderFallback = () => (
 );
 
 export const routesSection: RouteObject[] = [
+  // ============================================================================
+  // AUTHENTICATION ROUTES (Public - Not authenticated)
+  // ============================================================================
+  ...authRoutes,
+
+  // ============================================================================
+  // DYNAMIC BANK ROUTES (Public - Not authenticated)
+  // Pattern: /{bank_slug}/register, /{bank_slug}/login, /{bank_slug}/admin/login
+  // ============================================================================
+  ...bankDynamicRoutes,
+
+  // ============================================================================
+  // PROTECTED DASHBOARD ROUTES (Requires Authentication)
+  // ============================================================================
   {
+    path: '/',
     element: (
       <ProtectedRoute>
         <DashboardLayout>
@@ -80,260 +113,28 @@ export const routesSection: RouteObject[] = [
       </ProtectedRoute>
     ),
     children: [
-      { 
-        index: true, 
+      // Dashboard - All authenticated users
+      {
+        index: true,
         element: (
           <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER]}>
             <DashboardPage />
           </MultiRoleGuard>
-        )
-      },
-      {
-        path: 'bank-management',
-        element: (
-          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
-            <BankManagementPage />
-          </RoleGuard>
         ),
       },
-      {
-        path: 'bank-management/form',
-        element: (
-          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
-            <BankFormPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'subscriptions',
-        element: (
-          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
-            <BankPaymentsPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'settings',
-        element: (
-          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
-            <SettingsPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'borrower-management',
-        element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
-            <BorrowerManagementPage />
-          </MultiRoleGuard>
-        ),
-      },
-      {
-        path: 'loan-applications',
-        element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
-            <LoanApplicationPage />
-          </MultiRoleGuard>
-        ),
-      },
-      {
-        path: 'recoveries-overdues',
-        element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
-            <RecoveryPage />
-          </MultiRoleGuard>
-        ),
-      },
-      {
-        path: 'payments-ledger',
-        element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
-            <PaymentPage />
-          </MultiRoleGuard>
-        ),
-      },
-      {
-        path: 'credit-ratings',
-        element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
-            <CreditRatingsPage />
-          </MultiRoleGuard>
-        ),
-      },
-      {
-        path: 'mis-reports',
-        element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
-            <MISReportsPage />
-          </MultiRoleGuard>
-        ),
-      },
-      { 
-        path: 'user', 
-        element: (
-          <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
-            <UserPage />
-          </RoleGuard>
-        ),
-      },
-      // Customer routes
-      {
-        path: 'apply-loan',
-        element: (
-          <RoleGuard requiredRole={UserRole.CUSTOMER}>
-            <ApplyLoanPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'profile',
-        element: (
-          <RoleGuard requiredRole={UserRole.CUSTOMER}>
-            <ProfilePage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'documents',
-        element: (
-          <RoleGuard requiredRole={UserRole.CUSTOMER}>
-            <DocumentsPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'installments',
-        element: (
-          <RoleGuard requiredRole={UserRole.CUSTOMER}>
-            <InstallmentsPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'my-credit-rating',
-        element: (
-          <RoleGuard requiredRole={UserRole.CUSTOMER}>
-            <MyCreditRatingPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'pay-installment',
-        element: (
-          <RoleGuard requiredRole={UserRole.CUSTOMER}>
-            <PayInstallmentPage />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'payoff-offer',
-        element: (
-          <RoleGuard requiredRole={UserRole.CUSTOMER}>
-            <PayoffOfferPage />
-          </RoleGuard>
-        ),
-      },
+
+      // Import routes from separate files
+      ...superAdminRoutes,
+      ...adminRoutes,
+      ...customerRoutes,
+
+      // Public routes within dashboard
       { path: 'blog', element: <BlogPage /> },
     ],
   },
-  {
-    path: 'sign-in',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <SignInCustomerPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'sign-in/superadmin',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <SignInSuperAdminPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'sign-in/admin',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <SignInAdminPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'sign-in/customer',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <SignInCustomerPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
- 
-  {
-    path: 'register',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <RegisterPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'admin/forgot-password',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <ForgotPasswordAdminPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'forgot-password',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <ForgotPasswordPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'admin/verify-otp',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <VerifyOtpAdminPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'verify-otp',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <VerifyOtpPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'unauthorized',
-    element: <UnauthorizedPage />,
-  },
-  {
-    path: '404',
-    element: <Page404 />,
-  },
-  { path: '*', element: <Page404 /> },
+
+  // ============================================================================
+  // ERROR ROUTES
+  // ============================================================================
+  ...errorRoutes,
 ];

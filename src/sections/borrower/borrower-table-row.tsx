@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Stack from '@mui/material/Stack';
 import Popover from '@mui/material/Popover';
@@ -36,9 +37,12 @@ type BorrowerTableRowProps = {
   row: BorrowerProps;
   selected: boolean;
   onSelectRow: () => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 };
 
-export function BorrowerTableRow({ row, selected, onSelectRow }: BorrowerTableRowProps) {
+export function BorrowerTableRow({ row, selected, onSelectRow, onEdit, onDelete }: BorrowerTableRowProps) {
+  const navigate = useNavigate();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,6 +52,18 @@ export function BorrowerTableRow({ row, selected, onSelectRow }: BorrowerTableRo
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);
   }, []);
+
+  const handleEdit = useCallback(() => {
+    handleClosePopover();
+    navigate(`/borrower-management/edit/${row.id}`);
+  }, [row.id, navigate]);
+
+  const handleDelete = useCallback(() => {
+    handleClosePopover();
+    if (onDelete) {
+      onDelete(row.id);
+    }
+  }, [row.id, onDelete]);
 
   const getStatusColor = () => {
     switch (row.status) {
@@ -125,12 +141,12 @@ export function BorrowerTableRow({ row, selected, onSelectRow }: BorrowerTableRo
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem onClick={handleEdit}>
             <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
 
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>

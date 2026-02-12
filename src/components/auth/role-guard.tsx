@@ -23,8 +23,14 @@ interface RoleGuardProps {
  * Renders children only if user has required role or permission
  * Redirects to /unauthorized if access is denied
  */
-export function RoleGuard({ children, requiredRole, requiredPermission, fallback }: RoleGuardProps) {
+export function RoleGuard({
+  children,
+  requiredRole,
+  requiredPermission,
+  fallback,
+}: RoleGuardProps) {
   const { user } = useAppSelector((state) => state.auth);
+  console.log('user', user);
 
   // Check role requirement
   if (requiredRole && !hasRole(user, requiredRole)) {
@@ -40,7 +46,13 @@ export function RoleGuard({ children, requiredRole, requiredPermission, fallback
 }
 
 // Convenience components for common cases
-export function SuperAdminOnly({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
+export function SuperAdminOnly({
+  children,
+  fallback,
+}: {
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
   return (
     <RoleGuard requiredRole={'superadmin' as UserRole} fallback={fallback}>
       {children}
@@ -48,7 +60,13 @@ export function SuperAdminOnly({ children, fallback }: { children: ReactNode; fa
   );
 }
 
-export function CustomerOnly({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
+export function CustomerOnly({
+  children,
+  fallback,
+}: {
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
   return (
     <RoleGuard requiredRole={'customer' as UserRole} fallback={fallback}>
       {children}

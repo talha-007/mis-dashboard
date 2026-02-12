@@ -146,7 +146,6 @@ export function BankView() {
     }
   };
 
-
   const handleDelete = async () => {
     if (!selectedBank) return;
 
@@ -234,17 +233,17 @@ export function BankView() {
                   />
                   <TableBody>
                     {banks.map((row) => (
-                        <BankTableRow
-                          key={row._id}
-                          row={row}
-                          selected={table.selected.includes(row._id)}
-                          onSelectRow={() => table.onSelectRow(row._id)}
-                          onView={() => handleOpenViewDialog(row)}
-                          onEdit={() => handleOpenFormPage(row)}
-                          onUpdateStatus={() => handleOpenStatusDialog(row)}
-                          onDelete={() => handleOpenDeleteDialog(row)}
-                        />
-                      ))}
+                      <BankTableRow
+                        key={row._id}
+                        row={row}
+                        selected={table.selected.includes(row._id)}
+                        onSelectRow={() => table.onSelectRow(row._id)}
+                        onView={() => handleOpenViewDialog(row)}
+                        onEdit={() => handleOpenFormPage(row)}
+                        onUpdateStatus={() => handleOpenStatusDialog(row)}
+                        onDelete={() => handleOpenDeleteDialog(row)}
+                      />
+                    ))}
 
                     <TableEmptyRows
                       height={68}

@@ -263,7 +263,16 @@ type StatCardProps = CardProps & {
   isIncrease?: boolean;
 };
 
-function StatCard({ title, value, icon, color = 'primary', trend, isIncrease, sx, ...other }: StatCardProps) {
+function StatCard({
+  title,
+  value,
+  icon,
+  color = 'primary',
+  trend,
+  isIncrease,
+  sx,
+  ...other
+}: StatCardProps) {
   const theme = useTheme();
 
   return (

@@ -45,19 +45,21 @@ export function SignInSuperAdminView() {
         e.preventDefault();
         e.stopPropagation();
       }
-      
+
       if (submitting || isLoading) return;
 
       setSubmitting(true);
       try {
-        await loginSuperAdmin({
+        const response = await loginSuperAdmin({
           email: formData.email,
           password: formData.password,
           rememberMe: true,
         });
         await new Promise((resolve) => setTimeout(resolve, 50));
         dispatch(setLoggingIn(false));
-        const target = getUserHomePath(user);
+
+        // Get home path from the returned user object
+        const target = getUserHomePath(response.user);
         router.push(target);
       } catch (err) {
         console.error('Login failed:', err);
@@ -72,9 +74,9 @@ export function SignInSuperAdminView() {
   );
 
   const renderForm = (
-    <Stack 
-      spacing={3} 
-      component="form" 
+    <Stack
+      spacing={3}
+      component="form"
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -83,11 +85,11 @@ export function SignInSuperAdminView() {
       noValidate
     >
       {error && (
-        <Alert 
+        <Alert
           severity="error"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {error}
@@ -140,7 +142,11 @@ export function SignInSuperAdminView() {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    size="small"
+                  >
                     <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                   </IconButton>
                 </InputAdornment>
@@ -201,7 +207,6 @@ export function SignInSuperAdminView() {
   return (
     <Stack spacing={4}>
       {/* Back Button */}
-     
 
       {/* Header */}
       <Stack spacing={2} alignItems="center">
@@ -219,7 +224,7 @@ export function SignInSuperAdminView() {
         >
           <Iconify icon="solar:shield-star-bold-duotone" width={40} />
         </Box>
-        
+
         <Stack spacing={1} alignItems="center">
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="h4" fontWeight={700}>
@@ -232,7 +237,6 @@ export function SignInSuperAdminView() {
               sx={{ fontWeight: 600 }}
             /> */}
           </Stack>
-        
         </Stack>
       </Stack>
 

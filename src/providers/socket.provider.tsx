@@ -5,7 +5,7 @@
 
 import type { StatsUpdatePayload, NotificationPayload } from 'src/services/socket';
 
-import { useMemo, useEffect, useContext, createContext, type ReactNode } from 'react';
+import { useState, useMemo, useEffect, useContext, createContext, type ReactNode } from 'react';
 
 import ENV from 'src/config/environment';
 import { useAppSelector } from 'src/store';
@@ -33,12 +33,13 @@ interface SocketProviderProps {
 }
 
 export function SocketProvider({ children }: SocketProviderProps) {
-  const { isAuthenticated, token, isInitialized } = useAppSelector((state) => state.auth);
-
+  const { isAuthenticated, token, isInitialized, user } = useAppSelector((state) => state.auth);
+  const [isConnected, setIsConnected] = useState(false);
+  
   // Connect/disconnect socket based on auth state
   useEffect(() => {
-    // If not ready, no token, or feature disabled - disconnect
-    if (!isInitialized || !isAuthenticated || !token || !ENV.FEATURES.REAL_TIME) {
+    // If not ready, no token - disconnect
+    if (!isInitialized || !isAuthenticated || !token) {
       socketService.disconnect();
       return undefined;
     }
@@ -49,6 +50,47 @@ export function SocketProvider({ children }: SocketProviderProps) {
 
     // Setup event handlers
     const unsubscribers: Array<() => void> = [];
+
+    // Track connection state
+    unsubscribers.push(
+      socketService.on('connect', () => {
+        console.log('[Socket] ✅ Connected');
+        setIsConnected(true);
+      })
+    );
+
+    unsubscribers.push(
+      socketService.on('disconnect', () => {
+        console.log('[Socket] ❌ Disconnected');
+        setIsConnected(false);
+      })
+    );
+
+    unsubscribers.push(
+      socketService.on('reconnect', () => {
+        console.log('[Socket] 🔄 Reconnected');
+        setIsConnected(true);
+      })
+    );
+
+    // Subscribe to notifications AFTER socket connects
+    if (user?.id) {
+      // Subscribe on initial connect
+      unsubscribers.push(
+        socketService.on('connect', () => {
+          console.log('[Socket] 📢 Emitting subscribe_notifications for user:', user.id);
+          socketService.subscribeToNotifications(user.id);
+        })
+      );
+
+      // Also subscribe on reconnect
+      unsubscribers.push(
+        socketService.on('reconnect', () => {
+          console.log('[Socket] 🔄 Reconnected! Resubscribing for user:', user.id);
+          socketService.subscribeToNotifications(user.id);
+        })
+      );
+    }
 
     // Handle notifications
     if (ENV.FEATURES.NOTIFICATIONS) {
@@ -82,16 +124,16 @@ export function SocketProvider({ children }: SocketProviderProps) {
     return () => {
       unsubscribers.forEach((unsubscribe) => unsubscribe());
     };
-  }, [isAuthenticated, isInitialized, token]);
+  }, [isAuthenticated, isInitialized, token, user?.id]);
 
   const contextValue: SocketContextValue = useMemo(
     () => ({
-      isConnected: socketService.isConnected(),
+      isConnected,
       emit: socketService.emit.bind(socketService),
       on: socketService.on.bind(socketService),
       off: socketService.off.bind(socketService),
     }),
-    [isAuthenticated, token]
+    [isConnected]
   );
 
   return <SocketContext.Provider value={contextValue}>{children}</SocketContext.Provider>;

@@ -54,17 +54,14 @@ export function CreditRatingView() {
     [order, orderBy]
   );
 
-  const handleSelectAllRows = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        const newSelecteds = _creditRatings.map((n) => n.id);
-        setSelected(newSelecteds);
-        return;
-      }
-      setSelected([]);
-    },
-    []
-  );
+  const handleSelectAllRows = useCallback((checked: boolean) => {
+    if (checked) {
+      const newSelecteds = _creditRatings.map((n) => n.id);
+      setSelected(newSelecteds);
+      return;
+    }
+    setSelected([]);
+  }, []);
 
   const handleSelectRow = useCallback(
     (id: string) => {

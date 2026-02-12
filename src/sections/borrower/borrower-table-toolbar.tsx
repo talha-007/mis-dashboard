@@ -15,7 +15,11 @@ type BorrowerTableToolbarProps = {
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export function BorrowerTableToolbar({ numSelected, filterName, onFilterName }: BorrowerTableToolbarProps) {
+export function BorrowerTableToolbar({
+  numSelected,
+  filterName,
+  onFilterName,
+}: BorrowerTableToolbarProps) {
   return (
     <Toolbar
       sx={{

@@ -1,3 +1,4 @@
+import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 
 import Button from '@mui/material/Button';
@@ -9,6 +10,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
+
+import bankService from 'src/redux/services/bank.services';
 
 import type { BankProps } from './bank-table-row';
 
@@ -34,15 +37,19 @@ export function BankStatusDialog({ open, onClose, onUpdate, bank }: BankStatusDi
 
   const handleUpdate = async () => {
     if (!bank) return;
-    
+
     try {
       setLoading(true);
-      await onUpdate(status);
-      // Don't close here - let parent handle it after success
+      const response = await bankService.changeBankStatus(bank._id, status);
+      if (response.status === 200) {
+        onClose();
+        toast.success('Bank status updated successfully');
+      }
     } catch (err: any) {
+      setLoading(false);
       console.log(err);
-      // Error handling is done in parent
-    } 
+      toast.error(err.response?.data?.message || err.message || 'Failed to update bank status');
+    }
   };
 
   return (
@@ -52,7 +59,7 @@ export function BankStatusDialog({ open, onClose, onUpdate, bank }: BankStatusDi
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Update the status for <strong>{bank?.name}</strong>
         </Typography>
-        
+
         <TextField
           fullWidth
           select
@@ -62,9 +69,7 @@ export function BankStatusDialog({ open, onClose, onUpdate, bank }: BankStatusDi
           sx={{ mt: 2 }}
         >
           <MenuItem value="active">Active</MenuItem>
-          <MenuItem value="inactive">Inactive</MenuItem>
-          <MenuItem value="pending">Pending</MenuItem>
-          <MenuItem value="suspended">Suspended</MenuItem>
+          <MenuItem value="suspended">Block</MenuItem>
         </TextField>
 
         {status === 'active' && (
@@ -92,9 +97,9 @@ export function BankStatusDialog({ open, onClose, onUpdate, bank }: BankStatusDi
         <Button onClick={onClose} disabled={loading}>
           Cancel
         </Button>
-        <Button 
-          onClick={handleUpdate} 
-          variant="contained" 
+        <Button
+          onClick={handleUpdate}
+          variant="contained"
           disabled={loading || status === bank?.status}
           startIcon={loading ? <CircularProgress size={16} /> : null}
         >

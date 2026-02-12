@@ -36,9 +36,7 @@ export function InstallmentTableRow({ row, selected, onSelectRow }: InstallmentT
       <TableCell>
         <Label
           color={
-            (row.status === 'paid' && 'success') ||
-            (row.status === 'due' && 'error') ||
-            'default'
+            (row.status === 'paid' && 'success') || (row.status === 'due' && 'error') || 'default'
           }
         >
           {row.status === 'paid' && 'Paid'}

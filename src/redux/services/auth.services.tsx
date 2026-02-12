@@ -1,7 +1,7 @@
-import { callAPi } from "./http-common";
+import { callAPi } from './http-common';
 
 // Super Admin Login
-const superAdminLogin = (data: any) => callAPi.post("/api/users/superadmin-login", data);
+const superAdminLogin = (data: any) => callAPi.post('/api/users/superadmin-login', data);
 
 // Admin Login
 const adminLogin = (data: any) => callAPi.post(`/api/banks/login`, data);
@@ -31,16 +31,14 @@ const logout = (data: any) => callAPi.post(`/api/customers/logout`, data);
 
 const getCurrentUser = (data: any) => callAPi.get(`/api/customers/me`, data);
 
-const updateProfile=(data: any) => callAPi.put(`/api/customers/${data.id}`, data);
+const updateProfile = (data: any) => callAPi.put(`/api/customers/${data.id}`, data);
 
 const googleLogin = (data: any) => callAPi.post(`/api/customers/google-login`, data);
 
-const requestPasswordReset = (data: any) => callAPi.post(`/api/customers/request-password-reset`, data);
+const requestPasswordReset = (data: any) =>
+  callAPi.post(`/api/customers/request-password-reset`, data);
 
 const verifyEmail = (data: any) => callAPi.post(`/api/customers/verify-email`, data);
-
-
-
 
 const authService = {
   superAdminLogin,
@@ -56,7 +54,11 @@ const authService = {
   updateProfile,
   googleLogin,
   requestPasswordReset,
-  verifyEmail,forgotPasswordAdmin,verifyEmailAdmin,resendOTPAdmin,newPasswordAdmin
+  verifyEmail,
+  forgotPasswordAdmin,
+  verifyEmailAdmin,
+  resendOTPAdmin,
+  newPasswordAdmin,
 };
 
 export default authService;

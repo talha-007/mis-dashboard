@@ -18,23 +18,14 @@ export const useStats = () => {
   const isLoading = false;
   const lastUpdate: string | null = null;
 
-  const getMetric = useCallback(
-    (metricName: string) => metrics[metricName] || null,
-    [metrics]
-  );
+  const getMetric = useCallback((metricName: string) => metrics[metricName] || null, [metrics]);
 
-  const getAnalytics = useCallback(
-    (key: string) => analytics[key] || null,
-    [analytics]
-  );
+  const getAnalytics = useCallback((key: string) => analytics[key] || null, [analytics]);
 
-  const removeMetric = useCallback(
-    (metricName: string) => {
-      // TODO: Implement when stats slice is added
-      console.log('Clear metric:', metricName);
-    },
-    []
-  );
+  const removeMetric = useCallback((metricName: string) => {
+    // TODO: Implement when stats slice is added
+    console.log('Clear metric:', metricName);
+  }, []);
 
   const clearAll = useCallback(() => {
     // TODO: Implement when stats slice is added
@@ -47,11 +38,11 @@ export const useStats = () => {
     analytics,
     isLoading,
     lastUpdate,
-    
+
     // Getters
     getMetric,
     getAnalytics,
-    
+
     // Actions
     clearMetric: removeMetric,
     clearAllMetrics: clearAll,

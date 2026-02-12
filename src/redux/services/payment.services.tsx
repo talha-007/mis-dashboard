@@ -28,10 +28,11 @@ const getSubscriptionById = (id: string) => callAPi.get(`/api/banks/subscription
 const createPayment = (data: any) => callAPi.post('/api/banks/subscriptions', data);
 
 // Update a subscription
-const updateSubscription = (id: string, data: any) => callAPi.put(`/api/banks/subscriptions/${id}`, data);
+const updateSubscription = (id: string, data: any) =>
+  callAPi.put(`/api/banks/subscriptions/${id}`, data);
 
 // Process payment
-const processPayment = (subscriptionId: string, paymentData: any) => 
+const processPayment = (subscriptionId: string, paymentData: any) =>
   callAPi.post(`/api/banks/subscriptions/${subscriptionId}/payments`, paymentData);
 
 // Cancel subscription
@@ -51,7 +52,7 @@ const recordPayment = (data: {
 }) => callAPi.post('/api/banks/subscriptions/record-payment', data);
 
 // Generate and download invoice PDF
-const generateInvoice = (paymentId: string) => 
+const generateInvoice = (paymentId: string) =>
   callAPi.get(`/api/banks/subscriptions/payments/${paymentId}/invoice`, {
     responseType: 'blob',
   });

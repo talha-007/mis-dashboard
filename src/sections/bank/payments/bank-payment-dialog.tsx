@@ -101,13 +101,13 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
     try {
       setSearching(true);
       setError(null);
-      
+
       const response = await bankService.searchBankByCode(code.trim());
       const bank = response.data?.data || response.data;
-      
+
       if (bank) {
         setBankDetails(bank);
-        
+
         // Fetch subscription details
         try {
           const subResponse = await bankService.getBankSubscriptionDetails(bank._id || bank.id);
@@ -116,7 +116,7 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
         } catch (err: any) {
           // If no subscription found, set default
           console.log(err);
-          
+
           setSubscriptionDetails({ nextPaymentAmount: 0 });
         }
       } else {
@@ -172,12 +172,13 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
   const downloadInvoice = async (invoiceId: string) => {
     try {
       const response = await paymentService.generateInvoice(invoiceId);
-      
+
       // Create blob and download
-      const blob = response.data instanceof Blob 
-        ? response.data 
-        : new Blob([response.data], { type: 'application/pdf' });
-      
+      const blob =
+        response.data instanceof Blob
+          ? response.data
+          : new Blob([response.data], { type: 'application/pdf' });
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -195,7 +196,7 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -216,7 +217,7 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
       const response = await paymentService.recordPayment(paymentData);
       const payment = response.data?.data || response.data;
       const recordedPaymentId = payment?.paymentId || payment?._id || payment?.id;
-      
+
       if (recordedPaymentId) {
         setPaymentId(recordedPaymentId);
         // Automatically download invoice
@@ -227,7 +228,7 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
           console.error('Invoice download failed:', invoiceErr);
         }
       }
-      
+
       onSuccess?.();
       onClose();
     } catch (err: any) {
@@ -247,7 +248,7 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
             <Typography variant="h6">Record Bank Payment</Typography>
           </Stack>
         </DialogTitle>
-        
+
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 2 }}>
             {error && !searching && (
@@ -336,14 +337,20 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
                               <Typography variant="caption" color="text.secondary">
                                 Last Payment
                               </Typography>
-                              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 0.5 }}>
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                                sx={{ mt: 0.5 }}
+                              >
                                 <Box>
                                   <Typography variant="body2">
                                     {fDate(subscriptionDetails.lastPayment.date)}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
                                     {subscriptionDetails.lastPayment.method} •{' '}
-                                    {subscriptionDetails.lastPayment.transactionId || 'No reference'}
+                                    {subscriptionDetails.lastPayment.transactionId ||
+                                      'No reference'}
                                   </Typography>
                                 </Box>
                                 <Typography variant="subtitle2">
@@ -362,7 +369,11 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
                               bgcolor: 'primary.lighter',
                             }}
                           >
-                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Stack
+                              direction="row"
+                              justifyContent="space-between"
+                              alignItems="center"
+                            >
                               <Typography variant="subtitle2" color="primary.darker">
                                 Next Payment Amount
                               </Typography>
@@ -370,7 +381,11 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
                                 {fCurrency(subscriptionDetails.nextPaymentAmount)}
                               </Typography>
                             </Stack>
-                            <Typography variant="caption" color="primary.darker" sx={{ mt: 1, display: 'block' }}>
+                            <Typography
+                              variant="caption"
+                              color="primary.darker"
+                              sx={{ mt: 1, display: 'block' }}
+                            >
                               Monthly subscription fee
                             </Typography>
                           </Box>
@@ -393,7 +408,11 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
                                   {subscriptionDetails.subscriptionStatus}
                                 </Label>
                                 {subscriptionDetails.subscriptionEndDate && (
-                                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ ml: 1 }}
+                                  >
                                     Ends: {fDate(subscriptionDetails.subscriptionEndDate)}
                                   </Typography>
                                 )}
@@ -479,7 +498,9 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
             type="submit"
             variant="contained"
             disabled={loading || !bankDetails || !subscriptionDetails?.nextPaymentAmount}
-            startIcon={loading ? <CircularProgress size={20} /> : <Iconify icon="eva:checkmark-fill" />}
+            startIcon={
+              loading ? <CircularProgress size={20} /> : <Iconify icon="eva:checkmark-fill" />
+            }
           >
             {loading ? 'Recording...' : 'Record Payment & Download Invoice'}
           </Button>

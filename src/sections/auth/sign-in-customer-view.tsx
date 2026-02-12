@@ -2,7 +2,7 @@
  * Customer Sign In View
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -17,8 +17,10 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
+import { useBankSlug } from 'src/hooks/use-bank-slug';
 
 import { getUserHomePath } from 'src/utils/role-home-path';
+import { useBankContext } from 'src/utils/bank-context';
 
 import { useAuth } from 'src/hooks';
 import { setLoggingIn } from 'src/redux/slice/authSlice';
@@ -34,6 +36,7 @@ export function SignInCustomerView() {
   const dispatch = useAppDispatch();
   const { loginUser, isLoading, error } = useAuth();
   const { user } = useAppSelector((state) => state.auth);
+  const { bankSlug, initializeBankContext } = useBankContext();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,6 +45,13 @@ export function SignInCustomerView() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  // Initialize bank context when bank_slug is present
+  useEffect(() => {
+    if (bankSlug) {
+      initializeBankContext();
+    }
+  }, [bankSlug, initializeBankContext]);
 
   const handleSignIn = useCallback(
     async (e?: React.FormEvent | React.MouseEvent) => {
@@ -54,14 +64,14 @@ export function SignInCustomerView() {
 
       setSubmitting(true);
       try {
-        await loginUser({
+        const response = await loginUser({
           email: formData.email,
           password: formData.password,
           rememberMe: true,
         });
         await new Promise((resolve) => setTimeout(resolve, 50));
         dispatch(setLoggingIn(false));
-        const target = getUserHomePath(user);
+        const target = getUserHomePath(response.user);
         router.push(target);
       } catch (err) {
         console.error('Login failed:', err);
@@ -89,11 +99,11 @@ export function SignInCustomerView() {
       noValidate
     >
       {error && (
-        <Alert 
+        <Alert
           severity="error"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {error}
@@ -146,7 +156,11 @@ export function SignInCustomerView() {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    size="small"
+                  >
                     <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                   </IconButton>
                 </InputAdornment>
@@ -203,7 +217,6 @@ export function SignInCustomerView() {
 
   return (
     <Stack spacing={4}>
-      
       {/* Header */}
       <Stack spacing={2} alignItems="center">
         <Box
@@ -220,13 +233,12 @@ export function SignInCustomerView() {
         >
           <Iconify icon="solar:user-bold-duotone" width={40} />
         </Box>
-        
+
         <Stack spacing={1} alignItems="center">
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="h4" fontWeight={700}>
               Customer Login
             </Typography>
-          
           </Stack>
           <Typography variant="body2" color="text.secondary">
             Sign in to access your account
@@ -245,8 +257,8 @@ export function SignInCustomerView() {
       </Divider>
 
       {/* Google Sign In */}
-      <GoogleLoginButton 
-        onSuccess={handleGoogleSuccess} 
+      <GoogleLoginButton
+        onSuccess={handleGoogleSuccess}
         disabled={isLoading}
         sx={{
           borderRadius: 2,
@@ -260,7 +272,7 @@ export function SignInCustomerView() {
       {/* Footer */}
       <Stack spacing={2}>
         <Divider />
-        
+
         <Box textAlign="center">
           <Typography variant="body2" color="text.secondary" display="inline">
             Don&apos;t have an account?{' '}

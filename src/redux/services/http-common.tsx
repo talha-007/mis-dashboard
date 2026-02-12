@@ -1,4 +1,3 @@
- 
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 import { getAuthToken } from 'src/utils/auth-storage';

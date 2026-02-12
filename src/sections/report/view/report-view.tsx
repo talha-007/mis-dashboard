@@ -58,17 +58,14 @@ export function ReportView() {
     [order, orderBy]
   );
 
-  const handleSelectAllRows = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        const newSelecteds = _reports.map((n) => n.id);
-        setSelected(newSelecteds);
-        return;
-      }
-      setSelected([]);
-    },
-    []
-  );
+  const handleSelectAllRows = useCallback((checked: boolean) => {
+    if (checked) {
+      const newSelecteds = _reports.map((n) => n.id);
+      setSelected(newSelecteds);
+      return;
+    }
+    setSelected([]);
+  }, []);
 
   const handleSelectRow = useCallback(
     (id: string) => {

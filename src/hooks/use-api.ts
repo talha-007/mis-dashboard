@@ -23,23 +23,23 @@ export const useApi = <T = any>(
       try {
         setLoading(true);
         setError(null);
-        
+
         const result = await apiFunction(...args);
         setData(result);
-        
+
         if (options?.onSuccess) {
           options.onSuccess(result);
         }
-        
+
         return result;
       } catch (err: any) {
         const errorMessage = err.message || 'An error occurred';
         setError(errorMessage);
-        
+
         if (options?.onError) {
           options.onError(err);
         }
-        
+
         throw err;
       } finally {
         setLoading(false);

@@ -30,7 +30,11 @@ export function SettingsView() {
   const [bankSettings, setBankSettings] = useState<BankAccessSettings[]>(_bankSettings);
   const [expandedBank, setExpandedBank] = useState<string | false>(false);
 
-  const handleSystemSettingChange = (section: keyof SystemSettings, field: string, value: boolean | number) => {
+  const handleSystemSettingChange = (
+    section: keyof SystemSettings,
+    field: string,
+    value: boolean | number
+  ) => {
     setSystemSettings((prev) => ({
       ...prev,
       [section]: {
@@ -93,9 +97,10 @@ export function SettingsView() {
     // Show success message
   };
 
-  const handleExpandBank = (bankId: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedBank(isExpanded ? bankId : false);
-  };
+  const handleExpandBank =
+    (bankId: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpandedBank(isExpanded ? bankId : false);
+    };
 
   return (
     <DashboardContent>
@@ -330,7 +335,8 @@ export function SettingsView() {
                               size="small"
                               variant="outlined"
                               onClick={(e) => {
-                                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                const input = e.currentTarget
+                                  .previousElementSibling as HTMLInputElement;
                                 if (input) {
                                   handleAddIP(bank.bankId, input.value);
                                   input.value = '';
@@ -669,7 +675,11 @@ export function SettingsView() {
             <Button variant="outlined" onClick={() => window.location.reload()}>
               Cancel
             </Button>
-            <Button variant="contained" onClick={handleSave} startIcon={<Iconify icon="eva:save-fill" />}>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              startIcon={<Iconify icon="eva:save-fill" />}
+            >
               Save Settings
             </Button>
           </Box>

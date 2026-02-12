@@ -12,7 +12,6 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
 
-
 // ----------------------------------------------------------------------
 
 type DocumentType = 'idCard' | 'utilityBill';

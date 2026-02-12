@@ -40,6 +40,7 @@ class SocketService {
   private socket: Socket | null = null;
   private authToken: string | null = null;
   private isConnecting = false;
+  private subscribedUserId: string | null = null;
 
   /**
    * Update authentication token
@@ -66,8 +67,16 @@ class SocketService {
       return;
     }
 
-    if (!ENV.FEATURES.REAL_TIME) {
-      console.log('[Socket] Real-time features disabled');
+    // Log environment
+    console.log('[Socket] Config:', {
+      URL: ENV.SOCKET.URL,
+      PATH: ENV.SOCKET.PATH,
+      REAL_TIME_ENABLED: ENV.FEATURES.REAL_TIME,
+    });
+
+    // Check if socket URL is configured (allow connection even if feature flag is off during dev)
+    if (!ENV.SOCKET.URL) {
+      console.warn('[Socket] Socket URL not configured');
       return;
     }
 
@@ -120,6 +129,7 @@ class SocketService {
       console.log('[Socket] 🔌 Disconnecting...');
       this.socket.disconnect();
       this.socket = null;
+      this.subscribedUserId = null;
       this.isConnecting = false;
     }
   }
@@ -129,6 +139,25 @@ class SocketService {
    */
   isConnected(): boolean {
     return this.socket?.connected || false;
+  }
+
+  /**
+   * Subscribe to notifications for the current user
+   */
+  subscribeToNotifications(userId: string) {
+    // Already subscribed for this user - don't subscribe again
+    if (this.subscribedUserId === userId) {
+      console.log('[Socket] Already subscribed for user:', userId);
+      return;
+    }
+
+    if (this.socket?.connected) {
+      console.log('[Socket] 📢 Subscribing to notifications for user:', userId);
+      this.socket.emit('subscribe_notifications', { userId });
+      this.subscribedUserId = userId;
+    } else {
+      console.warn('[Socket] Cannot subscribe - socket not connected');
+    }
   }
 
   /**

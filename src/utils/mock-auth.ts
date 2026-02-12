@@ -21,7 +21,7 @@ export const MOCK_USERS: Record<'superadmin' | 'admin' | 'customer', User> = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
-  
+
   admin: {
     id: 'mock-admin-001',
     email: 'admin@example.com',
@@ -50,7 +50,7 @@ export const MOCK_USERS: Record<'superadmin' | 'admin' | 'customer', User> = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
-  
+
   customer: {
     id: 'mock-customer-001',
     email: 'customer@mis.local',

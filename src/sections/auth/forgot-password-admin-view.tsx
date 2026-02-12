@@ -54,11 +54,11 @@ export function ForgotPasswordAdminView() {
   const renderForm = (
     <Stack spacing={3} component="form" onSubmit={handleSubmit}>
       {error && (
-        <Alert 
+        <Alert
           severity="error"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {error}
@@ -66,11 +66,11 @@ export function ForgotPasswordAdminView() {
       )}
 
       {success && (
-        <Alert 
+        <Alert
           severity="success"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           Reset code sent! Check your email for the OTP.
@@ -138,11 +138,11 @@ export function ForgotPasswordAdminView() {
           variant="body2"
           fontWeight={600}
           onClick={() => router.push('/sign-in/admin')}
-          sx={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: 0.5, 
-            cursor: 'pointer' 
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.5,
+            cursor: 'pointer',
           }}
         >
           <Iconify icon="eva:arrow-ios-back-outline" width={16} />

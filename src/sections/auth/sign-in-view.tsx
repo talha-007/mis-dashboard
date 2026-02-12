@@ -34,14 +34,11 @@ export function SignInView() {
   });
 
   // This view is just for role selection - actual login happens in role-specific views
-  const handleSignIn = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      // This should not be called - role selector should navigate to specific login pages
-      console.warn('SignInView: This should redirect to role-specific login pages');
-    },
-    []
-  );
+  const handleSignIn = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    // This should not be called - role selector should navigate to specific login pages
+    console.warn('SignInView: This should redirect to role-specific login pages');
+  }, []);
 
   const handleGoogleSuccess = useCallback(() => {
     router.push('/');
@@ -50,11 +47,11 @@ export function SignInView() {
   const renderForm = (
     <Stack spacing={3} component="form" onSubmit={handleSignIn}>
       {error && (
-        <Alert 
+        <Alert
           severity="error"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {error}
@@ -107,7 +104,11 @@ export function SignInView() {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    size="small"
+                  >
                     <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                   </IconButton>
                 </InputAdornment>
@@ -187,8 +188,8 @@ export function SignInView() {
       </Divider>
 
       {/* Google Sign In */}
-      <GoogleLoginButton 
-        onSuccess={handleGoogleSuccess} 
+      <GoogleLoginButton
+        onSuccess={handleGoogleSuccess}
         disabled={isLoading}
         sx={{
           borderRadius: 2,
@@ -202,7 +203,7 @@ export function SignInView() {
       {/* Footer */}
       <Stack spacing={2}>
         <Divider />
-        
+
         <Box textAlign="center">
           <Typography variant="body2" color="text.secondary" display="inline">
             Don&apos;t have an account?{' '}

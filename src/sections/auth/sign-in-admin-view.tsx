@@ -3,7 +3,7 @@
  */
 
 import { toast } from 'react-toastify';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -18,6 +18,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
+import { useBankContext } from 'src/utils/bank-context';
 
 import { getUserHomePath } from 'src/utils/role-home-path';
 
@@ -32,8 +33,9 @@ import { Iconify } from 'src/components/iconify';
 export function SignInAdminView() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { loginAdmin, isLoading, error } = useAuth();
   const { user } = useAppSelector((state) => state.auth);
+  const { loginAdmin, isLoading, error } = useAuth();
+  const { bankSlug, initializeBankContext } = useBankContext();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,6 +44,13 @@ export function SignInAdminView() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  // Initialize bank context when bank_slug is present
+  useEffect(() => {
+    if (bankSlug) {
+      initializeBankContext();
+    }
+  }, [bankSlug, initializeBankContext]);
 
   const handleSignIn = useCallback(
     async (e?: React.FormEvent | React.MouseEvent) => {
@@ -57,13 +66,11 @@ export function SignInAdminView() {
           password: formData.password,
           rememberMe: true,
         });
-        
-        // loginAdmin returns { user, token }
-        if (response && response.user) {
-          const target = getUserHomePath(response.user);
-          router.push(target);
+        if (response) {
+          const userObj = (response as any).user || (response as any).bank;
+          const homePath = getUserHomePath(userObj);
+          router.push(homePath);
         }
-        dispatch(setLoggingIn(false));
       } catch (err: any) {
         setSubmitting(false);
         console.error('Login failed:', err);
@@ -72,7 +79,7 @@ export function SignInAdminView() {
         dispatch(setLoggingIn(false));
       }
     },
-    [formData, loginAdmin, router, dispatch]
+    [formData, loginAdmin, dispatch]
   );
 
   const renderForm = (
@@ -87,11 +94,11 @@ export function SignInAdminView() {
       noValidate
     >
       {error && (
-        <Alert 
+        <Alert
           severity="error"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {error}
@@ -144,7 +151,11 @@ export function SignInAdminView() {
               ),
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    size="small"
+                  >
                     <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                   </IconButton>
                 </InputAdornment>
@@ -185,8 +196,6 @@ export function SignInAdminView() {
           fontWeight: 600,
           textTransform: 'none',
           boxShadow: 'none',
-          
-          
         }}
       >
         {submitting ? (
@@ -203,8 +212,6 @@ export function SignInAdminView() {
 
   return (
     <Stack spacing={4}>
-      
-
       {/* Header */}
       <Stack spacing={2} alignItems="center">
         <Box
@@ -221,19 +228,19 @@ export function SignInAdminView() {
         >
           <Iconify icon="solar:user-id-bold-duotone" width={40} />
         </Box>
-        
+
         <Stack spacing={1} alignItems="center">
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="h4" fontWeight={700}>
               Admin Login
             </Typography>
-            <Chip 
-              label="Operations" 
-              size="small" 
-              sx={{ 
-                bgcolor: '#4D0CE7', 
+            <Chip
+              label="Operations"
+              size="small"
+              sx={{
+                bgcolor: '#4D0CE7',
                 color: 'white',
-                fontWeight: 600 
+                fontWeight: 600,
               }}
             />
           </Stack>

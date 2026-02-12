@@ -48,7 +48,6 @@ interface BankSubscription {
 }
 
 export function BankPaymentsView() {
-
   const [filterName, setFilterName] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [subscriptions, setSubscriptions] = useState<BankSubscription[]>([]);
@@ -77,7 +76,8 @@ export function BankPaymentsView() {
       setSubscriptions(Array.isArray(data) ? data : []);
       setTotalCount(count);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Failed to fetch subscriptions';
+      const errorMsg =
+        err.response?.data?.message || err.message || 'Failed to fetch subscriptions';
       setError(errorMsg);
       setSubscriptions([]);
     } finally {
@@ -112,14 +112,15 @@ export function BankPaymentsView() {
 
   const handleCancelSubscription = async (subscriptionId: string) => {
     if (!window.confirm('Are you sure you want to cancel this subscription?')) return;
-    
+
     try {
       setError(null);
       await paymentService.cancelSubscription(subscriptionId);
       setSuccessMessage('Subscription cancelled successfully');
       fetchSubscriptions();
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Failed to cancel subscription';
+      const errorMsg =
+        err.response?.data?.message || err.message || 'Failed to cancel subscription';
       setError(errorMsg);
     }
   };
@@ -140,7 +141,6 @@ export function BankPaymentsView() {
         return 'default';
     }
   };
-
 
   return (
     <DashboardContent>
@@ -221,9 +221,7 @@ export function BankPaymentsView() {
                 Total Revenue
               </Typography>
               <Typography variant="h4">
-                {fCurrency(
-                  subscriptions.reduce((sum, s) => sum + (s.amount || 0), 0)
-                )}
+                {fCurrency(subscriptions.reduce((sum, s) => sum + (s.amount || 0), 0))}
               </Typography>
             </Box>
             <Box
@@ -352,10 +350,14 @@ export function BankPaymentsView() {
                             <Chip label={subscription.planName} size="small" variant="outlined" />
                           </TableCell>
                           <TableCell>
-                            <Typography variant="subtitle2">{fCurrency(subscription.amount)}</Typography>
+                            <Typography variant="subtitle2">
+                              {fCurrency(subscription.amount)}
+                            </Typography>
                           </TableCell>
                           <TableCell>
-                            <Label color={getStatusColor(subscription.status)}>{subscription.status}</Label>
+                            <Label color={getStatusColor(subscription.status)}>
+                              {subscription.status}
+                            </Label>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">{fDate(subscription.startDate)}</Typography>
@@ -364,7 +366,9 @@ export function BankPaymentsView() {
                             <Typography variant="body2">{fDate(subscription.endDate)}</Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2">{fDate(subscription.nextBillingDate)}</Typography>
+                            <Typography variant="body2">
+                              {fDate(subscription.nextBillingDate)}
+                            </Typography>
                           </TableCell>
                           <TableCell>
                             {subscription.lastPaymentDate ? (

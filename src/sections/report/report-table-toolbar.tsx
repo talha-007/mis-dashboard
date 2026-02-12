@@ -71,12 +71,7 @@ export function ReportTableToolbar({
       ) : (
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Report Type</InputLabel>
-          <Select
-            value={filterType}
-            onChange={onFilterType}
-            label="Report Type"
-            size="small"
-          >
+          <Select value={filterType} onChange={onFilterType} label="Report Type" size="small">
             <MenuItem value="all">All Reports</MenuItem>
             <MenuItem value="portfolio">Portfolio Reports</MenuItem>
             <MenuItem value="recovery">Recovery Reports</MenuItem>

@@ -15,6 +15,9 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { useRouter, usePathname } from 'src/routes/hooks';
 
 import { _myAccount } from 'src/_mock';
+import { clearAuthToken } from 'src/utils/auth-storage';
+import { logout } from 'src/redux/slice/authSlice';
+import { useDispatch } from 'react-redux';
 
 // ----------------------------------------------------------------------
 
@@ -29,7 +32,7 @@ export type AccountPopoverProps = IconButtonProps & {
 
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
   const router = useRouter();
-
+  const dispatch = useDispatch();
   const pathname = usePathname();
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
@@ -129,7 +132,11 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth color="error" size="medium" variant="text">
+          {/* remove token and user from local storage and redirect to login page */}
+          <Button fullWidth color="error" size="medium" variant="text" onClick={() => {
+            clearAuthToken();
+            dispatch(logout({}) as any);
+          }}>
             Logout
           </Button>
         </Box>

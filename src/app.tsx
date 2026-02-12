@@ -15,11 +15,7 @@ type AppProps = {
 export default function App({ children }: AppProps) {
   useScrollToTop();
 
-  return (
-    <ThemeProvider>
-      {children}
-    </ThemeProvider>
-  );
+  return <ThemeProvider>{children}</ThemeProvider>;
 }
 
 // ----------------------------------------------------------------------

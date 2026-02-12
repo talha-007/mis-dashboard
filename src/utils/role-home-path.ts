@@ -14,6 +14,4 @@ export const getRoleHomePath = (role?: UserRole | null): string => {
   }
 };
 
-export const getUserHomePath = (user?: User | null): string =>
-  getRoleHomePath(user?.role ?? null);
-
+export const getUserHomePath = (user?: User | null): string => getRoleHomePath(user?.role ?? null);

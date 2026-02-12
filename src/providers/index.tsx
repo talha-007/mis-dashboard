@@ -12,6 +12,7 @@ import { store } from 'src/redux/store';
 
 import { SocketProvider } from './socket.provider';
 import { GoogleOAuthWrapper } from './google-oauth.provider';
+import { NotificationProvider } from './notification.provider';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -22,7 +23,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     <HelmetProvider>
       <ReduxProvider store={store}>
         <GoogleOAuthWrapper>
-          <SocketProvider>{children}</SocketProvider>
+          <SocketProvider>
+            <NotificationProvider>{children}</NotificationProvider>
+          </SocketProvider>
         </GoogleOAuthWrapper>
       </ReduxProvider>
     </HelmetProvider>
@@ -31,3 +34,4 @@ export function AppProviders({ children }: AppProvidersProps) {
 
 export * from './socket.provider';
 export * from './google-oauth.provider';
+export * from './notification.provider';

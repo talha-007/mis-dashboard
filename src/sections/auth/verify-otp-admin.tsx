@@ -86,23 +86,22 @@ export function VerifyOtpAdminView() {
         return;
       }
       try {
-          setIsLoading(true);
-          // Verify email for registration
-          const response = await authService.verifyEmailAdmin({ otp: otpCode, email });
-          console.log('response', response);
-          if(response.data.status === 200) {
-            setSuccess(true);
-            setTimeout(() => {
-              router.push('/admin/new-password');
-            }, 2000);
-          } else {
-            setError(response.data.message);
-          }
-       
+        setIsLoading(true);
+        // Verify email for registration
+        const response = await authService.verifyEmailAdmin({ otp: otpCode, email });
+        console.log('response', response);
+        if (response.status === 200) {
+          setSuccess(true);
+          setTimeout(() => {
+            router.push(`/admin/new-password?email=${encodeURIComponent(email)}`);
+          }, 2000);
+        } else {
+          setError(response.data.message);
+        }
       } catch (err: any) {
         setError(err.message || 'Invalid or expired OTP. Please try again.');
         setIsLoading(false);
-      } 
+      }
     },
     [otp, email, router]
   );
@@ -111,27 +110,26 @@ export function VerifyOtpAdminView() {
     setError('');
 
     try {
-      
-       const response =  await authService.resendOTPAdmin({ email });
-       console.log('response', response);
-       if(response.status === 200) {        
-       toast.success(response.data.message);
-       setCountdown(60); // 60 second cooldown
-       setResendDisabled(true);
-       }
+      const response = await authService.resendOTPAdmin({ email });
+      console.log('response', response);
+      if (response.status === 200) {
+        toast.success(response.data.message);
+        setCountdown(60); // 60 second cooldown
+        setResendDisabled(true);
+      }
     } catch (err: any) {
       toast.error(err.message || 'Failed to resend code. Please try again.');
-    } 
+    }
   }, [email]);
 
   const renderForm = (
     <Stack spacing={3} component="form" onSubmit={handleSubmit}>
       {error && (
-        <Alert 
+        <Alert
           severity="error"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {error}
@@ -139,11 +137,11 @@ export function VerifyOtpAdminView() {
       )}
 
       {success && (
-        <Alert 
+        <Alert
           severity="success"
-          sx={{ 
+          sx={{
             borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' }
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
           {verificationType === 'registration'
@@ -170,9 +168,9 @@ export function VerifyOtpAdminView() {
             disabled={isLoading || success}
             inputProps={{
               maxLength: 1,
-              style: { 
-                textAlign: 'center', 
-                fontSize: '1.75rem', 
+              style: {
+                textAlign: 'center',
+                fontSize: '1.75rem',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
               },
@@ -241,11 +239,7 @@ export function VerifyOtpAdminView() {
             px: 0.5,
           }}
         >
-          {resendDisabled ? (
-            `Resend in ${countdown}s`
-          ) : (
-            'Resend Code'
-          )}
+          {resendDisabled ? `Resend in ${countdown}s` : 'Resend Code'}
         </Button>
       </Box>
 
@@ -254,11 +248,11 @@ export function VerifyOtpAdminView() {
           variant="body2"
           fontWeight={600}
           onClick={() => router.push('/sign-in/admin')}
-          sx={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: 0.5, 
-            cursor: 'pointer' 
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.5,
+            cursor: 'pointer',
           }}
         >
           <Iconify icon="eva:arrow-ios-back-outline" width={16} />
@@ -281,10 +275,10 @@ export function VerifyOtpAdminView() {
             : 'Enter the 6-digit code sent to your email'}
         </Typography>
         {email && (
-          <Chip 
-            label={email} 
-            size="small" 
-            sx={{ 
+          <Chip
+            label={email}
+            size="small"
+            sx={{
               bgcolor: 'action.hover',
               fontWeight: 500,
               fontSize: '0.8125rem',

@@ -67,8 +67,7 @@ export function SignInRoleSelectorView() {
               '&:hover': {
                 borderColor: roleCard.color,
                 transform: 'translateY(-4px)',
-                boxShadow: (theme) =>
-                  `0 8px 24px ${alpha(roleCard.color, 0.24)}`,
+                boxShadow: (theme) => `0 8px 24px ${alpha(roleCard.color, 0.24)}`,
               },
             }}
             onClick={() => router.push(roleCard.path)}

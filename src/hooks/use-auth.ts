@@ -26,8 +26,7 @@ export const useAuth = () => {
   // .unwrap() returns a Promise that will reject if the async thunk was rejected
   // This allows proper error handling in components
   const handleSuperAdminLogin = useCallback(
-    async (credentials: LoginCredentials) =>
-      dispatch(superAdminLogin(credentials)).unwrap(),
+    async (credentials: LoginCredentials) => dispatch(superAdminLogin(credentials)).unwrap(),
     [dispatch]
   );
 
@@ -53,15 +52,9 @@ export const useAuth = () => {
 
   const handleLogout = useCallback(async () => dispatch(logout({})).unwrap(), [dispatch]);
 
-  const refreshUser = useCallback(
-    async () => dispatch(getCurrentUser()).unwrap(),
-    [dispatch]
-  );
+  const refreshUser = useCallback(async () => dispatch(getCurrentUser()).unwrap(), [dispatch]);
 
-  const initialize = useCallback(
-    async () => dispatch(initializeAuth()).unwrap(),
-    [dispatch]
-  );
+  const initialize = useCallback(async () => dispatch(initializeAuth()).unwrap(), [dispatch]);
 
   return {
     // State

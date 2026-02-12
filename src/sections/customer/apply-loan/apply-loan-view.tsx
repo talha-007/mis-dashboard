@@ -41,7 +41,8 @@ const calculateInstallment = (loanAmount: number): number => {
 };
 
 export function ApplyLoanView() {
-  const [applications, setApplications] = useState<CustomerLoanApplication[]>(_customerLoanApplications);
+  const [applications, setApplications] =
+    useState<CustomerLoanApplication[]>(_customerLoanApplications);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -143,7 +144,7 @@ export function ApplyLoanView() {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     const newApplication: CustomerLoanApplication = {
       id: editingId || `APP-${String(applications.length + 1).padStart(3, '0')}`,
       customerName: formData.customerName,
@@ -168,8 +169,9 @@ export function ApplyLoanView() {
       otherExpenses: parseFloat(formData.otherExpenses) || 0,
       miscellaneous: parseFloat(formData.miscellaneous) || 0,
       status: editingId ? 'draft' : 'submitted',
-      createdAt: editingId 
-        ? applications.find((app) => app.id === editingId)?.createdAt || new Date().toISOString().split('T')[0]
+      createdAt: editingId
+        ? applications.find((app) => app.id === editingId)?.createdAt ||
+          new Date().toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
     };
@@ -209,7 +211,13 @@ export function ApplyLoanView() {
       (parseFloat(formData.salaryIncome) || 0) +
       (parseFloat(formData.houseRental) || 0) +
       (parseFloat(formData.carRental) || 0),
-    [formData.businessIncome, formData.investmentIncome, formData.salaryIncome, formData.houseRental, formData.carRental]
+    [
+      formData.businessIncome,
+      formData.investmentIncome,
+      formData.salaryIncome,
+      formData.houseRental,
+      formData.carRental,
+    ]
   );
 
   const totalExpenses = useMemo(
@@ -277,12 +285,8 @@ export function ApplyLoanView() {
                         <TableCell>{application.customerName}</TableCell>
                         <TableCell>{application.cnic}</TableCell>
                         <TableCell>{application.city}</TableCell>
-                        <TableCell>
-                          PKR {application.loanAmount.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          PKR {application.installmentAmount.toLocaleString()}
-                        </TableCell>
+                        <TableCell>PKR {application.loanAmount.toLocaleString()}</TableCell>
+                        <TableCell>PKR {application.installmentAmount.toLocaleString()}</TableCell>
                         <TableCell>
                           <Chip
                             label={application.status.replace('_', ' ').toUpperCase()}
@@ -297,10 +301,7 @@ export function ApplyLoanView() {
                           >
                             <Iconify icon="eva:edit-fill" />
                           </IconButton>
-                          <IconButton
-                            color="error"
-                            onClick={() => handleDelete(application.id)}
-                          >
+                          <IconButton color="error" onClick={() => handleDelete(application.id)}>
                             <Iconify icon="eva:trash-2-fill" />
                           </IconButton>
                         </TableCell>

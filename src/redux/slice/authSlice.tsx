@@ -2,7 +2,13 @@ import type { User, RegisterData, LoginCredentials } from 'src/types/auth.types'
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
-import { setUserData, getUserData, setAuthToken, getAuthToken, clearAuthToken } from 'src/utils/auth-storage';
+import {
+  setUserData,
+  getUserData,
+  setAuthToken,
+  getAuthToken,
+  clearAuthToken,
+} from 'src/utils/auth-storage';
 
 import authService from '../services/auth.services';
 
@@ -105,9 +111,7 @@ export const userLogin = createAsyncThunk(
         token: data.token,
       };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message || 'User login failed'
-      );
+      return rejectWithValue(error.response?.data?.message || error.message || 'User login failed');
     }
   }
 );
@@ -166,17 +170,20 @@ export const register = createAsyncThunk(
   }
 );
 
-export const logout = createAsyncThunk('auth/logout', async (data?: any, { rejectWithValue } = {} as any) => {
-  try {
-    await authService.logout(data || {});
-    clearAuthToken();
-    return null;
-  } catch (error: any) {
-    // Even if API call fails, clear local data
-    clearAuthToken();
-    return rejectWithValue(error.message || 'Logout failed');
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async (data?: any, { rejectWithValue } = {} as any) => {
+    try {
+      await authService.logout(data || {});
+      clearAuthToken();
+      return null;
+    } catch (error: any) {
+      // Even if API call fails, clear local data
+      clearAuthToken();
+      return rejectWithValue(error.message || 'Logout failed');
+    }
   }
-});
+);
 
 export const getCurrentUser = createAsyncThunk(
   'auth/getCurrentUser',
@@ -196,37 +203,34 @@ export const getCurrentUser = createAsyncThunk(
  * Initialize auth state on app startup
  * Restores session from localStorage
  */
-export const initializeAuth = createAsyncThunk(
-  'auth/initialize',
-  async () => {
-    try {
-      const token = getAuthToken();
-      const cachedUser = getUserData<User>();
+export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
+  try {
+    const token = getAuthToken();
+    const cachedUser = getUserData<User>();
 
-      if (!token) {
-        return null;
-      }
-
-      // If we already have user data in localStorage, trust it
-      if (cachedUser) {
-        return { user: cachedUser, token };
-      }
-
-      // Fallback: try to fetch current user from backend when userData is missing
-      const response = await authService.getCurrentUser({});
-      const data = response.data?.data || response.data;
-      setUserData(data);
-
-      return { user: data, token };
-    } catch (error: any) {
-      console.log(error);
-      
-      // Backend validation failed or network error.
-      // Do NOT clear token or local state – just signal "no update".
+    if (!token) {
       return null;
     }
+
+    // If we already have user data in localStorage, trust it
+    if (cachedUser) {
+      return { user: cachedUser, token };
+    }
+
+    // Fallback: try to fetch current user from backend when userData is missing
+    const response = await authService.getCurrentUser({});
+    const data = response.data?.data || response.data;
+    setUserData(data);
+
+    return { user: data, token };
+  } catch (error: any) {
+    console.log(error);
+
+    // Backend validation failed or network error.
+    // Do NOT clear token or local state – just signal "no update".
+    return null;
   }
-);
+});
 
 // Slice
 const authSlice = createSlice({
@@ -266,6 +270,7 @@ const authSlice = createSlice({
     // Super Admin Login
     builder
       .addCase(superAdminLogin.pending, (state) => {
+        state.isLoading = true;
         state.isLoggingIn = true;
         state.error = null;
       })
@@ -287,13 +292,14 @@ const authSlice = createSlice({
     // Admin Login
     builder
       .addCase(adminLogin.pending, (state) => {
-        // state.isLoading = true;
+        state.isLoading = true;
         state.isLoggingIn = true;
         state.error = null;
       })
-      .addCase(adminLogin.fulfilled, (state, action) => {
+      .addCase(adminLogin.fulfilled, (state, action: any) => {
         state.isLoading = false;
         state.isLoggingIn = false;
+        // Admin API returns bank object, but we store it as user for consistency
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;

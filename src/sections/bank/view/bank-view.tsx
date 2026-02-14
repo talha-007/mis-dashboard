@@ -60,10 +60,14 @@ export function BankView() {
         sortBy: table.orderBy,
         sortOrder: table.order,
       });
-
-      // Handle different response structures
-      const data = response.data?.data || response.data?.banks || response.data || [];
-      const count = response.data?.total || response.data?.count || data.length;
+      // Handle different response structures (API returns { banks, pagination: { total, currentPage, ... } })
+      const data = response.data?.data ?? response.data?.banks ?? response.data ?? [];
+      const pagination = response.data?.pagination;
+      const count =
+        (typeof pagination?.total === 'number' && pagination.total) ||
+        response.data?.total ||
+        response.data?.count ||
+        (Array.isArray(data) ? data.length : 0);
 
       setBanks(Array.isArray(data) ? data : []);
       setTotalCount(count);

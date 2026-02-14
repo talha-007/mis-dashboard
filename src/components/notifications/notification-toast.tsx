@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import './notifications.css';
 
 import type { Notification } from 'src/types/notification';
 
-import './notifications.css';
+import { useState, useEffect } from 'react';
 
 interface NotificationToastProps {
   notification: Notification;

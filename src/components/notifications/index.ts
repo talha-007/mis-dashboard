@@ -3,5 +3,5 @@
  */
 
 export { NotificationToast } from './notification-toast';
-export { NotificationContainer } from './notification-container';
 export { NotificationHistory } from './notification-history';
+export { NotificationContainer } from './notification-container';

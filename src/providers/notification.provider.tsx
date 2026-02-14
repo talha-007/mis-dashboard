@@ -4,9 +4,10 @@
  * Shows toast notifications for new notifications
  */
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { useNotifications } from 'src/hooks';
+
 import { NotificationContainer } from 'src/components/notifications';
 
 interface NotificationProviderProps {

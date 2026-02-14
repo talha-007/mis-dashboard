@@ -5,7 +5,7 @@
 
 import type { StatsUpdatePayload, NotificationPayload } from 'src/services/socket';
 
-import { useState, useMemo, useEffect, useContext, createContext, type ReactNode } from 'react';
+import { useMemo, useState, useEffect, useContext, createContext, type ReactNode } from 'react';
 
 import ENV from 'src/config/environment';
 import { useAppSelector } from 'src/store';

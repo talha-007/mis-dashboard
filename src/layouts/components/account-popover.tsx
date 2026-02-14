@@ -1,5 +1,6 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { useDispatch } from 'react-redux';
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -14,10 +15,10 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { useRouter, usePathname } from 'src/routes/hooks';
 
-import { _myAccount } from 'src/_mock';
 import { clearAuthToken } from 'src/utils/auth-storage';
+
+import { _myAccount } from 'src/_mock';
 import { logout } from 'src/redux/slice/authSlice';
-import { useDispatch } from 'react-redux';
 
 // ----------------------------------------------------------------------
 

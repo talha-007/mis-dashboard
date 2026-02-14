@@ -116,6 +116,9 @@ export interface User {
   accountNumber?: string;
   customerType?: 'individual' | 'business';
   kycStatus?: 'pending' | 'approved' | 'rejected';
+
+  // Bank admin: subscription status (from /me API)
+  subscriptionStatus?: 'active' | 'inactive';
 }
 
 // Auth Response
@@ -151,7 +154,8 @@ export interface RegisterData {
 // Helper function to check permissions
 export const hasPermission = (user: User | null, permission: Permission): boolean => {
   if (!user) return false;
-  return user.permissions.includes(permission);
+  const permissions = user.permissions ?? [];
+  return Array.isArray(permissions) && permissions.includes(permission);
 };
 
 // Helper function to check role
@@ -168,3 +172,14 @@ export const isAdmin = (user: User | null): boolean => hasRole(user, UserRole.AD
 
 // Helper function to check if user is customer
 export const isCustomer = (user: User | null): boolean => hasRole(user, UserRole.CUSTOMER);
+
+/** Bank admin subscription: active = can access dashboard; inactive = must pay first */
+export const isSubscriptionActive = (user: User | null): boolean => {
+  if (!user) return false;
+  if (user.role !== UserRole.ADMIN) return true; // Super admin & customer not restricted
+  return (user.subscriptionStatus ?? 'inactive') === 'active';
+};
+
+/** True if user is bank admin and must complete subscription before accessing pages */
+export const needsSubscription = (user: User | null): boolean =>
+  !!user && user.role === UserRole.ADMIN && (user.subscriptionStatus ?? 'inactive') !== 'active';

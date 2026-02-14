@@ -2,8 +2,8 @@
  * Hook to extract bank_slug from URL and manage bank context
  */
 
-import { useParams, useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 export interface BankSlugContext {
   bankSlug: string | undefined;

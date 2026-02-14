@@ -1,6 +1,7 @@
+import type { Notification } from 'src/types/notification';
 import type { IconButtonProps } from '@mui/material/IconButton';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
@@ -19,10 +20,10 @@ import ListItemButton from '@mui/material/ListItemButton';
 
 import { fToNow } from 'src/utils/format-time';
 
+import { useNotifications } from 'src/hooks';
+
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-import { useNotifications } from 'src/hooks';
-import type { Notification } from 'src/types/notification';
 
 // ----------------------------------------------------------------------
 
@@ -71,8 +72,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
   const { notifications: socketNotifications, markAllAsRead, markAsRead } = useNotifications();
   
   // Map Socket.io notifications to UI format
-  const mappedNotifications = useMemo(() => {
-    return socketNotifications.map((notif: Notification) => ({
+  const mappedNotifications = useMemo(() => socketNotifications.map((notif: Notification) => ({
       id: notif.id,
       type: getNotificationType(notif.type),
       title: notif.title,
@@ -80,8 +80,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
       description: notif.message,
       avatarUrl: getAvatarForType(notif.type),
       postedAt: new Date(notif.timestamp).getTime(),
-    }));
-  }, [socketNotifications]);
+    })), [socketNotifications]);
 
   // Fallback to initial data if no socket notifications
   const [notificationsState, setNotificationsState] = useState<NotificationItemProps[]>(

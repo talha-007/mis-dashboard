@@ -9,7 +9,7 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 
 import { DashboardLayout } from 'src/layouts/dashboard';
 
-import { ProtectedRoute, MultiRoleGuard } from 'src/components/auth';
+import { ProtectedRoute, MultiRoleGuard, SubscriptionGuard } from 'src/components/auth';
 
 import { UserRole } from 'src/types/auth.types';
 
@@ -66,6 +66,11 @@ export const VerifyOtpAdminPage = lazy(() => import('src/pages/auth/verify-otp-a
 export const UnauthorizedPage = lazy(() => import('src/pages/error/unauthorized'));
 export const Page404 = lazy(() => import('src/pages/error/page-not-found'));
 
+// Subscription (bank admin)
+export const SubscriptionRequiredPage = lazy(
+  () => import('src/pages/subscription/subscription-required')
+);
+
 const renderFallback = () => (
   <Box
     sx={{
@@ -105,15 +110,23 @@ export const routesSection: RouteObject[] = [
     path: '/',
     element: (
       <ProtectedRoute>
-        <DashboardLayout>
-          <Suspense fallback={renderFallback()}>
-            <Outlet />
-          </Suspense>
-        </DashboardLayout>
+        <SubscriptionGuard>
+          <DashboardLayout>
+            <Suspense fallback={renderFallback()}>
+              <Outlet />
+            </Suspense>
+          </DashboardLayout>
+        </SubscriptionGuard>
       </ProtectedRoute>
     ),
     children: [
-      // Dashboard - All authenticated users
+      // Subscription required (bank admin with inactive subscription)
+      {
+        path: 'subscription-required',
+        element: <SubscriptionRequiredPage />,
+      },
+
+      // Dashboard - All authenticated users (with active subscription for admin)
       {
         index: true,
         element: (

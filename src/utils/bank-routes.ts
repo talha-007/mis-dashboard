@@ -12,58 +12,42 @@
 /**
  * Generate customer registration URL for a bank
  */
-export const getBankRegisterUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/register`;
-};
+export const getBankRegisterUrl = (bankSlug: string): string => `/${bankSlug}/register`;
 
 /**
  * Generate customer login URL for a bank
  */
-export const getBankLoginUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/login`;
-};
+export const getBankLoginUrl = (bankSlug: string): string => `/${bankSlug}/login`;
 
 /**
  * Generate admin login URL for a bank
  */
-export const getBankAdminLoginUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/admin/login`;
-};
+export const getBankAdminLoginUrl = (bankSlug: string): string => `/${bankSlug}/admin/login`;
 
 /**
  * Generate customer forgot password URL for a bank
  */
-export const getBankForgotPasswordUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/forgot-password`;
-};
+export const getBankForgotPasswordUrl = (bankSlug: string): string => `/${bankSlug}/forgot-password`;
 
 /**
  * Generate customer verify OTP URL for a bank
  */
-export const getBankVerifyOtpUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/verify-otp`;
-};
+export const getBankVerifyOtpUrl = (bankSlug: string): string => `/${bankSlug}/verify-otp`;
 
 /**
  * Generate admin forgot password URL for a bank
  */
-export const getBankAdminForgotPasswordUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/admin/forgot-password`;
-};
+export const getBankAdminForgotPasswordUrl = (bankSlug: string): string => `/${bankSlug}/admin/forgot-password`;
 
 /**
  * Generate admin verify OTP URL for a bank
  */
-export const getBankAdminVerifyOtpUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/admin/verify-otp`;
-};
+export const getBankAdminVerifyOtpUrl = (bankSlug: string): string => `/${bankSlug}/admin/verify-otp`;
 
 /**
  * Generate admin new password URL for a bank
  */
-export const getBankAdminNewPasswordUrl = (bankSlug: string): string => {
-  return `/${bankSlug}/admin/new-password`;
-};
+export const getBankAdminNewPasswordUrl = (bankSlug: string): string => `/${bankSlug}/admin/new-password`;
 
 /**
  * All bank route builders

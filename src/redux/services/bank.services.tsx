@@ -30,7 +30,7 @@ const getBankSubscriptionDetails = (bankId: string) =>
   callAPi.get(`/api/banks/${bankId}/subscription-details`);
 
 // Create a new bank
-const addBank = (data: any) => callAPi.post('/api/banks/', data);
+const addBank = (data: any) => callAPi.post('/api/banks/addBank', data);
 
 // Update a bank
 const updateBank = (id: string, data: any) => callAPi.put(`/api/banks/${id}`, data);

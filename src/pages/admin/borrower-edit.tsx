@@ -1,13 +1,14 @@
+import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+
+import borrowerService from 'src/redux/services/borrowServices';
 
 import { BorrowerFormView } from 'src/sections/borrower/borrower-form-view';
-import borrowerService from 'src/redux/services/borrowServices';
-import { toast } from 'react-toastify';
 
 export default function BorrowerEditPage() {
   const { id } = useParams();

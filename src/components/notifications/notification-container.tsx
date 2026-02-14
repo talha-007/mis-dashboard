@@ -1,9 +1,10 @@
+import './notifications.css';
+
 import { useMemo } from 'react';
 
 import { useNotifications } from 'src/hooks';
-import { NotificationToast } from './notification-toast';
 
-import './notifications.css';
+import { NotificationToast } from './notification-toast';
 
 interface NotificationContainerProps {
   maxVisible?: number;
@@ -13,9 +14,7 @@ export const NotificationContainer = ({ maxVisible = 3 }: NotificationContainerP
   const { notifications, deleteNotification } = useNotifications();
 
   // Only show most recent notifications (toast)
-  const visibleNotifications = useMemo(() => {
-    return notifications.slice(0, maxVisible);
-  }, [notifications, maxVisible]);
+  const visibleNotifications = useMemo(() => notifications.slice(0, maxVisible), [notifications, maxVisible]);
 
   return (
     <div className="notification-container">

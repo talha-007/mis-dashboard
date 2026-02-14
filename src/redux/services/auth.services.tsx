@@ -29,6 +29,9 @@ const verifyOTP = (data: any) => callAPi.post(`/api/customers/verify-otp`, data)
 
 const logout = (data: any) => callAPi.post(`/api/customers/logout`, data);
 
+/** Current user by token - called after any login; returns id, name, email, role, subscriptionStatus */
+const getMe = () => callAPi.get('/api/users/me');
+
 const getCurrentUser = (data: any) => callAPi.get(`/api/customers/me`, data);
 
 const updateProfile = (data: any) => callAPi.put(`/api/customers/${data.id}`, data);
@@ -41,6 +44,7 @@ const requestPasswordReset = (data: any) =>
 const verifyEmail = (data: any) => callAPi.post(`/api/customers/verify-email`, data);
 
 const authService = {
+  getMe,
   superAdminLogin,
   adminLogin,
   userLogin,

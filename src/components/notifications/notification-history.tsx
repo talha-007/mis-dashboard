@@ -1,6 +1,6 @@
-import { useNotifications } from 'src/hooks';
-
 import './notifications.css';
+
+import { useNotifications } from 'src/hooks';
 
 export const NotificationHistory = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotifications } =

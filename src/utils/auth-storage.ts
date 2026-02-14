@@ -6,6 +6,7 @@
 // Use 'token' to match http-common.tsx which uses localStorage.getItem("token")
 const AUTH_TOKEN_KEY = 'token';
 const USER_DATA_KEY = 'userData';
+const BANK_DATA_KEY = 'bankData';
 
 /**
  * Get authentication token from storage
@@ -37,8 +38,33 @@ export const clearAuthToken = (): void => {
   try {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(BANK_DATA_KEY);
   } catch (error) {
     console.error('Error clearing auth tokens:', error);
+  }
+};
+
+/**
+ * Get bank data from storage (from /me for bank admin)
+ */
+export const getBankData = <T = any>(): T | null => {
+  try {
+    const data = localStorage.getItem(BANK_DATA_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error('Error getting bank data:', error);
+    return null;
+  }
+};
+
+/**
+ * Set bank data in storage
+ */
+export const setBankData = <T = any>(data: T): void => {
+  try {
+    localStorage.setItem(BANK_DATA_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error setting bank data:', error);
   }
 };
 

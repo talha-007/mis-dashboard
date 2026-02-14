@@ -5,6 +5,8 @@ import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/tool
 import {
   setUserData,
   getUserData,
+  setBankData,
+  getBankData,
   setAuthToken,
   getAuthToken,
   clearAuthToken,
@@ -12,8 +14,16 @@ import {
 
 import authService from '../services/auth.services';
 
+/** Bank from /me (for bank admin) */
+export interface AuthBank {
+  id: string;
+  name?: string;
+  subscriptionStatus?: string;
+}
+
 interface AuthState {
   user: User | null;
+  bank: AuthBank | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -25,9 +35,11 @@ interface AuthState {
 // Initialize state from localStorage
 const storedToken = getAuthToken();
 const storedUser = getUserData<User>();
+const storedBank = getBankData<AuthBank>();
 
 const initialState: AuthState = {
   user: storedUser,
+  bank: storedBank,
   token: storedToken,
   isAuthenticated: !!(storedToken && storedUser),
   isLoading: false,
@@ -37,25 +49,81 @@ const initialState: AuthState = {
 };
 
 // Async thunks
+/** Merge /me API response (user + optional bank for subscriptionStatus) into user */
+function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
+  if (!loginUser) return loginUser as User;
+  const meData = userData ?? loginUser;
+  const name =
+    (meData.name ?? `${loginUser.firstName ?? ''} ${loginUser.lastName ?? ''}`.trim()) || 'User';
+  const [firstName, ...rest] = name.split(' ');
+  const lastName = rest.join(' ') || firstName;
+  const subscriptionStatus =
+    bankData?.subscriptionStatus ?? meData.subscriptionStatus ?? loginUser.subscriptionStatus;
+  return {
+    ...loginUser,
+    id: meData.id ?? loginUser.id,
+    email: meData.email ?? loginUser.email,
+    firstName: meData.firstName ?? loginUser.firstName ?? firstName,
+    lastName: meData.lastName ?? loginUser.lastName ?? lastName,
+    role: meData.role ?? loginUser.role,
+    subscriptionStatus,
+    permissions: loginUser.permissions ?? [],
+    isActive: loginUser.isActive ?? true,
+    isEmailVerified: loginUser.isEmailVerified ?? false,
+    createdAt: loginUser.createdAt ?? '',
+    updatedAt: loginUser.updatedAt ?? '',
+  };
+}
+
+/** Fetch current user from /me (returns { user, bank, subscription }) - call after login or to refresh */
+export const fetchMe = createAsyncThunk(
+  'auth/fetchMe',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authService.getMe();
+      const data = response.data?.data ?? response.data;
+      if (!data) return null;
+      const userData = data.user ?? data;
+      const bankData = data.bank ?? null;
+      const user = getUserData<User>();
+      const merged = mergeMeIntoUser(user ?? {}, userData, bankData);
+      setUserData(merged);
+      if (bankData?.id) {
+        setBankData({ id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus });
+      }
+      return { user: merged, bank: bankData?.id ? { id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus } : null };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message ?? error.message ?? 'Failed to fetch profile');
+    }
+  }
+);
+
 export const superAdminLogin = createAsyncThunk(
   'auth/superAdminLogin',
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
       const response = await authService.superAdminLogin(credentials);
       const data = response.data?.data || response.data;
-      console.log('data', data);
-      // Store tokens
-      if (data.token) {
-        setAuthToken(data.token);
-      }
-      if (data.user) {
-        setUserData(data.user);
-      }
+      if (data.token) setAuthToken(data.token);
+      if (data.user) setUserData(data.user);
 
-      return {
-        user: data.user,
-        token: data.token,
-      };
+      let user = data.user as User;
+      let bank: AuthBank | null = null;
+      try {
+        const meRes = await authService.getMe();
+        const meData = meRes.data?.data ?? meRes.data;
+        if (meData) {
+          user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
+          if (meData.bank?.id) {
+            bank = { id: meData.bank.id, name: meData.bank.name, subscriptionStatus: meData.bank.subscriptionStatus };
+            setBankData(bank);
+          }
+        }
+      } catch {
+        // keep login user if /me fails
+      }
+      setUserData(user);
+      return { user, bank, token: data.token };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || error.message || 'Super Admin login failed'
@@ -70,19 +138,26 @@ export const adminLogin = createAsyncThunk(
     try {
       const response = await authService.adminLogin(credentials);
       const data = response.data?.data || response.data;
+      if (data.token) setAuthToken(data.token);
+      if (data.user) setUserData(data.user);
 
-      // Store tokens
-      if (data.token) {
-        setAuthToken(data.token);
+      let user = data.user as User;
+      let bank: AuthBank | null = null;
+      try {
+        const meRes = await authService.getMe();
+        const meData = meRes.data?.data ?? meRes.data;
+        if (meData) {
+          user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
+          if (meData.bank?.id) {
+            bank = { id: meData.bank.id, name: meData.bank.name, subscriptionStatus: meData.bank.subscriptionStatus };
+            setBankData(bank);
+          }
+        }
+      } catch {
+        // keep login user if /me fails
       }
-      if (data.user) {
-        setUserData(data.user);
-      }
-
-      return {
-        user: data.user,
-        token: data.token,
-      };
+      setUserData(user);
+      return { user, bank, token: data.token };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || error.message || 'Admin login failed'
@@ -97,19 +172,19 @@ export const userLogin = createAsyncThunk(
     try {
       const response = await authService.userLogin(credentials);
       const data = response.data?.data || response.data;
+      if (data.token) setAuthToken(data.token);
+      if (data.user) setUserData(data.user);
 
-      // Store tokens
-      if (data.token) {
-        setAuthToken(data.token);
+      let user = data.user as User;
+      try {
+        const meRes = await authService.getMe();
+        const meData = meRes.data?.data ?? meRes.data;
+        if (meData) user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
+      } catch {
+        // keep login user if /me fails
       }
-      if (data.user) {
-        setUserData(data.user);
-      }
-
-      return {
-        user: data.user,
-        token: data.token,
-      };
+      setUserData(user);
+      return { user, token: data.token };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || error.message || 'User login failed');
     }
@@ -123,18 +198,19 @@ export const googleLogin = createAsyncThunk(
     try {
       const response = await authService.googleLogin(data);
       const resp = response.data?.data || response.data;
+      if (resp.token) setAuthToken(resp.token);
+      if (resp.user) setUserData(resp.user);
 
-      if (resp.token) {
-        setAuthToken(resp.token);
+      let user = resp.user as User;
+      try {
+        const meRes = await authService.getMe();
+        const meData = meRes.data?.data ?? meRes.data;
+        if (meData) user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
+      } catch {
+        // keep login user if /me fails
       }
-      if (resp.user) {
-        setUserData(resp.user);
-      }
-
-      return {
-        user: resp.user,
-        token: resp.token,
-      };
+      setUserData(user);
+      return { user, token: resp.token };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || error.message || 'Google login failed'
@@ -201,7 +277,7 @@ export const getCurrentUser = createAsyncThunk(
 
 /**
  * Initialize auth state on app startup
- * Restores session from localStorage
+ * Restores session from localStorage; refreshes user + subscriptionStatus via /me
  */
 export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
   try {
@@ -212,22 +288,31 @@ export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
       return null;
     }
 
-    // If we already have user data in localStorage, trust it
+    // Refresh user and subscriptionStatus from /me (works for all roles)
+    try {
+      const meRes = await authService.getMe();
+      const meData = meRes.data?.data ?? meRes.data;
+      if (meData) {
+        const userData = meData.user ?? meData;
+        const bankData = meData.bank ?? null;
+        const merged = mergeMeIntoUser(cachedUser ?? {}, userData, bankData);
+        setUserData(merged);
+        if (bankData?.id) {
+          setBankData({ id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus });
+        }
+        return { user: merged, bank: bankData?.id ? { id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus } : null, token };
+      }
+    } catch {
+      // keep cached user if /me fails
+    }
+
     if (cachedUser) {
       return { user: cachedUser, token };
     }
 
-    // Fallback: try to fetch current user from backend when userData is missing
-    const response = await authService.getCurrentUser({});
-    const data = response.data?.data || response.data;
-    setUserData(data);
-
-    return { user: data, token };
+    return null;
   } catch (error: any) {
     console.log(error);
-
-    // Backend validation failed or network error.
-    // Do NOT clear token or local state – just signal "no update".
     return null;
   }
 });
@@ -243,6 +328,7 @@ const authSlice = createSlice({
     },
     clearAuth: (state) => {
       state.user = null;
+      state.bank = null;
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
@@ -278,6 +364,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isLoggingIn = false;
         state.user = action.payload.user;
+        state.bank = action.payload.bank ?? null;
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.error = null;
@@ -299,8 +386,8 @@ const authSlice = createSlice({
       .addCase(adminLogin.fulfilled, (state, action: any) => {
         state.isLoading = false;
         state.isLoggingIn = false;
-        // Admin API returns bank object, but we store it as user for consistency
         state.user = action.payload.user;
+        state.bank = action.payload.bank ?? null;
         state.token = action.payload.token;
         state.isAuthenticated = true;
         state.error = null;
@@ -386,6 +473,7 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.isLoading = false;
         state.user = null;
+        state.bank = null;
         state.token = null;
         state.isAuthenticated = false;
         state.error = null;
@@ -394,6 +482,7 @@ const authSlice = createSlice({
       .addCase(logout.rejected, (state) => {
         state.isLoading = false;
         state.user = null;
+        state.bank = null;
         state.token = null;
         state.isAuthenticated = false;
         state.isLoggingIn = false;
@@ -417,6 +506,19 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
       });
 
+    // Fetch /me (refresh profile + subscriptionStatus + bank)
+    builder
+      .addCase(fetchMe.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.user = action.payload.user;
+          state.bank = action.payload.bank ?? null;
+          state.isAuthenticated = true;
+        }
+      })
+      .addCase(fetchMe.rejected, () => {
+        // do not clear auth; user stays as-is
+      });
+
     // Initialize Auth
     builder
       .addCase(initializeAuth.pending, (state) => {
@@ -425,9 +527,9 @@ const authSlice = createSlice({
       .addCase(initializeAuth.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isInitialized = true;
-        // If payload has fresh user/token, update; otherwise keep existing state
         if (action.payload) {
           state.user = action.payload.user;
+          state.bank = action.payload.bank ?? null;
           state.token = action.payload.token;
           state.isAuthenticated = true;
         }

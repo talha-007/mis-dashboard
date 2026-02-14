@@ -9,6 +9,7 @@ import type { RouteObject } from 'react-router';
 import { lazy } from 'react';
 
 import { AuthLayout } from 'src/layouts/auth';
+
 import { AuthRouteGuard } from 'src/components/auth';
 
 // Import pages directly from their source

@@ -44,6 +44,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
     licenseNumber: '',
     bankType: '',
     establishedDate: '',
+    capitalAmount: '',
 
     // Contact Information
     email: '',
@@ -88,6 +89,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
             licenseNumber: bank.licenseNumber || '',
             bankType: bank.bankType || '',
             establishedDate: bank.establishedDate || '',
+            capitalAmount: bank.capitalAmount || '',
             email: bank.email || '',
             phone: bank.phone || '',
             website: bank.website || '',
@@ -184,6 +186,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
         phone: formData.phone,
         address: formData.address,
         status: formData.status,
+        capitalAmount: formData.capitalAmount,
       };
 
       // Add optional fields if provided
@@ -192,6 +195,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
       if (formData.licenseNumber) bankPayload.licenseNumber = formData.licenseNumber;
       if (formData.bankType) bankPayload.bankType = formData.bankType;
       if (formData.establishedDate) bankPayload.establishedDate = formData.establishedDate;
+      if (formData.capitalAmount) bankPayload.capitalAmount = formData.capitalAmount;
       if (formData.website) bankPayload.website = formData.website;
       if (formData.fax) bankPayload.fax = formData.fax;
       if (formData.city) bankPayload.city = formData.city;
@@ -340,6 +344,18 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       <MenuItem value="development">Development Bank</MenuItem>
                       <MenuItem value="savings">Savings Bank</MenuItem>
                     </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      fullWidth
+                      label="Capital Amount"
+                      name="capitalAmount"
+                      value={formData.capitalAmount}
+                      onChange={handleChange}
+                    />
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      The amount of money the bank has in its reserves.
+                    </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
@@ -556,13 +572,13 @@ export function BankFormView({ bankId }: BankFormViewProps) {
 
               {/* Status Section */}
               <Box>
-                <Typography
+                {/* <Typography
                   variant="h6"
                   sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}
                 >
                   Status
-                </Typography>
-                <Grid container spacing={3}>
+                </Typography> */}
+                {/* <Grid container spacing={3}>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       fullWidth
@@ -578,7 +594,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       <MenuItem value="pending">Pending</MenuItem>
                     </TextField>
                   </Grid>
-                </Grid>
+                </Grid> */}
               </Box>
 
               {/* Action Buttons */}

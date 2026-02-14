@@ -4,10 +4,11 @@
  * ⚠️ Do NOT create new Socket.io connections - use the centralized one!
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import type { Notification, SocketNotification } from 'src/types/notification';
+
+import { useState, useEffect, useCallback } from 'react';
 
 import { useSocket } from 'src/hooks/useSocket';
-import type { Notification, SocketNotification } from 'src/types/notification';
 
 export const useNotifications = () => {
   const { on, off } = useSocket();

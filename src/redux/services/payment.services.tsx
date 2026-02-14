@@ -1,35 +1,19 @@
 import { callAPi } from './http-common';
 
-// Get all bank subscriptions/payments
+// Get all bank subscriptions/payments (optional query params: search, page, limit, status)
 const getBankSubscriptions = (params?: {
   search?: string;
   page?: number;
   limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
   status?: string;
-}) => {
-  const queryParams = new URLSearchParams();
-  if (params?.search) queryParams.append('search', params.search);
-  if (params?.page) queryParams.append('page', params.page.toString());
-  if (params?.limit) queryParams.append('limit', params.limit.toString());
-  if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
-  if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
-  if (params?.status) queryParams.append('status', params.status);
+}) => callAPi.get(`/api/subscriptions`, { params });
 
-  const queryString = queryParams.toString();
-  return callAPi.get(`/api/banks/subscriptions${queryString ? `?${queryString}` : ''}`);
-};
-
-// Get a single subscription by ID
-const getSubscriptionById = (id: string) => callAPi.get(`/api/banks/subscriptions/${id}`);
+/** Create/pay subscription for a bank (bank admin) - POST /api/subscriptions */
+const createSubscription = (payload: { bankId: string; amount: number }) =>
+  callAPi.post('/api/subscriptions', payload);
 
 // Create a new payment/subscription
-const createPayment = (data: any) => callAPi.post('/api/banks/subscriptions', data);
-
-// Update a subscription
-const updateSubscription = (id: string, data: any) =>
-  callAPi.put(`/api/banks/subscriptions/${id}`, data);
+const createPayment = (bankId: string, data: any) => callAPi.post(`/api/banks/subscriptions/${bankId}`, data);
 
 // Process payment
 const processPayment = (subscriptionId: string, paymentData: any) =>
@@ -59,9 +43,9 @@ const generateInvoice = (paymentId: string) =>
 
 const paymentService = {
   getBankSubscriptions,
-  getSubscriptionById,
+  createSubscription,
   createPayment,
-  updateSubscription,
+
   processPayment,
   cancelSubscription,
   renewSubscription,

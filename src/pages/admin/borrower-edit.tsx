@@ -39,7 +39,8 @@ export default function BorrowerEditPage() {
           address: data.address,
         });
       } catch (err: any) {
-        const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load borrower';
+        const errorMessage =
+          err?.response?.data?.message || err?.message || 'Failed to load borrower';
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -52,7 +53,9 @@ export default function BorrowerEditPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}
+      >
         <CircularProgress />
       </Box>
     );

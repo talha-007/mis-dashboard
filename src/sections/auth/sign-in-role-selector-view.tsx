@@ -34,7 +34,7 @@ const ROLES: RoleCard[] = [
     description: 'Access your account and loans',
     icon: 'solar:user-bold-duotone',
     color: '#4D0CE7', // Use brand primary color (purple)
-    path: '/sign-in/customer',
+    path: '/sign-in',
   },
 ];
 

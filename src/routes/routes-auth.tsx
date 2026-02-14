@@ -78,19 +78,9 @@ export const authRoutes: RouteObject[] = [
     ),
   },
 
-  // CUSTOMER AUTH
+  // CUSTOMER AUTH (single sign-in; API returns bank slug after login)
   {
     path: 'sign-in',
-    element: (
-      <AuthRouteGuard>
-        <AuthLayout>
-          <SignInCustomerPage />
-        </AuthLayout>
-      </AuthRouteGuard>
-    ),
-  },
-  {
-    path: 'sign-in/customer',
     element: (
       <AuthRouteGuard>
         <AuthLayout>

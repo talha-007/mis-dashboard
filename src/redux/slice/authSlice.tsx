@@ -2,6 +2,7 @@ import type { User, RegisterData, LoginCredentials } from 'src/types/auth.types'
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
+import { getCurrentBankSlug } from 'src/utils/bank-context';
 import {
   setUserData,
   getUserData,
@@ -12,6 +13,8 @@ import {
   clearAuthToken,
 } from 'src/utils/auth-storage';
 
+import { UserRole, ROLE_PERMISSIONS } from 'src/types/auth.types';
+
 import authService from '../services/auth.services';
 
 /** Bank from /me (for bank admin) */
@@ -19,6 +22,26 @@ export interface AuthBank {
   id: string;
   name?: string;
   subscriptionStatus?: string;
+}
+
+/** Map register/login API customer object to our User type */
+function customerToUser(customer: any): User {
+  if (!customer || !customer.id) return customer as User;
+  const permissions = ROLE_PERMISSIONS[UserRole.CUSTOMER] ?? [];
+  return {
+    ...customer,
+    id: customer.id,
+    email: customer.email ?? '',
+    firstName: customer.firstName ?? customer.name ?? '',
+    lastName: customer.lastName ?? customer.lastname ?? '',
+    role: UserRole.CUSTOMER,
+    bankSlug: customer.bankSlug ?? customer.slug ?? undefined,
+    permissions: Array.isArray(customer.permissions) ? customer.permissions : permissions,
+    isActive: customer.isActive ?? true,
+    isEmailVerified: customer.isEmailVerified ?? false,
+    createdAt: customer.createdAt ?? '',
+    updatedAt: customer.updatedAt ?? '',
+  };
 }
 
 interface AuthState {
@@ -75,28 +98,52 @@ function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
   };
 }
 
-/** Fetch current user from /me (returns { user, bank, subscription }) - call after login or to refresh */
-export const fetchMe = createAsyncThunk(
-  'auth/fetchMe',
-  async (_, { rejectWithValue }) => {
+/**
+ * Call /me API: try /api/users/me first (admin/superadmin), fallback to /api/customers/me for customers
+ */
+async function fetchMeApi(): Promise<{ user: User; bank: AuthBank | null } | null> {
+  try {
+    const response = await authService.getMe();
+    const data = response.data?.data ?? response.data;
+    if (!data) return null;
+    const userData = data.user ?? data;
+    const bankData = data.bank ?? null;
+    const cached = getUserData<User>();
+    const merged = mergeMeIntoUser(cached ?? {}, userData, bankData);
+    const bank = bankData?.id
+      ? { id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus }
+      : null;
+    if (bank) setBankData(bank);
+    return { user: merged, bank };
+  } catch {
     try {
-      const response = await authService.getMe();
+      const response = await authService.getCurrentUser({});
       const data = response.data?.data ?? response.data;
       if (!data) return null;
-      const userData = data.user ?? data;
-      const bankData = data.bank ?? null;
-      const user = getUserData<User>();
-      const merged = mergeMeIntoUser(user ?? {}, userData, bankData);
-      setUserData(merged);
-      if (bankData?.id) {
-        setBankData({ id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus });
-      }
-      return { user: merged, bank: bankData?.id ? { id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus } : null };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message ?? error.message ?? 'Failed to fetch profile');
+      const user = customerToUser(data);
+      setUserData(user);
+      return { user, bank: null };
+    } catch {
+      return null;
     }
   }
-);
+}
+
+/** Fetch current user from /me - call after login or to refresh (uses /api/users/me or /api/customers/me for customers) */
+export const fetchMe = createAsyncThunk('auth/fetchMe', async (_, { rejectWithValue }) => {
+  try {
+    const result = await fetchMeApi();
+    if (result) {
+      setUserData(result.user);
+      return result;
+    }
+    return rejectWithValue('Failed to fetch profile');
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message ?? error.message ?? 'Failed to fetch profile'
+    );
+  }
+});
 
 export const superAdminLogin = createAsyncThunk(
   'auth/superAdminLogin',
@@ -115,7 +162,11 @@ export const superAdminLogin = createAsyncThunk(
         if (meData) {
           user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
           if (meData.bank?.id) {
-            bank = { id: meData.bank.id, name: meData.bank.name, subscriptionStatus: meData.bank.subscriptionStatus };
+            bank = {
+              id: meData.bank.id,
+              name: meData.bank.name,
+              subscriptionStatus: meData.bank.subscriptionStatus,
+            };
             setBankData(bank);
           }
         }
@@ -149,7 +200,11 @@ export const adminLogin = createAsyncThunk(
         if (meData) {
           user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
           if (meData.bank?.id) {
-            bank = { id: meData.bank.id, name: meData.bank.name, subscriptionStatus: meData.bank.subscriptionStatus };
+            bank = {
+              id: meData.bank.id,
+              name: meData.bank.name,
+              subscriptionStatus: meData.bank.subscriptionStatus,
+            };
             setBankData(bank);
           }
         }
@@ -173,17 +228,12 @@ export const userLogin = createAsyncThunk(
       const response = await authService.userLogin(credentials);
       const data = response.data?.data || response.data;
       if (data.token) setAuthToken(data.token);
-      if (data.user) setUserData(data.user);
 
-      let user = data.user as User;
-      try {
-        const meRes = await authService.getMe();
-        const meData = meRes.data?.data ?? meRes.data;
-        if (meData) user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
-      } catch {
-        // keep login user if /me fails
-      }
-      setUserData(user);
+      const rawUser = data.customer ?? data.user;
+      let user = rawUser ? customerToUser(rawUser) : null;
+      const meResult = await fetchMeApi();
+      if (meResult) user = meResult.user;
+      if (user) setUserData(user);
       return { user, token: data.token };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || error.message || 'User login failed');
@@ -223,19 +273,26 @@ export const register = createAsyncThunk(
   'auth/register',
   async (data: RegisterData, { rejectWithValue }) => {
     try {
-      const response = await authService.register(data);
+      // API expects field "slug" (bank slug) when registering via bank URL
+      const slug = data.bankSlug ?? getCurrentBankSlug() ?? undefined;
+      const payload = slug ? { ...data, slug } : data;
+
+      const response = await authService.register(payload);
       const responseData = response.data?.data || response.data;
 
-      // Store tokens if provided
+      // Register API returns { token, customer } (not "user")
+      const rawUser = responseData.customer ?? responseData.user;
+      const user = rawUser ? customerToUser(rawUser) : null;
+
       if (responseData.token) {
         setAuthToken(responseData.token);
       }
-      if (responseData.user) {
-        setUserData(responseData.user);
+      if (user) {
+        setUserData(user);
       }
 
       return {
-        user: responseData.user,
+        user,
         token: responseData.token,
       };
     } catch (error: any) {
@@ -277,7 +334,7 @@ export const getCurrentUser = createAsyncThunk(
 
 /**
  * Initialize auth state on app startup
- * Restores session from localStorage; refreshes user + subscriptionStatus via /me
+ * Restores session from localStorage; refreshes via /me (users/me or customers/me for customers)
  */
 export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
   try {
@@ -288,22 +345,10 @@ export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
       return null;
     }
 
-    // Refresh user and subscriptionStatus from /me (works for all roles)
-    try {
-      const meRes = await authService.getMe();
-      const meData = meRes.data?.data ?? meRes.data;
-      if (meData) {
-        const userData = meData.user ?? meData;
-        const bankData = meData.bank ?? null;
-        const merged = mergeMeIntoUser(cachedUser ?? {}, userData, bankData);
-        setUserData(merged);
-        if (bankData?.id) {
-          setBankData({ id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus });
-        }
-        return { user: merged, bank: bankData?.id ? { id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus } : null, token };
-      }
-    } catch {
-      // keep cached user if /me fails
+    const meResult = await fetchMeApi();
+    if (meResult) {
+      setUserData(meResult.user);
+      return { user: meResult.user, bank: meResult.bank, token };
     }
 
     if (cachedUser) {

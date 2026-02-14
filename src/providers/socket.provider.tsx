@@ -35,7 +35,7 @@ interface SocketProviderProps {
 export function SocketProvider({ children }: SocketProviderProps) {
   const { isAuthenticated, token, isInitialized, user } = useAppSelector((state) => state.auth);
   const [isConnected, setIsConnected] = useState(false);
-  
+
   // Connect/disconnect socket based on auth state
   useEffect(() => {
     // If not ready, no token - disconnect

@@ -35,15 +35,17 @@ export function RegisterView() {
   const router = useRouter();
   const { register, isLoading, error } = useAuth();
   const { bankSlug, initializeBankContext } = useBankContext();
-
+  console.log('bankSlug', bankSlug);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState<RegisterData>({
     email: '',
     password: '',
-    firstName: '',
-    lastName: '',
-    phoneNumber: '',
+    name: '',
+    cnic: '',
+    lastname: '',
+    phone: '',
+    bankSlug,
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -55,6 +57,13 @@ export function RegisterView() {
     }
   }, [bankSlug, initializeBankContext]);
 
+  // Keep formData.bankSlug in sync with URL/context so it is always sent in the register payload
+  useEffect(() => {
+    if (bankSlug) {
+      setFormData((prev) => ({ ...prev, bankSlug }));
+    }
+  }, [bankSlug]);
+
   const handleRegister = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -65,7 +74,7 @@ export function RegisterView() {
         setValidationError('Passwords do not match');
         return;
       }
-
+      console.log('formData', formData);
       if (formData.password.length < 8) {
         setValidationError('Password must be at least 8 characters');
         return;
@@ -104,11 +113,11 @@ export function RegisterView() {
         <TextField
           fullWidth
           required
-          name="firstName"
+          name="name"
           label="First Name"
           placeholder="John"
-          value={formData.firstName}
-          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           disabled={isLoading}
           sx={{
             '& .MuiOutlinedInput-root': {
@@ -119,11 +128,11 @@ export function RegisterView() {
         <TextField
           fullWidth
           required
-          name="lastName"
+          name="lastname"
           label="Last Name"
           placeholder="Doe"
-          value={formData.lastName}
-          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+          value={formData.lastname}
+          onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
           disabled={isLoading}
           sx={{
             '& .MuiOutlinedInput-root': {
@@ -165,11 +174,11 @@ export function RegisterView() {
 
       <TextField
         fullWidth
-        name="phoneNumber"
+        name="phone"
         label="Phone Number"
         placeholder="+1 (555) 123-4567"
-        value={formData.phoneNumber}
-        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+        value={formData.phone}
+        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
         disabled={isLoading}
         slotProps={{
           input: {
@@ -190,7 +199,34 @@ export function RegisterView() {
           },
         }}
       />
-
+      <TextField
+        fullWidth
+        required
+        name="cnic"
+        label="CNIC"
+        placeholder="12345-6789012-3"
+        value={formData.cnic}
+        onChange={(e) => setFormData({ ...formData, cnic: e.target.value })}
+        disabled={isLoading}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Iconify
+                  icon={'eva:id-card-outline' as any}
+                  width={20}
+                  sx={{ color: 'text.disabled' }}
+                />
+              </InputAdornment>
+            ),
+          },
+        }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 2,
+          },
+        }}
+      />
       <TextField
         fullWidth
         required

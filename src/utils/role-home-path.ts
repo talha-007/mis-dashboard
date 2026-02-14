@@ -4,13 +4,13 @@ import type { User, UserRole } from 'src/types/auth.types';
 export const getRoleHomePath = (role?: UserRole | null): string => {
   switch (role) {
     case 'superadmin':
-      return '/bank-management'; // Super admin main area
+      return '/bank-management';
     case 'admin':
-      return '/borrower-management'; // Admin main area
+      return '/borrower-management';
     case 'customer':
-      return '/apply-loan'; // Customer main area
+      return '/';
     default:
-      return '/'; // Fallback to generic dashboard
+      return '/';
   }
 };
 

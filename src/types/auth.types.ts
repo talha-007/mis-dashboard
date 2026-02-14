@@ -116,6 +116,8 @@ export interface User {
   accountNumber?: string;
   customerType?: 'individual' | 'business';
   kycStatus?: 'pending' | 'approved' | 'rejected';
+  /** Bank slug this customer is linked to (for dynamic customer routes) */
+  bankSlug?: string;
 
   // Bank admin: subscription status (from /me API)
   subscriptionStatus?: 'active' | 'inactive';
@@ -144,9 +146,11 @@ export interface GoogleLoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
+  name: string;
+  lastname: string;
+  phone?: string;
+  cnic?: string;
+  bankSlug?: string;
   role?: UserRole;
   customerType?: 'individual' | 'business';
 }

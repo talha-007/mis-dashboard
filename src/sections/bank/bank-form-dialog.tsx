@@ -38,7 +38,7 @@ export function BankFormDialog({ open, onClose, onSubmit, bank }: BankFormDialog
         code: bank.code,
         email: bank.email,
         phone: bank.phone,
-        address: bank.address,
+        address: bank.address ?? '',
         status: bank.status,
       });
     } else {

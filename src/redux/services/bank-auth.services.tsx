@@ -1,7 +1,7 @@
 /**
  * Bank-Specific Authentication Service
  * Handles dynamic bank-based registration and login with bank_slug parameter
- * 
+ *
  * Usage:
  * - Customer Registration: POST /api/borrowers/register?bank_slug={bank_slug}
  * - Customer Login: POST /api/borrowers/login?bank_slug={bank_slug}
@@ -71,9 +71,13 @@ const adminLogin = (data: AdminLoginData) => {
  */
 const customerForgotPassword = (data: BankAuthData & { email: string }) => {
   const { bankSlug, email } = data;
-  return callAPi.post('/api/borrowers/forgot-password', { email }, {
-    params: { bank_slug: bankSlug },
-  });
+  return callAPi.post(
+    '/api/borrowers/forgot-password',
+    { email },
+    {
+      params: { bank_slug: bankSlug },
+    }
+  );
 };
 
 /**
@@ -109,7 +113,9 @@ const adminVerifyOTP = (data: BankAuthData & { email: string; otp: string }) => 
  * Admin Reset Password with Bank Slug
  * POST /api/banks/{bank_slug}/reset-password
  */
-const adminResetPassword = (data: BankAuthData & { email: string; password: string; otp: string }) => {
+const adminResetPassword = (
+  data: BankAuthData & { email: string; password: string; otp: string }
+) => {
   const { bankSlug, ...payload } = data;
   return callAPi.post(`/api/banks/${bankSlug}/reset-password`, payload);
 };

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Chip from '@mui/material/Chip';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -34,17 +33,17 @@ type SubscriptionStatus = 'active' | 'expired' | 'pending' | 'cancelled' | 'susp
 
 interface BankSubscription {
   _id: string;
-  bankName: string;
-  planName: string;
+  bankId: {
+    _id: string;
+    name: string;
+    code: string;
+  };
+  status: SubscriptionStatus | string;
   amount: number;
-  status: SubscriptionStatus;
-  startDate: string;
-  endDate: string;
-  nextBillingDate: string;
-  paymentMethod?: string;
-  lastPaymentDate?: string;
-  lastPaymentAmount?: number;
-  totalPayments?: number;
+  datePaid: string;
+  nextPayDate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function BankPaymentsView() {
@@ -71,7 +70,11 @@ export function BankPaymentsView() {
       });
 
       const data = response.data?.data || response.data?.subscriptions || response.data || [];
-      const count = response.data?.total || response.data?.count || data.length;
+      const count =
+        response.data?.pagination?.total ??
+        response.data?.total ??
+        response.data?.count ??
+        (Array.isArray(data) ? data.length : 0);
 
       setSubscriptions(Array.isArray(data) ? data : []);
       setTotalCount(count);
@@ -125,7 +128,7 @@ export function BankPaymentsView() {
     }
   };
 
-  const getStatusColor = (status: SubscriptionStatus) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
         return 'success';
@@ -317,24 +320,21 @@ export function BankPaymentsView() {
           <>
             <Scrollbar>
               <TableContainer sx={{ overflow: 'unset' }}>
-                <Table sx={{ minWidth: 1200 }}>
+                <Table sx={{ minWidth: 800 }}>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Bank Name</TableCell>
-                      <TableCell>Plan</TableCell>
+                      <TableCell>Bank</TableCell>
                       <TableCell>Amount</TableCell>
                       <TableCell>Status</TableCell>
-                      <TableCell>Start Date</TableCell>
-                      <TableCell>End Date</TableCell>
-                      <TableCell>Next Billing</TableCell>
-                      <TableCell>Last Payment</TableCell>
+                      <TableCell>Date Paid</TableCell>
+                      <TableCell>Next Pay Date</TableCell>
                       <TableCell align="right">Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {subscriptions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={9} align="center" sx={{ py: 8 }}>
+                        <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
                           <Typography variant="body2" color="text.secondary">
                             No subscriptions found
                           </Typography>
@@ -344,10 +344,16 @@ export function BankPaymentsView() {
                       subscriptions.map((subscription) => (
                         <TableRow key={subscription._id} hover>
                           <TableCell>
-                            <Typography variant="subtitle2">{subscription.bankName}</Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip label={subscription.planName} size="small" variant="outlined" />
+                            <Box>
+                              <Typography variant="subtitle2">
+                                {subscription.bankId?.name ?? '-'}
+                              </Typography>
+                              {subscription.bankId?.code && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {subscription.bankId.code}
+                                </Typography>
+                              )}
+                            </Box>
                           </TableCell>
                           <TableCell>
                             <Typography variant="subtitle2">
@@ -360,33 +366,14 @@ export function BankPaymentsView() {
                             </Label>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2">{fDate(subscription.startDate)}</Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">{fDate(subscription.endDate)}</Typography>
-                          </TableCell>
-                          <TableCell>
                             <Typography variant="body2">
-                              {fDate(subscription.nextBillingDate)}
+                              {subscription.datePaid ? fDate(subscription.datePaid) : '-'}
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            {subscription.lastPaymentDate ? (
-                              <Box>
-                                <Typography variant="caption" display="block">
-                                  {fDate(subscription.lastPaymentDate)}
-                                </Typography>
-                                {subscription.lastPaymentAmount && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    {fCurrency(subscription.lastPaymentAmount)}
-                                  </Typography>
-                                )}
-                              </Box>
-                            ) : (
-                              <Typography variant="caption" color="text.secondary">
-                                No payments
-                              </Typography>
-                            )}
+                            <Typography variant="body2">
+                              {subscription.nextPayDate ? fDate(subscription.nextPayDate) : '-'}
+                            </Typography>
                           </TableCell>
                           <TableCell align="right">
                             <Box display="flex" gap={1} justifyContent="flex-end">

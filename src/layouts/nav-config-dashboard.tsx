@@ -59,6 +59,16 @@ export const adminNavData: NavItem[] = [
     icon: icon('applications'),
   },
   {
+    title: 'Assessment',
+    path: '/assessment',
+    icon: icon('ratings'),
+  },
+  {
+    title: 'Credit Proposal Reports',
+    path: '/credit-proposal-reports',
+    icon: icon('reports'),
+  },
+  {
     title: 'Recoveries & Overdues',
     path: '/recoveries-overdues',
     icon: icon('recoveries'),
@@ -85,6 +95,11 @@ export const customerNavData: NavItem[] = [
   {
     title: 'My Dashboard',
     path: '/',
+    icon: icon('ic-analytics'),
+  },
+  {
+    title: 'Assessment',
+    path: '/assessment',
     icon: icon('ic-analytics'),
   },
   {
@@ -124,7 +139,7 @@ export const customerNavData: NavItem[] = [
   },
 ];
 
-// Get navigation based on user role
+// Get navigation based on user role (customer bank from server, no slug in URL)
 export const getNavDataByRole = (role: UserRole): NavItem[] => {
   switch (role) {
     case UserRole.SUPER_ADMIN:

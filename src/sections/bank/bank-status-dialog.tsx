@@ -42,6 +42,8 @@ export function BankStatusDialog({ open, onClose, onUpdate, bank }: BankStatusDi
       setLoading(true);
       const response = await bankService.changeBankStatus(bank._id, status);
       if (response.status === 200) {
+        setLoading(false);
+        onUpdate(status);
         onClose();
         toast.success('Bank status updated successfully');
       }

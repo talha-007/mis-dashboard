@@ -1,53 +1,48 @@
 /**
  * Bank-Based Route Navigation Helpers
- * Generates bank-specific URLs for dynamic routing
- * 
- * Examples:
- * - /acme-bank/register
- * - /acme-bank/login
- * - /acme-bank/admin/login
- * - /acme-bank/forgot-password
+ * Only registration uses bank slug (/:bank_slug/register). All other auth routes are global.
  */
 
 /**
- * Generate customer registration URL for a bank
+ * Customer registration URL – only route that uses bank slug
  */
 export const getBankRegisterUrl = (bankSlug: string): string => `/${bankSlug}/register`;
 
 /**
- * Generate customer login URL for a bank
+ * Customer sign-in (no bank slug)
  */
-export const getBankLoginUrl = (bankSlug: string): string => `/${bankSlug}/login`;
+export const getBankLoginUrl = (_bankSlug?: string): string => '/sign-in';
 
 /**
- * Generate admin login URL for a bank
+ * Bank admin sign-in (no bank slug)
  */
-export const getBankAdminLoginUrl = (bankSlug: string): string => `/${bankSlug}/admin/login`;
+export const getBankAdminLoginUrl = (_bankSlug?: string): string => '/sign-in/admin';
 
 /**
- * Generate customer forgot password URL for a bank
+ * Customer forgot password (no bank slug)
  */
-export const getBankForgotPasswordUrl = (bankSlug: string): string => `/${bankSlug}/forgot-password`;
+export const getBankForgotPasswordUrl = (_bankSlug?: string): string => '/forgot-password';
 
 /**
- * Generate customer verify OTP URL for a bank
+ * Customer verify OTP (no bank slug)
  */
-export const getBankVerifyOtpUrl = (bankSlug: string): string => `/${bankSlug}/verify-otp`;
+export const getBankVerifyOtpUrl = (_bankSlug?: string): string => '/verify-otp';
 
 /**
- * Generate admin forgot password URL for a bank
+ * Admin forgot password (no bank slug)
  */
-export const getBankAdminForgotPasswordUrl = (bankSlug: string): string => `/${bankSlug}/admin/forgot-password`;
+export const getBankAdminForgotPasswordUrl = (_bankSlug?: string): string =>
+  '/admin/forgot-password';
 
 /**
- * Generate admin verify OTP URL for a bank
+ * Admin verify OTP (no bank slug)
  */
-export const getBankAdminVerifyOtpUrl = (bankSlug: string): string => `/${bankSlug}/admin/verify-otp`;
+export const getBankAdminVerifyOtpUrl = (_bankSlug?: string): string => '/admin/verify-otp';
 
 /**
- * Generate admin new password URL for a bank
+ * Admin new password (no bank slug)
  */
-export const getBankAdminNewPasswordUrl = (bankSlug: string): string => `/${bankSlug}/admin/new-password`;
+export const getBankAdminNewPasswordUrl = (_bankSlug?: string): string => '/admin/new-password';
 
 /**
  * All bank route builders

@@ -1,0 +1,171 @@
+import type { CreditProposalReport } from 'src/types/assessment.types';
+
+export const _creditProposalReports: CreditProposalReport[] = [
+  {
+    _id: 'cpr-001',
+    customerId: 'cust-001',
+    customer: {
+      _id: 'cust-001',
+      name: 'Ahmed Ali',
+      email: 'ahmed.ali@example.com',
+      phone: '+92 300 1234567',
+    },
+    assessmentSubmissionId: 'sub-001',
+    score: 72,
+    totalScore: 100,
+    loanApplicationId: 'app-001',
+    loanAmount: 150000,
+    loanType: 'Business Loan',
+    loanPurpose: 'Working capital',
+    status: 'pending',
+    submittedAt: '2026-02-14T10:30:00.000Z',
+    answersSnapshot: [
+      {
+        questionText: 'What is your employment type?',
+        chosenOptionText: 'Self-employed',
+        points: 15,
+      },
+      {
+        questionText: 'What is your monthly income range?',
+        chosenOptionText: '50,000 – 100,000',
+        points: 18,
+      },
+      {
+        questionText: 'Do you have any existing loans?',
+        chosenOptionText: 'One loan, repayments on time',
+        points: 18,
+      },
+      {
+        questionText: 'How long have you been with your current employer?',
+        chosenOptionText: '1–3 years',
+        points: 18,
+      },
+    ],
+    customFieldSnapshot: [
+      { label: 'Salary Income (PKR/month)', value: 75000 },
+      { label: 'Business Income (PKR/month)', value: 0 },
+      { label: 'Utilities Bills (PKR/month)', value: 8000 },
+    ],
+  },
+  {
+    _id: 'cpr-002',
+    customerId: 'cust-002',
+    customer: {
+      _id: 'cust-002',
+      name: 'Fatima Hassan',
+      email: 'fatima.hassan@example.com',
+      phone: '+92 301 2345678',
+    },
+    assessmentSubmissionId: 'sub-002',
+    score: 88,
+    totalScore: 100,
+    loanApplicationId: 'app-002',
+    loanAmount: 200000,
+    loanType: 'Personal Loan',
+    loanPurpose: 'Education',
+    status: 'pending',
+    submittedAt: '2026-02-13T14:00:00.000Z',
+    answersSnapshot: [
+      {
+        questionText: 'What is your employment type?',
+        chosenOptionText: 'Salaried (full-time)',
+        points: 25,
+      },
+      {
+        questionText: 'What is your monthly income range?',
+        chosenOptionText: 'Above 100,000',
+        points: 25,
+      },
+      {
+        questionText: 'Do you have any existing loans?',
+        chosenOptionText: 'No existing loans',
+        points: 25,
+      },
+      {
+        questionText: 'How long have you been with your current employer?',
+        chosenOptionText: 'More than 3 years',
+        points: 25,
+      },
+    ],
+  },
+  {
+    _id: 'cpr-003',
+    customerId: 'cust-003',
+    customer: {
+      _id: 'cust-003',
+      name: 'Muhammad Usman',
+      email: 'usman@example.com',
+      phone: '+92 302 3456789',
+    },
+    assessmentSubmissionId: 'sub-003',
+    score: 55,
+    totalScore: 100,
+    loanApplicationId: 'app-003',
+    loanAmount: 300000,
+    loanType: 'Agriculture Loan',
+    status: 'approved',
+    submittedAt: '2026-02-12T09:15:00.000Z',
+    answersSnapshot: [
+      {
+        questionText: 'What is your employment type?',
+        chosenOptionText: 'Self-employed',
+        points: 15,
+      },
+      {
+        questionText: 'What is your monthly income range?',
+        chosenOptionText: '25,000 – 50,000',
+        points: 10,
+      },
+      {
+        questionText: 'Do you have any existing loans?',
+        chosenOptionText: 'No existing loans',
+        points: 25,
+      },
+      {
+        questionText: 'How long have you been with your current employer?',
+        chosenOptionText: '1–3 years',
+        points: 18,
+      },
+    ],
+  },
+  {
+    _id: 'cpr-004',
+    customerId: 'cust-004',
+    customer: {
+      _id: 'cust-004',
+      name: 'Ayesha Khan',
+      email: 'ayesha.khan@example.com',
+      phone: '+92 303 4567890',
+    },
+    assessmentSubmissionId: 'sub-004',
+    score: 48,
+    totalScore: 100,
+    loanApplicationId: 'app-004',
+    loanAmount: 175000,
+    loanType: 'Education Loan',
+    status: 'rejected',
+    submittedAt: '2026-02-11T16:45:00.000Z',
+    answersSnapshot: [
+      {
+        questionText: 'What is your employment type?',
+        chosenOptionText: 'Part-time / Contract',
+        points: 10,
+      },
+      {
+        questionText: 'What is your monthly income range?',
+        chosenOptionText: 'Below 25,000',
+        points: 5,
+      },
+      {
+        questionText: 'Do you have any existing loans?',
+        chosenOptionText: 'Past defaults or late payments',
+        points: 0,
+      },
+      {
+        questionText: 'How long have you been with your current employer?',
+        chosenOptionText: 'Less than 6 months',
+        points: 5,
+      },
+    ],
+  },
+];

@@ -44,6 +44,7 @@ export const MISReportsPage = lazy(() => import('src/pages/admin/mis-reports'));
 // Customer
 export const ApplyLoanPage = lazy(() => import('src/pages/customer/apply-loan'));
 export const ProfilePage = lazy(() => import('src/pages/customer/profile'));
+export const ProfileMePage = lazy(() => import('src/pages/profile'));
 export const DocumentsPage = lazy(() => import('src/pages/customer/documents'));
 export const InstallmentsPage = lazy(() => import('src/pages/customer/installments'));
 export const MyCreditRatingPage = lazy(() => import('src/pages/customer/my-credit-rating'));
@@ -99,7 +100,7 @@ export const routesSection: RouteObject[] = [
 
   // ============================================================================
   // DYNAMIC BANK ROUTES (Public - Not authenticated)
-  // Pattern: /{bank_slug}/register, /{bank_slug}/login, /{bank_slug}/admin/login
+  // Pattern: /{bank_slug}/register only (login at /sign-in and /sign-in/admin)
   // ============================================================================
   ...bankDynamicRoutes,
 
@@ -126,7 +127,7 @@ export const routesSection: RouteObject[] = [
         element: <SubscriptionRequiredPage />,
       },
 
-      // Dashboard - All authenticated users (with active subscription for admin)
+      // Dashboard - all authenticated roles (customer bank comes from server)
       {
         index: true,
         element: (
@@ -136,12 +137,20 @@ export const routesSection: RouteObject[] = [
         ),
       },
 
-      // Import routes from separate files
+      // Profile (all roles - /me data)
+      {
+        path: 'profile',
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER]}>
+            <ProfileMePage />
+          </MultiRoleGuard>
+        ),
+      },
+
       ...superAdminRoutes,
       ...adminRoutes,
       ...customerRoutes,
 
-      // Public routes within dashboard
       { path: 'blog', element: <BlogPage /> },
     ],
   },

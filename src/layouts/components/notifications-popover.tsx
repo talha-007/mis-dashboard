@@ -70,17 +70,21 @@ export type NotificationsPopoverProps = IconButtonProps & {
 
 export function NotificationsPopover({ data = [], sx, ...other }: NotificationsPopoverProps) {
   const { notifications: socketNotifications, markAllAsRead, markAsRead } = useNotifications();
-  
+
   // Map Socket.io notifications to UI format
-  const mappedNotifications = useMemo(() => socketNotifications.map((notif: Notification) => ({
-      id: notif.id,
-      type: getNotificationType(notif.type),
-      title: notif.title,
-      isUnRead: !notif.isRead,
-      description: notif.message,
-      avatarUrl: getAvatarForType(notif.type),
-      postedAt: new Date(notif.timestamp).getTime(),
-    })), [socketNotifications]);
+  const mappedNotifications = useMemo(
+    () =>
+      socketNotifications.map((notif: Notification) => ({
+        id: notif.id,
+        type: getNotificationType(notif.type),
+        title: notif.title,
+        isUnRead: !notif.isRead,
+        description: notif.message,
+        avatarUrl: getAvatarForType(notif.type),
+        postedAt: new Date(notif.timestamp).getTime(),
+      })),
+    [socketNotifications]
+  );
 
   // Fallback to initial data if no socket notifications
   const [notificationsState, setNotificationsState] = useState<NotificationItemProps[]>(
@@ -109,7 +113,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
   const handleMarkAllAsRead = useCallback(() => {
     // Mark all as read in Socket.io notifications
     markAllAsRead();
-    
+
     // Also update local state
     const updatedNotifications = notificationsState.map((notification) => ({
       ...notification,
@@ -118,13 +122,16 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
     setNotificationsState(updatedNotifications);
   }, [notificationsState, markAllAsRead]);
 
-  const handleNotificationClick = useCallback((notificationId: string) => {
-    markAsRead(notificationId);
-    const updatedNotifications = notificationsState.map((notification) =>
-      notification.id === notificationId ? { ...notification, isUnRead: false } : notification
-    );
-    setNotificationsState(updatedNotifications);
-  }, [notificationsState, markAsRead]);
+  const handleNotificationClick = useCallback(
+    (notificationId: string) => {
+      markAsRead(notificationId);
+      const updatedNotifications = notificationsState.map((notification) =>
+        notification.id === notificationId ? { ...notification, isUnRead: false } : notification
+      );
+      setNotificationsState(updatedNotifications);
+    },
+    [notificationsState, markAsRead]
+  );
 
   return (
     <>
@@ -353,7 +360,10 @@ function renderContent(notification: NotificationItemProps) {
   if (notification.type === 'payment') {
     return {
       avatarUrl: (
-        <img alt={notification.title} src="/assets/icons/notification/ic-notification-payment.svg" />
+        <img
+          alt={notification.title}
+          src="/assets/icons/notification/ic-notification-payment.svg"
+        />
       ),
       title,
     };

@@ -22,11 +22,9 @@ export const useBankSlug = (): BankSlugContext => {
 
   const navigateToBankLogin = useCallback(
     (customPath?: string) => {
-      if (bank_slug) {
-        navigate(customPath || `/${bank_slug}/login`);
-      }
+      navigate(customPath || '/sign-in');
     },
-    [bank_slug, navigate]
+    [navigate]
   );
 
   const navigateToBankRegister = useCallback(() => {
@@ -36,10 +34,8 @@ export const useBankSlug = (): BankSlugContext => {
   }, [bank_slug, navigate]);
 
   const navigateToBankAdminLogin = useCallback(() => {
-    if (bank_slug) {
-      navigate(`/${bank_slug}/admin/login`);
-    }
-  }, [bank_slug, navigate]);
+    navigate('/sign-in/admin');
+  }, [navigate]);
 
   return {
     bankSlug: bank_slug,

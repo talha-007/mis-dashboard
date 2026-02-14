@@ -7,11 +7,10 @@ import type { ReactNode } from 'react';
 
 import { Navigate } from 'react-router-dom';
 
+import { getUserHomePath } from 'src/utils/role-home-path';
 import { isAuthenticated as hasStoredToken } from 'src/utils/auth-storage';
 
 import { useAppSelector } from 'src/store';
-
-import { UserRole } from 'src/types/auth.types';
 
 interface GuestOnlyRouteProps {
   children: ReactNode;
@@ -23,19 +22,7 @@ export function GuestOnlyRoute({ children, redirectTo }: GuestOnlyRouteProps) {
 
   const effectiveAuthenticated = isAuthenticated || hasStoredToken();
 
-  // Determine default dashboard per role
-  const getDefaultRedirect = () => {
-    switch (user?.role) {
-      case UserRole.SUPER_ADMIN:
-        return '/dashboard'; // Super admin home
-      case UserRole.ADMIN:
-        return '/dashboard'; // Admin home (can be customized later)
-      case UserRole.CUSTOMER:
-        return '/dashboard'; // Customer home (can be customized later)
-      default:
-        return '/dashboard';
-    }
-  };
+  const getDefaultRedirect = () => getUserHomePath(user) || '/';
 
   // If user is authenticated, redirect them away from auth routes
   if (effectiveAuthenticated) {

@@ -84,7 +84,7 @@ export function BankViewDialog({ open, onClose, bank, onEdit }: BankViewDialogPr
               <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
                 Address
               </Typography>
-              <Typography variant="body1">{bank.address}</Typography>
+              <Typography variant="body1">{bank.address ?? '—'}</Typography>
             </Grid>
           </Grid>
 
@@ -111,7 +111,7 @@ export function BankViewDialog({ open, onClose, bank, onEdit }: BankViewDialogPr
                 <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
                   Total Amount
                 </Typography>
-                <Typography variant="h6">{fCurrency(bank.totalAmount)}</Typography>
+                <Typography variant="h6">{fCurrency(bank.totalAmount ?? 0)}</Typography>
               </Grid>
             </Grid>
           </Box>

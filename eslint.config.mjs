@@ -50,6 +50,8 @@ const commonRules = () => ({
  */
 const importRules = () => ({
   ...importPlugin.configs.recommended.rules,
+  // Disable no-unresolved: resolver can fail on Windows (unrs-resolver native binding). Vite/TS still resolve src/*.
+  'import/no-unresolved': 0,
   'import/named': 0,
   'import/export': 0,
   'import/default': 0,

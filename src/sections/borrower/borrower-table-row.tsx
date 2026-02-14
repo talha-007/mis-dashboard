@@ -41,7 +41,13 @@ type BorrowerTableRowProps = {
   onDelete?: (id: string) => void;
 };
 
-export function BorrowerTableRow({ row, selected, onSelectRow, onEdit, onDelete }: BorrowerTableRowProps) {
+export function BorrowerTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onEdit,
+  onDelete,
+}: BorrowerTableRowProps) {
   const navigate = useNavigate();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 

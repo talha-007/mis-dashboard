@@ -1,3 +1,5 @@
+import type { MeProfileResponse, MeUser } from 'src/types/me.types';
+
 import { callAPi } from './http-common';
 
 // Super Admin Login
@@ -34,6 +36,38 @@ const getMe = () => callAPi.get('/api/users/me');
 
 const getCurrentUser = (data: any) => callAPi.get(`/api/customers/me`, data);
 
+/** Full profile from /me: user + bank + subscription. Tries /api/users/me first, then /api/customers/me for customers. */
+async function getProfile(): Promise<MeProfileResponse | null> {
+  try {
+    const response = await getMe();
+    const data = response.data?.data ?? response.data;
+    if (!data) return null;
+    const user = (data.user ?? data) as MeUser;
+    return {
+      user,
+      bank: data.bank ?? null,
+      subscription: data.subscription ?? null,
+    };
+  } catch {
+    try {
+      const response = await getCurrentUser({});
+      const data = response.data?.data ?? response.data;
+      if (!data) return null;
+      const user: MeUser = {
+        id: data.id,
+        name: data.name ?? ([data.firstName, data.lastName].filter(Boolean).join(' ') || data.email),
+        email: data.email,
+        role: 'customer',
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      };
+      return { user, bank: null, subscription: null };
+    } catch {
+      return null;
+    }
+  }
+}
+
 const updateProfile = (data: any) => callAPi.put(`/api/customers/${data.id}`, data);
 
 const googleLogin = (data: any) => callAPi.post(`/api/customers/google-login`, data);
@@ -45,6 +79,7 @@ const verifyEmail = (data: any) => callAPi.post(`/api/customers/verify-email`, d
 
 const authService = {
   getMe,
+  getProfile,
   superAdminLogin,
   adminLogin,
   userLogin,

@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-
 import { useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -14,13 +13,14 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { useAppDispatch, useAppSelector } from 'src/store';
 import { fetchMe } from 'src/redux/slice/authSlice';
-import { isSubscriptionActive } from 'src/types/auth.types';
+import { useAppDispatch, useAppSelector } from 'src/store';
 import paymentService from 'src/redux/services/payment.services';
+import { DashboardContent } from 'src/layouts/dashboard/content';
 
 import { Iconify } from 'src/components/iconify';
-import { DashboardContent } from 'src/layouts/dashboard/content';
+
+import { isSubscriptionActive } from 'src/types/auth.types';
 
 const SUBSCRIPTION_AMOUNT = 20;
 

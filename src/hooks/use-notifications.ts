@@ -34,18 +34,14 @@ export const useNotifications = () => {
   // Mark as read
   const markAsRead = useCallback((notificationId: string) => {
     setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === notificationId ? { ...notif, isRead: true } : notif
-      )
+      prev.map((notif) => (notif.id === notificationId ? { ...notif, isRead: true } : notif))
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
 
   // Mark all as read
   const markAllAsRead = useCallback(() => {
-    setNotifications((prev) =>
-      prev.map((notif) => ({ ...notif, isRead: true }))
-    );
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, isRead: true })));
     setUnreadCount(0);
   }, []);
 
@@ -57,9 +53,7 @@ export const useNotifications = () => {
 
   // Delete single notification
   const deleteNotification = useCallback((notificationId: string) => {
-    setNotifications((prev) =>
-      prev.filter((notif) => notif.id !== notificationId)
-    );
+    setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId));
   }, []);
 
   // Listen for WebSocket events via centralized socketService
@@ -101,25 +95,31 @@ export const useNotifications = () => {
     });
 
     // Loan events
-    const unsubLoanApproved = on<SocketNotification>('loan_approved', (data: SocketNotification) => {
-      console.log('📢 Loan approved:', data);
-      addNotification({
-        ...data,
-        id: data.notificationId || data.id || Date.now().toString(),
-        type: 'success',
-        timestamp: data.timestamp?.toString() || new Date().toISOString(),
-      });
-    });
+    const unsubLoanApproved = on<SocketNotification>(
+      'loan_approved',
+      (data: SocketNotification) => {
+        console.log('📢 Loan approved:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'success',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
 
-    const unsubLoanRejected = on<SocketNotification>('loan_rejected', (data: SocketNotification) => {
-      console.log('📢 Loan rejected:', data);
-      addNotification({
-        ...data,
-        id: data.notificationId || data.id || Date.now().toString(),
-        type: 'warning',
-        timestamp: data.timestamp?.toString() || new Date().toISOString(),
-      });
-    });
+    const unsubLoanRejected = on<SocketNotification>(
+      'loan_rejected',
+      (data: SocketNotification) => {
+        console.log('📢 Loan rejected:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'warning',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
 
     // Payment events
     const unsubPaymentSuccess = on<SocketNotification>(
@@ -135,15 +135,18 @@ export const useNotifications = () => {
       }
     );
 
-    const unsubPaymentFailed = on<SocketNotification>('payment_failed', (data: SocketNotification) => {
-      console.log('📢 Payment failed:', data);
-      addNotification({
-        ...data,
-        id: data.notificationId || data.id || Date.now().toString(),
-        type: 'error',
-        timestamp: data.timestamp?.toString() || new Date().toISOString(),
-      });
-    });
+    const unsubPaymentFailed = on<SocketNotification>(
+      'payment_failed',
+      (data: SocketNotification) => {
+        console.log('📢 Payment failed:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'error',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
 
     const unsubPaymentOverdue = on<SocketNotification>(
       'payment_overdue',

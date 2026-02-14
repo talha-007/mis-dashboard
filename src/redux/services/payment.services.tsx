@@ -13,7 +13,8 @@ const createSubscription = (payload: { bankId: string; amount: number }) =>
   callAPi.post('/api/subscriptions', payload);
 
 // Create a new payment/subscription
-const createPayment = (bankId: string, data: any) => callAPi.post(`/api/banks/subscriptions/${bankId}`, data);
+const createPayment = (bankId: string, data: any) =>
+  callAPi.post(`/api/banks/subscriptions/${bankId}`, data);
 
 // Process payment
 const processPayment = (subscriptionId: string, paymentData: any) =>

@@ -66,7 +66,9 @@ export const NotificationToast = ({
   };
 
   return (
-    <div className={`notification-toast ${getColorClass(notification)} ${isClosing ? 'notification-closing' : ''}`}>
+    <div
+      className={`notification-toast ${getColorClass(notification)} ${isClosing ? 'notification-closing' : ''}`}
+    >
       <div className="notification-toast-content">
         <div className="notification-toast-header">
           <span className="notification-toast-icon">{getIcon(notification)}</span>

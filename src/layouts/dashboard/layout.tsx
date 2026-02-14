@@ -1,4 +1,3 @@
-import type { UserRole } from 'src/types/auth.types';
 import type { Breakpoint } from '@mui/material/styles';
 
 import { merge } from 'es-toolkit';
@@ -54,8 +53,7 @@ export function DashboardLayout({
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
-  // Get navigation data based on user role
-  const navData = user?.role ? getNavDataByRole(user.role as UserRole) : customerNavData;
+  const navData = user?.role ? getNavDataByRole(user.role) : customerNavData;
 
   const renderHeader = () => {
     const headerSlotProps: HeaderSectionProps['slotProps'] = {
@@ -83,10 +81,10 @@ export function DashboardLayout({
       rightArea: (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0, sm: 0.75 } }}>
           {/** @slot Searchbar */}
-          <Searchbar />
+          {/* <Searchbar /> */}
 
           {/** @slot Language popover */}
-          <LanguagePopover data={_langs} />
+          {/* <LanguagePopover data={_langs} /> */}
 
           {/** @slot Notifications popover */}
           <NotificationsPopover />

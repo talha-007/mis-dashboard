@@ -226,11 +226,11 @@ export function BankView() {
                     }
                     headLabel={[
                       { id: 'name', label: 'Bank Name' },
-                      { id: 'code', label: 'Code' },
-                      { id: 'email', label: 'Email' },
-                      { id: 'address', label: 'Address' },
-                      { id: 'totalBorrowers', label: 'Borrowers' },
-                      { id: 'totalAmount', label: 'Total Amount' },
+                      { id: 'code', label: 'Bank Code' },
+                      { id: 'email', label: 'Bank Email' },
+                      { id: 'adminEmail', label: 'Admin Email' },
+                      { id: 'capitalAmount', label: 'Capital Amount' },
+                      { id: 'subscriptionStatus', label: 'Subscription Status' },
                       { id: 'status', label: 'Status' },
                       { id: '', label: '' },
                     ]}
@@ -293,7 +293,10 @@ export function BankView() {
       <BankStatusDialog
         open={openStatusDialog}
         onClose={handleCloseStatusDialog}
-        onUpdate={handleUpdateStatus}
+        onUpdate={() => {
+          handleCloseStatusDialog();
+          fetchBanks();
+        }}
         bank={selectedBank}
       />
     </DashboardContent>

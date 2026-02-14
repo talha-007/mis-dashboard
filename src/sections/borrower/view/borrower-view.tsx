@@ -59,11 +59,11 @@ export function BorrowerView() {
       setError(null);
       // TODO: Replace with actual API call when service is ready
       const response = await borrowerService.list({ page: 1, limit: 100 });
-    
-      if(response.status === 200){
+
+      if (response.status === 200) {
         setBorrowers(response.data.borrowers);
       }
-      
+
       // For now, use mock data
     } catch (err: any) {
       const errorMessage = err?.message || 'Failed to load borrowers';
@@ -92,7 +92,8 @@ export function BorrowerView() {
       setDeleteConfirm({ open: false, id: null });
       fetchBorrowers();
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to delete borrower';
+      const errorMessage =
+        err?.response?.data?.message || err?.message || 'Failed to delete borrower';
       toast.error(errorMessage);
     } finally {
       setIsDeleting(false);
@@ -108,8 +109,8 @@ export function BorrowerView() {
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
-  console.log("dataFiltered",dataFiltered);
-  
+  console.log('dataFiltered', dataFiltered);
+
   const notFound = !dataFiltered.length || !!filterName;
 
   return (
@@ -228,12 +229,7 @@ export function BorrowerView() {
       </Card>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteConfirm.open}
-        onClose={handleCancelDelete}
-        maxWidth="xs"
-        fullWidth
-      >
+      <Dialog open={deleteConfirm.open} onClose={handleCancelDelete} maxWidth="xs" fullWidth>
         <DialogTitle>Delete Borrower</DialogTitle>
         <DialogContent>
           Are you sure you want to delete this borrower? This action cannot be undone.

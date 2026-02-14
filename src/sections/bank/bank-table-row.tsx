@@ -24,11 +24,14 @@ export type BankProps = {
   code: string;
   email: string;
   phone: string;
-  address: string;
+  address?: string;
+  adminEmail?: string;
+  capitalAmount?: number;
+  subscriptionStatus?: string;
   status: string;
-  totalBorrowers: number;
-  totalLoans: number;
-  totalAmount: number;
+  totalBorrowers?: number;
+  totalLoans?: number;
+  totalAmount?: number;
 };
 
 type BankTableRowProps = {
@@ -73,11 +76,21 @@ export function BankTableRow({
 
         <TableCell>{row.email}</TableCell>
 
-        <TableCell>{row.address}</TableCell>
+        <TableCell>{row.adminEmail}</TableCell>
 
-        <TableCell>{row?.totalBorrowers?.toLocaleString()}</TableCell>
+        <TableCell>{fCurrency(row.capitalAmount)}</TableCell>
 
-        <TableCell>{fCurrency(row.totalAmount)}</TableCell>
+        <TableCell>
+          <Label
+            color={
+              (row.subscriptionStatus === 'active' && 'success') ||
+              (row.subscriptionStatus === 'inactive' && 'error') ||
+              'default'
+            }
+          >
+            {(row.subscriptionStatus ?? '').toUpperCase()}
+          </Label>
+        </TableCell>
 
         <TableCell>
           <Label
@@ -88,7 +101,7 @@ export function BankTableRow({
               'default'
             }
           >
-            {row.status}
+            {row.status.toUpperCase()}
           </Label>
         </TableCell>
 

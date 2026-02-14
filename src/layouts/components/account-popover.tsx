@@ -134,10 +134,16 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
 
         <Box sx={{ p: 1 }}>
           {/* remove token and user from local storage and redirect to login page */}
-          <Button fullWidth color="error" size="medium" variant="text" onClick={() => {
-            clearAuthToken();
-            dispatch(logout({}) as any);
-          }}>
+          <Button
+            fullWidth
+            color="error"
+            size="medium"
+            variant="text"
+            onClick={() => {
+              clearAuthToken();
+              dispatch(logout({}) as any);
+            }}
+          >
             Logout
           </Button>
         </Box>

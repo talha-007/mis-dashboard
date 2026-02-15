@@ -28,12 +28,7 @@ export const _users = [...Array(24)].map((_, index) => ({
   isVerified: _boolean(index),
   avatarUrl: `/assets/images/avatar/avatar-${index + 1}.webp`,
   status: index % 4 ? 'active' : 'banned',
-  role:
-    [
-    'superadmin',
-    'admin',
-    'customer',
-    ][index] || 'customer',
+  role: ['superadmin', 'admin', 'customer'][index] || 'customer',
 }));
 
 // ----------------------------------------------------------------------

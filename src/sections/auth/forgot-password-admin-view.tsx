@@ -1,9 +1,10 @@
 /**
- * Forgot Password View
- * Request password reset via email/OTP
+ * Forgot Password Admin View - Formik + Yup validation
  */
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+
+import { Formik, Form } from 'formik';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -21,140 +22,28 @@ import authService from 'src/redux/services/auth.services';
 
 import { Iconify } from 'src/components/iconify';
 
+import { forgotPasswordSchema } from './validations';
+
+const textFieldSx = { '& .MuiOutlinedInput-root': { borderRadius: 2 } };
+
 export function ForgotPasswordAdminView() {
   const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setError('');
-      setIsLoading(true);
-
-      try {
-        await authService.forgotPasswordAdmin({ email });
-        setSuccess(true);
-        // Redirect to OTP verification after 2 seconds
-        setTimeout(() => {
-          router.push(`/admin/verify-otp?type=reset&email=${encodeURIComponent(email)}`);
-        }, 2000);
-      } catch (err: any) {
-        setError(err.message || 'Failed to send reset code. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [email, router]
-  );
-
-  const renderForm = (
-    <Stack spacing={3} component="form" onSubmit={handleSubmit}>
-      {error && (
-        <Alert
-          severity="error"
-          sx={{
-            borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' },
-          }}
-        >
-          {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert
-          severity="success"
-          sx={{
-            borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' },
-          }}
-        >
-          Reset code sent! Check your email for the OTP.
-        </Alert>
-      )}
-
-      <TextField
-        fullWidth
-        required
-        name="email"
-        type="email"
-        label="Email Address"
-        placeholder="john.doe@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        disabled={isLoading || success}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
-          },
-        }}
-      />
-
-      <Button
-        fullWidth
-        size="large"
-        type="submit"
-        variant="contained"
-        disabled={isLoading || success}
-        sx={{
-          py: 1.5,
-          borderRadius: 2,
-          fontSize: '1rem',
-          fontWeight: 600,
-          textTransform: 'none',
-          boxShadow: 'none',
-          '&:hover': {
-            boxShadow: 'none',
-          },
-        }}
-      >
-        {isLoading ? (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <CircularProgress size={20} color="inherit" />
-            <span>Sending...</span>
-          </Stack>
-        ) : success ? (
-          'Code Sent!'
-        ) : (
-          'Send Reset Code'
-        )}
-      </Button>
-
-      <Box textAlign="center">
-        <Link
-          variant="body2"
-          fontWeight={600}
-          onClick={() => router.push('/sign-in/admin')}
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            cursor: 'pointer',
-          }}
-        >
-          <Iconify icon="eva:arrow-ios-back-outline" width={16} />
-          Back to Sign In
-        </Link>
-      </Box>
-    </Stack>
-  );
+  const handleSubmit = async (values: { email: string }, { setStatus }: { setStatus: (s: any) => void }) => {
+    try {
+      await authService.forgotPasswordAdmin({ email: values.email });
+      setSuccess(true);
+      setTimeout(() => {
+        router.push(`/admin/verify-otp?type=reset&email=${encodeURIComponent(values.email)}`);
+      }, 2000);
+    } catch (err: any) {
+      setStatus({ submitError: err?.message || 'Failed to send reset code. Please try again.' });
+    }
+  };
 
   return (
     <Stack spacing={4}>
-      {/* Header */}
       <Stack spacing={1.5} alignItems="center">
         <Typography variant="h4" fontWeight={700}>
           Forgot Password?
@@ -164,8 +53,72 @@ export function ForgotPasswordAdminView() {
         </Typography>
       </Stack>
 
-      {/* Form */}
-      {renderForm}
+      <Formik initialValues={{ email: '' }} validationSchema={forgotPasswordSchema} onSubmit={handleSubmit}>
+        {({ values, errors, touched, handleChange, handleBlur, isSubmitting, status }) => (
+          <Form>
+            <Stack spacing={3}>
+              {(status?.submitError || (errors.email && touched.email)) && !success && (
+                <Alert severity="error" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                  {status?.submitError || errors.email}
+                </Alert>
+              )}
+              {success && (
+                <Alert severity="success" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                  Reset code sent! Check your email for the OTP.
+                </Alert>
+              )}
+              <TextField
+                fullWidth
+                name="email"
+                type="email"
+                label="Email Address"
+                placeholder="john.doe@example.com"
+                value={values.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={Boolean(touched.email && errors.email)}
+                helperText={touched.email && errors.email}
+                disabled={isSubmitting || success}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                sx={textFieldSx}
+              />
+              <Button
+                fullWidth
+                size="large"
+                type="submit"
+                variant="contained"
+                disabled={isSubmitting || success}
+                sx={{ py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 600, textTransform: 'none', boxShadow: 'none' }}
+              >
+                {isSubmitting ? (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <CircularProgress size={20} color="inherit" />
+                    <span>Sending...</span>
+                  </Stack>
+                ) : success ? (
+                  'Code Sent!'
+                ) : (
+                  'Send Reset Code'
+                )}
+              </Button>
+              <Box textAlign="center">
+                <Link variant="body2" fontWeight={600} onClick={() => router.push('/sign-in/admin')} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+                  <Iconify icon="eva:arrow-ios-back-outline" width={16} />
+                  Back to Sign In
+                </Link>
+              </Box>
+            </Stack>
+          </Form>
+        )}
+      </Formik>
     </Stack>
   );
 }

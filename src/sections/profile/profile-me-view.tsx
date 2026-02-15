@@ -1,50 +1,40 @@
-import { useEffect, useState } from 'react';
+import type { MeProfileResponse } from 'src/types/me.types';
+
+import { useState, useEffect } from 'react';
+import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
+import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import Chip from '@mui/material/Chip';
-
-import { varAlpha } from 'minimal-shared/utils';
+import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import authService from 'src/redux/services/auth.services';
 
 import { Iconify } from 'src/components/iconify';
 
-import authService from 'src/redux/services/auth.services';
-
-import type { MeProfileResponse } from 'src/types/me.types';
 import { UserRole } from 'src/types/auth.types';
+import { fDateTime } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
 
-function formatDate(value: string | undefined) {
+function formatDate(value: string | undefined): string {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleDateString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
+    const formatted = fDateTime(value);
+    return formatted === 'Invalid date' ? '—' : formatted;
   } catch {
-    return value;
+    return '—';
   }
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: string;
-  label: string;
-  value: React.ReactNode;
-}) {
+function InfoRow({ icon, label, value }: { icon: string; label: string; value: React.ReactNode }) {
   return (
     <Stack direction="row" alignItems="flex-start" spacing={1.5} sx={{ py: 1.25 }}>
       <Box
@@ -90,8 +80,7 @@ function SectionCard({
       sx={{
         overflow: 'hidden',
         borderRadius: 2,
-        boxShadow: (theme) =>
-          `0 0 0 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
+        boxShadow: (theme) => `0 0 0 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
         ...sx,
       }}
     >
@@ -99,7 +88,8 @@ function SectionCard({
         sx={{
           px: 3,
           py: 2,
-          borderBottom: (theme) => `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
+          borderBottom: (theme) =>
+            `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
           display: 'flex',
           alignItems: 'center',
           gap: 1.5,
@@ -138,7 +128,9 @@ function getRoleLabel(role: string) {
   return role || '—';
 }
 
-function getRoleColor(role: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' {
+function getRoleColor(
+  role: string
+): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' {
   const r = (role ?? '').toLowerCase();
   if (r === UserRole.SUPER_ADMIN) return 'error';
   if (r === UserRole.ADMIN) return 'primary';
@@ -215,10 +207,10 @@ export function ProfileMeView() {
   const isAdmin = role === UserRole.ADMIN;
   const isSuperAdmin = role === UserRole.SUPER_ADMIN;
   const isCustomer = role === UserRole.CUSTOMER;
-const displayName =
-        user?.name ??
-        ([user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email) ??
-        '—';
+  const displayName =
+    user?.name ??
+    ([user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email) ??
+    '—';
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -299,7 +291,11 @@ const displayName =
             <SectionCard title="Bank" icon="solar:building-2-bold-duotone">
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <InfoRow icon="solar:building-2-bold-duotone" label="Bank name" value={bank.name} />
+                  <InfoRow
+                    icon="solar:building-2-bold-duotone"
+                    label="Bank name"
+                    value={bank.name}
+                  />
                   <InfoRow icon="solar:link-bold-duotone" label="Slug" value={bank.slug} />
                   <InfoRow icon="solar:document-text-bold-duotone" label="Code" value={bank.code} />
                   <InfoRow
@@ -308,7 +304,11 @@ const displayName =
                     value={bank.adminEmail}
                   />
                   <InfoRow icon="solar:phone-bold-duotone" label="Phone" value={bank.phone} />
-                  <InfoRow icon="solar:map-point-bold-duotone" label="Address" value={bank.address} />
+                  <InfoRow
+                    icon="solar:map-point-bold-duotone"
+                    label="Address"
+                    value={bank.address}
+                  />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <InfoRow
@@ -326,11 +326,7 @@ const displayName =
                     label="Established"
                     value={formatDate(bank.establishedDate)}
                   />
-                  <InfoRow
-                    icon="solar:verify-bold-duotone"
-                    label="Status"
-                    value={bank.status}
-                  />
+                  <InfoRow icon="solar:verify-bold-duotone" label="Status" value={bank.status} />
                   <InfoRow
                     icon="solar:card-bold-duotone"
                     label="Subscription status"
@@ -387,11 +383,16 @@ const displayName =
                 borderRadius: 2,
                 p: 3,
                 bgcolor: (theme) => varAlpha(theme.vars.palette.info.mainChannel, 0.08),
-                border: (theme) => `1px solid ${varAlpha(theme.vars.palette.info.mainChannel, 0.2)}`,
+                border: (theme) =>
+                  `1px solid ${varAlpha(theme.vars.palette.info.mainChannel, 0.2)}`,
               }}
             >
               <Stack direction="row" alignItems="center" spacing={1.5}>
-                <Iconify icon="solar:info-circle-bold-duotone" width={28} sx={{ color: 'info.main' }} />
+                <Iconify
+                  icon="solar:info-circle-bold-duotone"
+                  width={28}
+                  sx={{ color: 'info.main' }}
+                />
                 <Typography variant="body2" color="text.secondary">
                   Super admin account — no bank or subscription is associated.
                 </Typography>

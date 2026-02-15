@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
@@ -21,6 +24,93 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
+type BankFormValues = {
+  name: string;
+  code: string;
+  registrationNumber: string;
+  taxId: string;
+  licenseNumber: string;
+  bankType: string;
+  establishedDate: string;
+  capitalAmount: string;
+  email: string;
+  phone: string;
+  website: string;
+  fax: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  adminEmail: string;
+  password: string;
+  confirmPassword: string;
+  status: 'active';
+};
+
+const defaultValues: BankFormValues = {
+  name: '',
+  code: '',
+  registrationNumber: '',
+  taxId: '',
+  licenseNumber: '',
+  bankType: '',
+  establishedDate: '',
+  capitalAmount: '',
+  email: '',
+  phone: '',
+  website: '',
+  fax: '',
+  address: '',
+  city: '',
+  state: '',
+  zipCode: '',
+  country: '',
+  adminEmail: '',
+  password: '',
+  confirmPassword: '',
+  status: 'active',
+};
+
+function getBankFormSchema(isEditMode: boolean) {
+  return Yup.object({
+    name: Yup.string().required('Bank name is required').trim(),
+    code: Yup.string().required('Bank code is required').trim(),
+    registrationNumber: Yup.string().trim(),
+    taxId: Yup.string().trim(),
+    licenseNumber: Yup.string().trim(),
+    bankType: Yup.string().trim(),
+    establishedDate: Yup.string().trim(),
+    capitalAmount: Yup.string().trim(),
+    email: Yup.string().required('Email is required').email('Enter a valid email address').trim(),
+    phone: Yup.string().required('Phone is required').trim(),
+    website: Yup.string()
+      .trim()
+      .test('url', 'Enter a valid URL', (v) => !v || /^https?:\/\/.+/.test(v)),
+    fax: Yup.string().trim(),
+    address: Yup.string().required('Address is required').trim(),
+    city: Yup.string().trim(),
+    state: Yup.string().trim(),
+    zipCode: Yup.string().trim(),
+    country: Yup.string().trim(),
+    adminEmail: isEditMode
+      ? Yup.string().trim()
+      : Yup.string().required('Admin email is required').email('Enter a valid email address').trim(),
+    password: isEditMode
+      ? Yup.string().trim()
+      : Yup.string()
+          .required('Password is required')
+          .min(8, 'Password must be at least 8 characters'),
+    confirmPassword: isEditMode
+      ? Yup.string().trim()
+      : Yup.string()
+          .required('Confirm password is required')
+          .oneOf([Yup.ref('password')], 'Passwords do not match'),
+  });
+}
+
+// ----------------------------------------------------------------------
+
 type BankFormViewProps = {
   bankId?: string;
 };
@@ -29,59 +119,73 @@ export function BankFormView({ bankId }: BankFormViewProps) {
   const router = useRouter();
   const isEditMode = !!bankId;
 
-  const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEditMode);
-  const [error, setError] = useState<string | null>(null);
+  const [initialValues, setInitialValues] = useState<BankFormValues>(defaultValues);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [formData, setFormData] = useState({
-    // Basic Information
-    name: '',
-    code: '',
-    registrationNumber: '',
-    taxId: '',
-    licenseNumber: '',
-    bankType: '',
-    establishedDate: '',
-    capitalAmount: '',
+  const validationSchema = useMemo(() => getBankFormSchema(isEditMode), [isEditMode]);
 
-    // Contact Information
-    email: '',
-    phone: '',
-    website: '',
-    fax: '',
+  const formik = useFormik<BankFormValues>({
+    initialValues,
+    enableReinitialize: true,
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        const bankPayload: Record<string, unknown> = {
+          name: values.name,
+          code: values.code,
+          email: values.email,
+          phone: values.phone,
+          address: values.address,
+          status: values.status,
+          capitalAmount: values.capitalAmount || undefined,
+        };
+        if (values.registrationNumber) bankPayload.registrationNumber = values.registrationNumber;
+        if (values.taxId) bankPayload.taxId = values.taxId;
+        if (values.licenseNumber) bankPayload.licenseNumber = values.licenseNumber;
+        if (values.bankType) bankPayload.bankType = values.bankType;
+        if (values.establishedDate) bankPayload.establishedDate = values.establishedDate;
+        if (values.website) bankPayload.website = values.website;
+        if (values.fax) bankPayload.fax = values.fax;
+        if (values.city) bankPayload.city = values.city;
+        if (values.state) bankPayload.state = values.state;
+        if (values.zipCode) bankPayload.zipCode = values.zipCode;
+        if (values.country) bankPayload.country = values.country;
+        if (!isEditMode) {
+          bankPayload.adminEmail = values.adminEmail;
+          bankPayload.password = values.password;
+        }
 
-    // Address Information
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: '',
-
-    // Admin Credentials (only for new banks)
-    adminEmail: '',
-    password: '',
-    confirmPassword: '',
-
-    // Status
-    status: 'active',
+        if (isEditMode && bankId) {
+          await bankService.updateBank(bankId, bankPayload);
+        } else {
+          await bankService.addBank(bankPayload);
+        }
+        router.push('/bank-management');
+      } catch (err: unknown) {
+        const errorMsg =
+          (err as { response?: { data?: { message?: string }; message?: string }; message?: string })
+            ?.response?.data?.message ||
+          (err as { message?: string })?.message ||
+          'Failed to save bank';
+        formik.setStatus({ submitError: errorMsg });
+      }
+    },
   });
 
   // Fetch bank data if editing
   useEffect(() => {
     const fetchBank = async () => {
       if (!bankId) return;
-
       try {
         setFetching(true);
-        setError(null);
+        setFetchError(null);
         const response = await bankService.getBankById(bankId);
-        console.log('response', response);
         const bank = response.data?.bank;
-
         if (bank) {
-          setFormData({
+          setInitialValues({
             name: bank.name || '',
             code: bank.code || '',
             registrationNumber: bank.registrationNumber || '',
@@ -89,7 +193,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
             licenseNumber: bank.licenseNumber || '',
             bankType: bank.bankType || '',
             establishedDate: bank.establishedDate || '',
-            capitalAmount: bank.capitalAmount || '',
+            capitalAmount: bank.capitalAmount ?? '',
             email: bank.email || '',
             phone: bank.phone || '',
             website: bank.website || '',
@@ -102,128 +206,19 @@ export function BankFormView({ bankId }: BankFormViewProps) {
             adminEmail: bank.adminEmail || '',
             password: '',
             confirmPassword: '',
-            status: bank.status || 'active',
+            status: (bank.status as 'active') || 'active',
           });
         }
-      } catch (err: any) {
-        setError(err.response?.data?.message || err.message || 'Failed to fetch bank data');
+      } catch {
+        setFetchError('Failed to fetch bank data');
       } finally {
         setFetching(false);
       }
     };
-
     fetchBank();
   }, [bankId]);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const validateForm = () => {
-    if (!formData.name.trim()) {
-      setError('Bank name is required');
-      return false;
-    }
-    if (!formData.code.trim()) {
-      setError('Bank code is required');
-      return false;
-    }
-    if (!formData.email.trim()) {
-      setError('Email is required');
-      return false;
-    }
-    if (!formData.phone.trim()) {
-      setError('Phone is required');
-      return false;
-    }
-    if (!formData.address.trim()) {
-      setError('Address is required');
-      return false;
-    }
-
-    // Password validation for new banks only
-    if (!isEditMode) {
-      if (!formData.adminEmail.trim()) {
-        setError('Admin email is required');
-        return false;
-      }
-      if (!formData.password.trim()) {
-        setError('Password is required');
-        return false;
-      }
-      if (formData.password.length < 8) {
-        setError('Password must be at least 8 characters long');
-        return false;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match');
-        return false;
-      }
-    }
-
-    return true;
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const bankPayload: any = {
-        name: formData.name,
-        code: formData.code,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        status: formData.status,
-        capitalAmount: formData.capitalAmount,
-      };
-
-      // Add optional fields if provided
-      if (formData.registrationNumber) bankPayload.registrationNumber = formData.registrationNumber;
-      if (formData.taxId) bankPayload.taxId = formData.taxId;
-      if (formData.licenseNumber) bankPayload.licenseNumber = formData.licenseNumber;
-      if (formData.bankType) bankPayload.bankType = formData.bankType;
-      if (formData.establishedDate) bankPayload.establishedDate = formData.establishedDate;
-      if (formData.capitalAmount) bankPayload.capitalAmount = formData.capitalAmount;
-      if (formData.website) bankPayload.website = formData.website;
-      if (formData.fax) bankPayload.fax = formData.fax;
-      if (formData.city) bankPayload.city = formData.city;
-      if (formData.state) bankPayload.state = formData.state;
-      if (formData.zipCode) bankPayload.zipCode = formData.zipCode;
-      if (formData.country) bankPayload.country = formData.country;
-
-      // Add admin credentials for new banks
-      if (!isEditMode) {
-        bankPayload.adminEmail = formData.adminEmail;
-        bankPayload.password = formData.password;
-      }
-
-      if (isEditMode && bankId) {
-        await bankService.updateBank(bankId, bankPayload);
-      } else {
-        await bankService.addBank(bankPayload);
-      }
-
-      // Navigate back to bank management
-      router.push('/bank-management');
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Failed to save bank';
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { values, touched, errors, handleChange, handleBlur, status, setStatus } = formik;
 
   if (fetching) {
     return (
@@ -248,23 +243,22 @@ export function BankFormView({ bankId }: BankFormViewProps) {
           </Box>
         </Box>
 
-        {/* Error Alert */}
-        {error && (
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 1,
-              bgcolor: 'error.lighter',
-              color: 'error.darker',
+        {/* Errors */}
+        {(status?.submitError || fetchError) && (
+          <Alert
+            severity="error"
+            onClose={() => {
+              setStatus(undefined);
+              setFetchError(null);
             }}
           >
-            {error}
-          </Box>
+            {status?.submitError || fetchError}
+          </Alert>
         )}
 
         {/* Form Card */}
         <Card sx={{ p: 3 }}>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={formik.handleSubmit}>
             <Stack spacing={4}>
               {/* Basic Information Section */}
               <Box>
@@ -281,8 +275,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       required
                       label="Bank Name"
                       name="name"
-                      value={formData.name}
+                      value={values.name}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.name && errors.name)}
+                      helperText={touched.name && errors.name}
                       placeholder="National Microfinance Bank"
                     />
                   </Grid>
@@ -292,10 +289,12 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       required
                       label="Bank Code"
                       name="code"
-                      value={formData.code}
+                      value={values.code}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.code && errors.code)}
+                      helperText={(touched.code && errors.code) || 'Unique identifier for the bank'}
                       placeholder="NMB001"
-                      helperText="Unique identifier for the bank"
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
@@ -303,8 +302,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="Registration Number"
                       name="registrationNumber"
-                      value={formData.registrationNumber}
+                      value={values.registrationNumber}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.registrationNumber && errors.registrationNumber)}
+                      helperText={touched.registrationNumber && errors.registrationNumber}
                       placeholder="REG-2024-001"
                     />
                   </Grid>
@@ -313,8 +315,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="Tax ID / NTN"
                       name="taxId"
-                      value={formData.taxId}
+                      value={values.taxId}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.taxId && errors.taxId)}
+                      helperText={touched.taxId && errors.taxId}
                       placeholder="1234567-8"
                     />
                   </Grid>
@@ -323,8 +328,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="License Number"
                       name="licenseNumber"
-                      value={formData.licenseNumber}
+                      value={values.licenseNumber}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.licenseNumber && errors.licenseNumber)}
+                      helperText={touched.licenseNumber && errors.licenseNumber}
                       placeholder="LIC-2024-001"
                     />
                   </Grid>
@@ -334,8 +342,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       select
                       label="Bank Type"
                       name="bankType"
-                      value={formData.bankType}
+                      value={values.bankType}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.bankType && errors.bankType)}
+                      helperText={touched.bankType && errors.bankType}
                     >
                       <MenuItem value="">Select Type</MenuItem>
                       <MenuItem value="commercial">Commercial Bank</MenuItem>
@@ -350,8 +361,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="Capital Amount"
                       name="capitalAmount"
-                      value={formData.capitalAmount}
+                      value={values.capitalAmount}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.capitalAmount && errors.capitalAmount)}
+                      helperText={touched.capitalAmount && errors.capitalAmount}
                     />
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                       The amount of money the bank has in its reserves.
@@ -363,8 +377,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       type="date"
                       label="Established Date"
                       name="establishedDate"
-                      value={formData.establishedDate}
+                      value={values.establishedDate}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.establishedDate && errors.establishedDate)}
+                      helperText={touched.establishedDate && errors.establishedDate}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
@@ -387,8 +404,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       type="email"
                       label="Email Address"
                       name="email"
-                      value={formData.email}
+                      value={values.email}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.email && errors.email)}
+                      helperText={touched.email && errors.email}
                       placeholder="info@bank.com"
                     />
                   </Grid>
@@ -398,8 +418,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       required
                       label="Phone Number"
                       name="phone"
-                      value={formData.phone}
+                      value={values.phone}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.phone && errors.phone)}
+                      helperText={touched.phone && errors.phone}
                       placeholder="+92 300 1234567"
                     />
                   </Grid>
@@ -409,8 +432,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       type="url"
                       label="Website"
                       name="website"
-                      value={formData.website}
+                      value={values.website}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.website && errors.website)}
+                      helperText={touched.website && errors.website}
                       placeholder="https://www.bank.com"
                     />
                   </Grid>
@@ -419,8 +445,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="Fax Number"
                       name="fax"
-                      value={formData.fax}
+                      value={values.fax}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.fax && errors.fax)}
+                      helperText={touched.fax && errors.fax}
                       placeholder="+92 21 1234567"
                     />
                   </Grid>
@@ -442,8 +471,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       required
                       label="Street Address"
                       name="address"
-                      value={formData.address}
+                      value={values.address}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.address && errors.address)}
+                      helperText={touched.address && errors.address}
                       multiline
                       rows={2}
                       placeholder="123 Main Street"
@@ -454,8 +486,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="City"
                       name="city"
-                      value={formData.city}
+                      value={values.city}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.city && errors.city)}
+                      helperText={touched.city && errors.city}
                       placeholder="Karachi"
                     />
                   </Grid>
@@ -464,8 +499,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="State / Province"
                       name="state"
-                      value={formData.state}
+                      value={values.state}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.state && errors.state)}
+                      helperText={touched.state && errors.state}
                       placeholder="Sindh"
                     />
                   </Grid>
@@ -474,8 +512,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="Zip / Postal Code"
                       name="zipCode"
-                      value={formData.zipCode}
+                      value={values.zipCode}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.zipCode && errors.zipCode)}
+                      helperText={touched.zipCode && errors.zipCode}
                       placeholder="75000"
                     />
                   </Grid>
@@ -484,8 +525,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                       fullWidth
                       label="Country"
                       name="country"
-                      value={formData.country}
+                      value={values.country}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touched.country && errors.country)}
+                      helperText={touched.country && errors.country}
                       placeholder="Pakistan"
                     />
                   </Grid>
@@ -512,10 +556,12 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                         type="email"
                         label="Admin Email"
                         name="adminEmail"
-                        value={formData.adminEmail}
+                        value={values.adminEmail}
                         onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.adminEmail && errors.adminEmail)}
+                        helperText={(touched.adminEmail && errors.adminEmail) || 'This will be used for bank admin login'}
                         placeholder="admin@bank.com"
-                        helperText="This will be used for bank admin login"
                       />
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
@@ -525,8 +571,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                         type={showPassword ? 'text' : 'password'}
                         label="Password"
                         name="password"
-                        value={formData.password}
+                        value={values.password}
                         onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.password && errors.password)}
+                        helperText={(touched.password && errors.password) || 'Minimum 8 characters'}
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
@@ -538,7 +587,6 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                             </InputAdornment>
                           ),
                         }}
-                        helperText="Minimum 8 characters"
                       />
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
@@ -548,8 +596,11 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                         type={showConfirmPassword ? 'text' : 'password'}
                         label="Confirm Password"
                         name="confirmPassword"
-                        value={formData.confirmPassword}
+                        value={values.confirmPassword}
                         onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.confirmPassword && errors.confirmPassword)}
+                        helperText={touched.confirmPassword && errors.confirmPassword}
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
@@ -570,47 +621,24 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                 </Box>
               )}
 
-              {/* Status Section */}
-              <Box>
-                {/* <Typography
-                  variant="h6"
-                  sx={{ mb: 3, pb: 1, borderBottom: 1, borderColor: 'divider' }}
-                >
-                  Status
-                </Typography> */}
-                {/* <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      fullWidth
-                      select
-                      required
-                      label="Status"
-                      name="status"
-                      value={formData.status}
-                      onChange={handleChange}
-                    >
-                      <MenuItem value="active">Active</MenuItem>
-                      <MenuItem value="inactive">Inactive</MenuItem>
-                      <MenuItem value="pending">Pending</MenuItem>
-                    </TextField>
-                  </Grid>
-                </Grid> */}
-              </Box>
-
-              {/* Action Buttons */}
+                          {/* Action Buttons */}
               <Box display="flex" gap={2} justifyContent="flex-end" sx={{ pt: 2 }}>
-                <Button variant="outlined" onClick={() => router.back()} disabled={loading}>
+                <Button variant="outlined" onClick={() => router.back()} disabled={formik.isSubmitting}>
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   variant="contained"
-                  disabled={loading}
+                  disabled={formik.isSubmitting}
                   startIcon={
-                    loading ? <CircularProgress size={20} /> : <Iconify icon="eva:save-fill" />
+                    formik.isSubmitting ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <Iconify icon="eva:save-fill" />
+                    )
                   }
                 >
-                  {loading ? 'Saving...' : isEditMode ? 'Update Bank' : 'Register Bank'}
+                  {formik.isSubmitting ? 'Saving...' : isEditMode ? 'Update Bank' : 'Register Bank'}
                 </Button>
               </Box>
             </Stack>

@@ -24,7 +24,6 @@ import { TableNoData } from '../table-no-data';
 import { BankTableRow } from '../bank-table-row';
 import { BankTableHead } from '../bank-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
-import { BankViewDialog } from '../bank-view-dialog';
 import { BankTableToolbar } from '../bank-table-toolbar';
 import { BankDeleteDialog } from '../bank-delete-dialog';
 import { BankStatusDialog } from '../bank-status-dialog';
@@ -43,7 +42,6 @@ export function BankView() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [openViewDialog, setOpenViewDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openStatusDialog, setOpenStatusDialog] = useState(false);
   const [selectedBank, setSelectedBank] = useState<BankProps | null>(null);
@@ -105,14 +103,8 @@ export function BankView() {
     }
   };
 
-  const handleOpenViewDialog = (bank: BankProps) => {
-    setSelectedBank(bank);
-    setOpenViewDialog(true);
-  };
-
-  const handleCloseViewDialog = () => {
-    setOpenViewDialog(false);
-    setSelectedBank(null);
+  const handleOpenView = (bank: BankProps) => {
+    router.push(`/bank-management/${bank._id}`);
   };
 
   const handleOpenDeleteDialog = (bank: BankProps) => {
@@ -242,7 +234,7 @@ export function BankView() {
                         row={row}
                         selected={table.selected.includes(row._id)}
                         onSelectRow={() => table.onSelectRow(row._id)}
-                        onView={() => handleOpenViewDialog(row)}
+                        onView={() => handleOpenView(row)}
                         onEdit={() => handleOpenFormPage(row)}
                         onUpdateStatus={() => handleOpenStatusDialog(row)}
                         onDelete={() => handleOpenDeleteDialog(row)}
@@ -272,16 +264,6 @@ export function BankView() {
           </>
         )}
       </Card>
-
-      <BankViewDialog
-        open={openViewDialog}
-        onClose={handleCloseViewDialog}
-        bank={selectedBank}
-        onEdit={() => {
-          handleCloseViewDialog();
-          handleOpenFormPage(selectedBank || undefined);
-        }}
-      />
 
       <BankDeleteDialog
         open={openDeleteDialog}

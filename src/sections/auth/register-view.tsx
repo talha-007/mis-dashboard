@@ -1,11 +1,14 @@
 /**
  * Registration View
- * Two-column layout with image and form
+ * Two-column layout with image and form. Uses Formik + Yup for validation.
  */
 
 import type { RegisterData } from 'src/types/auth.types';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -31,313 +34,96 @@ import { useAuth } from 'src/hooks';
 import { Iconify } from 'src/components/iconify';
 import { GoogleLoginButton } from 'src/components/auth';
 
+// ----------------------------------------------------------------------
+// Validation schema: email, phone, CNIC, password, confirmPassword
+// ----------------------------------------------------------------------
+
+const registerValidationSchema = Yup.object({
+  name: Yup.string().required('First name is required').trim(),
+  lastname: Yup.string().required('Last name is required').trim(),
+  email: Yup.string()
+    .required('Email is required')
+    .email('Enter a valid email address')
+    .trim(),
+  phone: Yup.string()
+    .required('Phone number is required')
+    .matches(
+      /^[+]?[\d\s\-()]{10,20}$/,
+      'Enter a valid phone number (e.g. +1 555 123 4567)'
+    )
+    .trim(),
+  cnic: Yup.string()
+    .required('CNIC is required')
+    .matches(
+      /^\d{5}-\d{7}-\d{1}$/,
+      'CNIC must be in format 12345-6789012-3'
+    )
+    .trim(),
+  password: Yup.string()
+    .required('Password is required')
+    .min(8, 'Password must be at least 8 characters'),
+  confirmPassword: Yup.string()
+    .required('Confirm password is required')
+    .oneOf([Yup.ref('password')], 'Passwords do not match'),
+});
+
+type RegisterFormValues = RegisterData & { confirmPassword: string };
+
+// Only allow digits, +, space, -, (, ) in phone
+const sanitizePhone = (value: string) => value.replace(/[^\d+\s\-()]/g, '');
+
+// Only allow digits and hyphens; auto-format to 12345-6789012-3
+const sanitizeCnic = (value: string) => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length <= 5) return digits;
+  if (digits.length <= 12) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12, 13)}`;
+};
+
+// ----------------------------------------------------------------------
+
 export function RegisterView() {
   const router = useRouter();
   const { register, isLoading, error } = useAuth();
   const { bankSlug, initializeBankContext } = useBankContext();
-  console.log('bankSlug', bankSlug);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState<RegisterData>({
-    email: '',
-    password: '',
-    name: '',
-    cnic: '',
-    lastname: '',
-    phone: '',
-    bankSlug,
-  });
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [validationError, setValidationError] = useState('');
 
-  // Initialize bank context when bank_slug is present
   useEffect(() => {
     if (bankSlug) {
       initializeBankContext();
     }
   }, [bankSlug, initializeBankContext]);
 
-  // Keep formData.bankSlug in sync with URL/context so it is always sent in the register payload
-  useEffect(() => {
-    if (bankSlug) {
-      setFormData((prev) => ({ ...prev, bankSlug }));
+  const initialValues: RegisterFormValues = {
+    email: '',
+    password: '',
+    name: '',
+    cnic: '',
+    lastname: '',
+    phone: '',
+    confirmPassword: '',
+    bankSlug: bankSlug ?? undefined,
+  };
+
+  const handleSubmit = async (values: RegisterFormValues) => {
+    const { confirmPassword: _, ...payload } = values;
+    const toSend: RegisterData = { ...payload, bankSlug: bankSlug ?? payload.bankSlug };
+    try {
+      await register(toSend);
+      router.push('/verify-otp?type=registration');
+    } catch (err) {
+      console.error('Registration failed:', err);
     }
-  }, [bankSlug]);
+  };
 
-  const handleRegister = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setValidationError('');
-
-      // Validation
-      if (formData.password !== confirmPassword) {
-        setValidationError('Passwords do not match');
-        return;
-      }
-      console.log('formData', formData);
-      if (formData.password.length < 8) {
-        setValidationError('Password must be at least 8 characters');
-        return;
-      }
-
-      try {
-        await register(formData);
-        // After successful registration, redirect to OTP verification
-        router.push('/verify-otp?type=registration');
-      } catch (err) {
-        console.error('Registration failed:', err);
-      }
-    },
-    [formData, confirmPassword, register, router]
-  );
-
-  const handleGoogleSuccess = useCallback(() => {
+  const handleGoogleSuccess = () => {
     router.push('/');
-  }, [router]);
+  };
 
-  const renderForm = (
-    <Stack spacing={3} component="form" onSubmit={handleRegister}>
-      {(error || validationError) && (
-        <Alert
-          severity="error"
-          sx={{
-            borderRadius: 2,
-            '& .MuiAlert-message': { width: '100%' },
-          }}
-        >
-          {validationError || error}
-        </Alert>
-      )}
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField
-          fullWidth
-          required
-          name="name"
-          label="First Name"
-          placeholder="John"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          disabled={isLoading}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-            },
-          }}
-        />
-        <TextField
-          fullWidth
-          required
-          name="lastname"
-          label="Last Name"
-          placeholder="Doe"
-          value={formData.lastname}
-          onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
-          disabled={isLoading}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-            },
-          }}
-        />
-      </Stack>
-
-      <TextField
-        fullWidth
-        required
-        name="email"
-        type="email"
-        label="Email Address"
-        placeholder="john.doe@example.com"
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        disabled={isLoading}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify
-                  icon={'eva:email-outline' as any}
-                  width={20}
-                  sx={{ color: 'text.disabled' }}
-                />
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
-          },
-        }}
-      />
-
-      <TextField
-        fullWidth
-        name="phone"
-        label="Phone Number"
-        placeholder="+1 (555) 123-4567"
-        value={formData.phone}
-        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-        disabled={isLoading}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify
-                  icon={'eva:phone-outline' as any}
-                  width={20}
-                  sx={{ color: 'text.disabled' }}
-                />
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
-          },
-        }}
-      />
-      <TextField
-        fullWidth
-        required
-        name="cnic"
-        label="CNIC"
-        placeholder="12345-6789012-3"
-        value={formData.cnic}
-        onChange={(e) => setFormData({ ...formData, cnic: e.target.value })}
-        disabled={isLoading}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify
-                  icon={'eva:id-card-outline' as any}
-                  width={20}
-                  sx={{ color: 'text.disabled' }}
-                />
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
-          },
-        }}
-      />
-      <TextField
-        fullWidth
-        required
-        name="password"
-        label="Password"
-        type={showPassword ? 'text' : 'password'}
-        placeholder="••••••••"
-        value={formData.password}
-        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        disabled={isLoading}
-        helperText="Must be at least 8 characters"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify
-                  icon={'eva:lock-outline' as any}
-                  width={20}
-                  sx={{ color: 'text.disabled' }}
-                />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                  <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
-          },
-        }}
-      />
-
-      <TextField
-        fullWidth
-        required
-        name="confirmPassword"
-        label="Confirm Password"
-        type={showConfirmPassword ? 'text' : 'password'}
-        placeholder="••••••••"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        disabled={isLoading}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify
-                  icon={'eva:lock-outline' as any}
-                  width={20}
-                  sx={{ color: 'text.disabled' }}
-                />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  edge="end"
-                  size="small"
-                >
-                  <Iconify
-                    icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
-                  />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
-          },
-        }}
-      />
-
-      <Button
-        fullWidth
-        size="large"
-        type="submit"
-        variant="contained"
-        disabled={isLoading}
-        sx={{
-          mt: 1,
-          py: 1.5,
-          borderRadius: 2,
-          fontSize: '1rem',
-          fontWeight: 600,
-          textTransform: 'none',
-          boxShadow: 'none',
-          '&:hover': {
-            boxShadow: 'none',
-          },
-        }}
-      >
-        {isLoading ? (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <CircularProgress size={20} color="inherit" />
-            <span>Creating Account...</span>
-          </Stack>
-        ) : (
-          'Create Account'
-        )}
-      </Button>
-    </Stack>
-  );
+  const textFieldSx = {
+    '& .MuiOutlinedInput-root': { borderRadius: 2 },
+  };
 
   return (
     <Card
@@ -367,7 +153,6 @@ export function RegisterView() {
             overflow: 'hidden',
           }}
         >
-          {/* Background Pattern */}
           <Box
             sx={{
               position: 'absolute',
@@ -379,10 +164,7 @@ export function RegisterView() {
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
             }}
           />
-
-          {/* Content */}
           <Stack spacing={4} sx={{ zIndex: 1, maxWidth: 400 }}>
-            {/* Icon/Illustration */}
             <Box
               sx={{
                 width: 80,
@@ -395,10 +177,8 @@ export function RegisterView() {
                 backdropFilter: 'blur(10px)',
               }}
             >
-              <Iconify icon={'solar:shield-check-bold' as any} width={40} />
+              <Iconify icon="solar:shield-check-bold" width={40} />
             </Box>
-
-            {/* Title */}
             <Stack spacing={2}>
               <Typography variant="h3" fontWeight={700}>
                 Start Your Financial Journey
@@ -407,25 +187,11 @@ export function RegisterView() {
                 Join thousands of satisfied customers who trust us with their financial needs.
               </Typography>
             </Stack>
-
-            {/* Features */}
             <Stack spacing={2.5}>
               {[
-                {
-                  icon: 'solar:verified-check-bold' as any,
-                  title: 'Secure & Trusted',
-                  desc: 'Bank-level security for your data',
-                },
-                {
-                  icon: 'solar:wallet-money-bold' as any,
-                  title: 'Easy Management',
-                  desc: 'Manage your finances with ease',
-                },
-                {
-                  icon: 'solar:graph-up-bold' as any,
-                  title: 'Grow Your Wealth',
-                  desc: 'Access to best financial products',
-                },
+                { icon: 'solar:verified-check-bold', title: 'Secure & Trusted', desc: 'Bank-level security for your data' },
+                { icon: 'solar:wallet-money-bold', title: 'Easy Management', desc: 'Manage your finances with ease' },
+                { icon: 'solar:graph-up-bold', title: 'Grow Your Wealth', desc: 'Access to best financial products' },
               ].map((feature, index) => (
                 <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
                   <Box
@@ -440,7 +206,7 @@ export function RegisterView() {
                       flexShrink: 0,
                     }}
                   >
-                    <Iconify icon={feature.icon as any} width={20} />
+                    <Iconify icon={feature.icon} width={20} />
                   </Box>
                   <Box>
                     <Typography variant="subtitle2" fontWeight={600} gutterBottom>
@@ -464,28 +230,18 @@ export function RegisterView() {
             flexDirection: 'column',
             height: '100%',
             overflow: 'auto',
-            // Custom Scrollbar Styling
-            '&::-webkit-scrollbar': {
-              width: '8px',
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: 'transparent',
-            },
+            '&::-webkit-scrollbar': { width: '8px' },
+            '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
             '&::-webkit-scrollbar-thumb': {
               backgroundColor: (theme) => theme.palette.divider,
               borderRadius: '10px',
-              '&:hover': {
-                backgroundColor: (theme) => theme.palette.action.hover,
-              },
+              '&:hover': { backgroundColor: (theme) => theme.palette.action.hover },
             },
-            // Firefox
             scrollbarWidth: 'thin',
-            scrollbarColor: (theme) => `${theme.palette.divider} transparent`,
           }}
         >
           <Box sx={{ p: { xs: 3, sm: 5, md: 6 }, flex: 1 }}>
             <Stack spacing={4}>
-              {/* Header */}
               <Stack spacing={1.5}>
                 <Typography variant="h4" fontWeight={700}>
                   Create Your Account
@@ -495,64 +251,242 @@ export function RegisterView() {
                 </Typography>
               </Stack>
 
-              {/* Google Sign Up */}
               <GoogleLoginButton
                 onSuccess={handleGoogleSuccess}
                 disabled={isLoading}
-                sx={{
-                  borderRadius: 2,
-                  py: 1.5,
-                  fontSize: '0.95rem',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                }}
+                sx={{ borderRadius: 2, py: 1.5, fontSize: '0.95rem', textTransform: 'none', fontWeight: 500 }}
               />
 
-              {/* Divider */}
               <Divider sx={{ '&::before, &::after': { borderTopStyle: 'dashed' } }}>
                 <Typography variant="body2" sx={{ color: 'text.disabled', px: 2 }}>
                   or continue with email
                 </Typography>
               </Divider>
 
-              {/* Registration Form */}
-              {renderForm}
+              <Formik
+                initialValues={initialValues}
+                validationSchema={registerValidationSchema}
+                onSubmit={handleSubmit}
+              >
+                {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
+                  <Form>
+                    <Stack spacing={3}>
+                      {error && (
+                        <Alert severity="error" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                          {error}
+                        </Alert>
+                      )}
 
-              {/* Footer */}
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                        <TextField
+                          fullWidth
+                          name="name"
+                          label="First Name"
+                          placeholder="John"
+                          value={values.name}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={Boolean(touched.name && errors.name)}
+                          helperText={touched.name && errors.name}
+                          disabled={isLoading}
+                          sx={textFieldSx}
+                        />
+                        <TextField
+                          fullWidth
+                          name="lastname"
+                          label="Last Name"
+                          placeholder="Doe"
+                          value={values.lastname}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={Boolean(touched.lastname && errors.lastname)}
+                          helperText={touched.lastname && errors.lastname}
+                          disabled={isLoading}
+                          sx={textFieldSx}
+                        />
+                      </Stack>
+
+                      <TextField
+                        fullWidth
+                        name="email"
+                        type="email"
+                        label="Email Address"
+                        placeholder="john.doe@example.com"
+                        value={values.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.email && errors.email)}
+                        helperText={touched.email && errors.email}
+                        disabled={isLoading}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                        sx={textFieldSx}
+                      />
+
+                      <TextField
+                        fullWidth
+                        name="phone"
+                        label="Phone Number"
+                        placeholder="+1 (555) 123-4567"
+                        value={values.phone}
+                        onChange={(e) => setFieldValue('phone', sanitizePhone(e.target.value))}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.phone && errors.phone)}
+                        helperText={touched.phone && errors.phone}
+                        disabled={isLoading}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Iconify icon="eva:phone-outline" width={20} sx={{ color: 'text.disabled' }} />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                        sx={textFieldSx}
+                      />
+
+                      <TextField
+                        fullWidth
+                        name="cnic"
+                        label="CNIC"
+                        placeholder="12345-6789012-3"
+                        value={values.cnic}
+                        onChange={(e) => setFieldValue('cnic', sanitizeCnic(e.target.value))}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.cnic && errors.cnic)}
+                        helperText={touched.cnic && errors.cnic}
+                        disabled={isLoading}
+                        inputProps={{ maxLength: 15 }}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Iconify icon="eva:id-card-outline" width={20} sx={{ color: 'text.disabled' }} />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                        sx={textFieldSx}
+                      />
+
+                      <TextField
+                        fullWidth
+                        name="password"
+                        label="Password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={values.password}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.password && errors.password)}
+                        helperText={(touched.password && errors.password) || 'Must be at least 8 characters'}
+                        disabled={isLoading}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                                  <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                        sx={textFieldSx}
+                      />
+
+                      <TextField
+                        fullWidth
+                        name="confirmPassword"
+                        label="Confirm Password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={values.confirmPassword}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={Boolean(touched.confirmPassword && errors.confirmPassword)}
+                        helperText={touched.confirmPassword && errors.confirmPassword}
+                        disabled={isLoading}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end" size="small">
+                                  <Iconify icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                        sx={textFieldSx}
+                      />
+
+                      <Button
+                        fullWidth
+                        size="large"
+                        type="submit"
+                        variant="contained"
+                        disabled={isLoading}
+                        sx={{
+                          mt: 1,
+                          py: 1.5,
+                          borderRadius: 2,
+                          fontSize: '1rem',
+                          fontWeight: 600,
+                          textTransform: 'none',
+                          boxShadow: 'none',
+                          '&:hover': { boxShadow: 'none' },
+                        }}
+                      >
+                        {isLoading ? (
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <CircularProgress size={20} color="inherit" />
+                            <span>Creating Account...</span>
+                          </Stack>
+                        ) : (
+                          'Create Account'
+                        )}
+                      </Button>
+                    </Stack>
+                  </Form>
+                )}
+              </Formik>
+
               <Stack spacing={2}>
                 <Typography variant="caption" color="text.secondary" textAlign="center">
                   By creating an account, you agree to our{' '}
-                  <Link
-                    variant="caption"
-                    color="primary"
-                    underline="hover"
-                    sx={{ cursor: 'pointer', fontWeight: 500 }}
-                  >
+                  <Link variant="caption" color="primary" underline="hover" sx={{ cursor: 'pointer', fontWeight: 500 }}>
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link
-                    variant="caption"
-                    color="primary"
-                    underline="hover"
-                    sx={{ cursor: 'pointer', fontWeight: 500 }}
-                  >
+                  <Link variant="caption" color="primary" underline="hover" sx={{ cursor: 'pointer', fontWeight: 500 }}>
                     Privacy Policy
                   </Link>
                 </Typography>
-
                 <Divider />
-
                 <Box textAlign="center">
                   <Typography variant="body2" color="text.secondary" display="inline">
                     Already have an account?{' '}
                   </Typography>
-                  <Link
-                    variant="body2"
-                    fontWeight={600}
-                    onClick={() => router.push('/sign-in')}
-                    sx={{ cursor: 'pointer' }}
-                  >
+                  <Link variant="body2" fontWeight={600} onClick={() => router.push('/sign-in')} sx={{ cursor: 'pointer' }}>
                     Sign In
                   </Link>
                 </Box>

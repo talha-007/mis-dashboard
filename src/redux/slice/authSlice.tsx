@@ -21,6 +21,7 @@ import authService from '../services/auth.services';
 export interface AuthBank {
   id: string;
   name?: string;
+  slug?: string;
   subscriptionStatus?: string;
 }
 
@@ -111,7 +112,12 @@ async function fetchMeApi(): Promise<{ user: User; bank: AuthBank | null } | nul
     const cached = getUserData<User>();
     const merged = mergeMeIntoUser(cached ?? {}, userData, bankData);
     const bank = bankData?.id
-      ? { id: bankData.id, name: bankData.name, subscriptionStatus: bankData.subscriptionStatus }
+      ? {
+          id: bankData.id,
+          name: bankData.name,
+          slug: bankData.slug,
+          subscriptionStatus: bankData.subscriptionStatus,
+        }
       : null;
     if (bank) setBankData(bank);
     return { user: merged, bank };
@@ -165,6 +171,7 @@ export const superAdminLogin = createAsyncThunk(
             bank = {
               id: meData.bank.id,
               name: meData.bank.name,
+              slug: meData.bank.slug,
               subscriptionStatus: meData.bank.subscriptionStatus,
             };
             setBankData(bank);
@@ -203,6 +210,7 @@ export const adminLogin = createAsyncThunk(
             bank = {
               id: meData.bank.id,
               name: meData.bank.name,
+              slug: meData.bank.slug,
               subscriptionStatus: meData.bank.subscriptionStatus,
             };
             setBankData(bank);

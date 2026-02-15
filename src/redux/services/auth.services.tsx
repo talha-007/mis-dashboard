@@ -1,4 +1,4 @@
-import type { MeProfileResponse, MeUser } from 'src/types/me.types';
+import type { MeUser, MeProfileResponse } from 'src/types/me.types';
 
 import { callAPi } from './http-common';
 
@@ -55,7 +55,8 @@ async function getProfile(): Promise<MeProfileResponse | null> {
       if (!data) return null;
       const user: MeUser = {
         id: data.id,
-        name: data.name ?? ([data.firstName, data.lastName].filter(Boolean).join(' ') || data.email),
+        name:
+          data.name ?? ([data.firstName, data.lastName].filter(Boolean).join(' ') || data.email),
         email: data.email,
         role: 'customer',
         createdAt: data.createdAt,

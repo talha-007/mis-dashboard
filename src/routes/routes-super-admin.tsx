@@ -14,6 +14,7 @@ import { UserRole } from 'src/types/auth.types';
 // Import pages directly from their source, not from sections (avoid circular deps)
 const BankManagementPage = lazy(() => import('src/pages/super-admin/bank-management'));
 const BankFormPage = lazy(() => import('src/pages/super-admin/bank-form'));
+const BankDetailsPage = lazy(() => import('src/pages/super-admin/bank-details'));
 const BankPaymentsPage = lazy(() => import('src/pages/super-admin/bank-payments'));
 const SettingsPage = lazy(() => import('src/pages/super-admin/settings'));
 const UserPage = lazy(() => import('src/pages/super-admin/user'));
@@ -32,6 +33,14 @@ export const superAdminRoutes: RouteObject[] = [
     element: (
       <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
         <BankFormPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'bank-management/:id',
+    element: (
+      <RoleGuard requiredRole={UserRole.SUPER_ADMIN}>
+        <BankDetailsPage />
       </RoleGuard>
     ),
   },

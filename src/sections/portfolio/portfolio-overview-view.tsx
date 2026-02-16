@@ -6,6 +6,7 @@
 
 import type { CardProps } from '@mui/material/Card';
 
+import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -18,15 +19,13 @@ import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { useAuth } from 'src/hooks/use-auth';
-import { useAppSelector } from 'src/store';
 
-import { fNumber, fCurrency } from 'src/utils/format-number';
 import { getBankRegisterUrl } from 'src/utils/bank-routes';
+import { fNumber, fCurrency } from 'src/utils/format-number';
 
+import { useAppSelector } from 'src/store';
 import bankService from 'src/redux/services/bank.services';
 import paymentService from 'src/redux/services/payment.services';
-
-import { toast } from 'react-toastify';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -126,7 +125,9 @@ export function PortfolioOverviewView() {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-        <Typography variant="h4">{isSuperAdmin ? 'Platform Overview' : 'Portfolio Overview'}</Typography>
+        <Typography variant="h4">
+          {isSuperAdmin ? 'Platform Overview' : 'Portfolio Overview'}
+        </Typography>
         {isSuperAdmin && (
           <Button
             variant="contained"
@@ -304,10 +305,15 @@ function StatCard({
                   height: 18,
                 }}
               />
-              <Typography variant="caption" sx={{ color: isIncrease ? 'success.main' : 'error.main', fontWeight: 600 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: isIncrease ? 'success.main' : 'error.main', fontWeight: 600 }}
+              >
                 {Math.abs(trend)}%
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>vs last month</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                vs last month
+              </Typography>
             </Stack>
           )}
         </Stack>

@@ -5,10 +5,9 @@
 
 import type { RegisterData } from 'src/types/auth.types';
 
-import { useState, useEffect } from 'react';
-
-import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { Form, Formik } from 'formik';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -41,23 +40,14 @@ import { GoogleLoginButton } from 'src/components/auth';
 const registerValidationSchema = Yup.object({
   name: Yup.string().required('First name is required').trim(),
   lastname: Yup.string().required('Last name is required').trim(),
-  email: Yup.string()
-    .required('Email is required')
-    .email('Enter a valid email address')
-    .trim(),
+  email: Yup.string().required('Email is required').email('Enter a valid email address').trim(),
   phone: Yup.string()
     .required('Phone number is required')
-    .matches(
-      /^[+]?[\d\s\-()]{10,20}$/,
-      'Enter a valid phone number (e.g. +1 555 123 4567)'
-    )
+    .matches(/^[+]?[\d\s\-()]{10,20}$/, 'Enter a valid phone number (e.g. +1 555 123 4567)')
     .trim(),
   cnic: Yup.string()
     .required('CNIC is required')
-    .matches(
-      /^\d{5}-\d{7}-\d{1}$/,
-      'CNIC must be in format 12345-6789012-3'
-    )
+    .matches(/^\d{5}-\d{7}-\d{1}$/, 'CNIC must be in format 12345-6789012-3')
     .trim(),
   password: Yup.string()
     .required('Password is required')
@@ -189,9 +179,21 @@ export function RegisterView() {
             </Stack>
             <Stack spacing={2.5}>
               {[
-                { icon: 'solar:verified-check-bold', title: 'Secure & Trusted', desc: 'Bank-level security for your data' },
-                { icon: 'solar:wallet-money-bold', title: 'Easy Management', desc: 'Manage your finances with ease' },
-                { icon: 'solar:graph-up-bold', title: 'Grow Your Wealth', desc: 'Access to best financial products' },
+                {
+                  icon: 'solar:verified-check-bold',
+                  title: 'Secure & Trusted',
+                  desc: 'Bank-level security for your data',
+                },
+                {
+                  icon: 'solar:wallet-money-bold',
+                  title: 'Easy Management',
+                  desc: 'Manage your finances with ease',
+                },
+                {
+                  icon: 'solar:graph-up-bold',
+                  title: 'Grow Your Wealth',
+                  desc: 'Access to best financial products',
+                },
               ].map((feature, index) => (
                 <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
                   <Box
@@ -254,7 +256,13 @@ export function RegisterView() {
               <GoogleLoginButton
                 onSuccess={handleGoogleSuccess}
                 disabled={isLoading}
-                sx={{ borderRadius: 2, py: 1.5, fontSize: '0.95rem', textTransform: 'none', fontWeight: 500 }}
+                sx={{
+                  borderRadius: 2,
+                  py: 1.5,
+                  fontSize: '0.95rem',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                }}
               />
 
               <Divider sx={{ '&::before, &::after': { borderTopStyle: 'dashed' } }}>
@@ -272,7 +280,10 @@ export function RegisterView() {
                   <Form>
                     <Stack spacing={3}>
                       {error && (
-                        <Alert severity="error" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                        <Alert
+                          severity="error"
+                          sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                        >
                           {error}
                         </Alert>
                       )}
@@ -322,7 +333,11 @@ export function RegisterView() {
                           input: {
                             startAdornment: (
                               <InputAdornment position="start">
-                                <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+                                <Iconify
+                                  icon="eva:email-outline"
+                                  width={20}
+                                  sx={{ color: 'text.disabled' }}
+                                />
                               </InputAdornment>
                             ),
                           },
@@ -345,7 +360,11 @@ export function RegisterView() {
                           input: {
                             startAdornment: (
                               <InputAdornment position="start">
-                                <Iconify icon="eva:phone-outline" width={20} sx={{ color: 'text.disabled' }} />
+                                <Iconify
+                                  icon="eva:phone-outline"
+                                  width={20}
+                                  sx={{ color: 'text.disabled' }}
+                                />
                               </InputAdornment>
                             ),
                           },
@@ -369,7 +388,11 @@ export function RegisterView() {
                           input: {
                             startAdornment: (
                               <InputAdornment position="start">
-                                <Iconify icon="eva:id-card-outline" width={20} sx={{ color: 'text.disabled' }} />
+                                <Iconify
+                                  icon="eva:id-card-outline"
+                                  width={20}
+                                  sx={{ color: 'text.disabled' }}
+                                />
                               </InputAdornment>
                             ),
                           },
@@ -387,19 +410,31 @@ export function RegisterView() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         error={Boolean(touched.password && errors.password)}
-                        helperText={(touched.password && errors.password) || 'Must be at least 8 characters'}
+                        helperText={
+                          (touched.password && errors.password) || 'Must be at least 8 characters'
+                        }
                         disabled={isLoading}
                         slotProps={{
                           input: {
                             startAdornment: (
                               <InputAdornment position="start">
-                                <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+                                <Iconify
+                                  icon="eva:lock-outline"
+                                  width={20}
+                                  sx={{ color: 'text.disabled' }}
+                                />
                               </InputAdornment>
                             ),
                             endAdornment: (
                               <InputAdornment position="end">
-                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                                  <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                                <IconButton
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  edge="end"
+                                  size="small"
+                                >
+                                  <Iconify
+                                    icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                                  />
                                 </IconButton>
                               </InputAdornment>
                             ),
@@ -424,13 +459,27 @@ export function RegisterView() {
                           input: {
                             startAdornment: (
                               <InputAdornment position="start">
-                                <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+                                <Iconify
+                                  icon="eva:lock-outline"
+                                  width={20}
+                                  sx={{ color: 'text.disabled' }}
+                                />
                               </InputAdornment>
                             ),
                             endAdornment: (
                               <InputAdornment position="end">
-                                <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end" size="small">
-                                  <Iconify icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                                <IconButton
+                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                  edge="end"
+                                  size="small"
+                                >
+                                  <Iconify
+                                    icon={
+                                      showConfirmPassword
+                                        ? 'solar:eye-bold'
+                                        : 'solar:eye-closed-bold'
+                                    }
+                                  />
                                 </IconButton>
                               </InputAdornment>
                             ),
@@ -473,11 +522,21 @@ export function RegisterView() {
               <Stack spacing={2}>
                 <Typography variant="caption" color="text.secondary" textAlign="center">
                   By creating an account, you agree to our{' '}
-                  <Link variant="caption" color="primary" underline="hover" sx={{ cursor: 'pointer', fontWeight: 500 }}>
+                  <Link
+                    variant="caption"
+                    color="primary"
+                    underline="hover"
+                    sx={{ cursor: 'pointer', fontWeight: 500 }}
+                  >
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link variant="caption" color="primary" underline="hover" sx={{ cursor: 'pointer', fontWeight: 500 }}>
+                  <Link
+                    variant="caption"
+                    color="primary"
+                    underline="hover"
+                    sx={{ cursor: 'pointer', fontWeight: 500 }}
+                  >
                     Privacy Policy
                   </Link>
                 </Typography>
@@ -486,7 +545,12 @@ export function RegisterView() {
                   <Typography variant="body2" color="text.secondary" display="inline">
                     Already have an account?{' '}
                   </Typography>
-                  <Link variant="body2" fontWeight={600} onClick={() => router.push('/sign-in')} sx={{ cursor: 'pointer' }}>
+                  <Link
+                    variant="body2"
+                    fontWeight={600}
+                    onClick={() => router.push('/sign-in')}
+                    sx={{ cursor: 'pointer' }}
+                  >
                     Sign In
                   </Link>
                 </Box>

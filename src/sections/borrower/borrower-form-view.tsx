@@ -1,8 +1,7 @@
+import * as Yup from 'yup';
+import { Form, Formik } from 'formik';
 import { toast } from 'react-toastify';
 import { useParams, useNavigate } from 'react-router-dom';
-
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -42,8 +41,12 @@ const borrowerSchema = Yup.object({
   loanAmount: Yup.number()
     .required('Loan amount is required')
     .min(0.01, 'Loan amount must be greater than 0'),
-  status: Yup.string().required().oneOf(BORROWER_STATUS_OPTIONS.map((o) => o.value)),
-  rating: Yup.string().required().oneOf(BORROWER_RATING_OPTIONS.map((o) => o.value)),
+  status: Yup.string()
+    .required()
+    .oneOf(BORROWER_STATUS_OPTIONS.map((o) => o.value)),
+  rating: Yup.string()
+    .required()
+    .oneOf(BORROWER_RATING_OPTIONS.map((o) => o.value)),
   address: Yup.string().required('Address is required').trim(),
 });
 
@@ -76,7 +79,10 @@ export function BorrowerFormView({ isEdit = false, initialData }: BorrowerFormVi
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const handleSubmit = async (values: BorrowerFormData, { setStatus }: { setStatus: (s: any) => void }) => {
+  const handleSubmit = async (
+    values: BorrowerFormData,
+    { setStatus }: { setStatus: (s: any) => void }
+  ) => {
     try {
       if (isEdit && id) {
         await borrowerService.update(id, values);
@@ -97,7 +103,12 @@ export function BorrowerFormView({ isEdit = false, initialData }: BorrowerFormVi
   return (
     <DashboardContent>
       <Box sx={{ mb: 5, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button startIcon={<Iconify icon="eva:arrow-ios-back-fill" />} onClick={() => navigate('/borrower-management')} color="inherit" variant="text">
+        <Button
+          startIcon={<Iconify icon="eva:arrow-ios-back-fill" />}
+          onClick={() => navigate('/borrower-management')}
+          color="inherit"
+          variant="text"
+        >
           Back
         </Button>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
@@ -111,7 +122,17 @@ export function BorrowerFormView({ isEdit = false, initialData }: BorrowerFormVi
           validationSchema={borrowerSchema}
           onSubmit={handleSubmit}
         >
-          {({ values, errors, touched, handleChange, handleBlur, setFieldValue, setStatus, isSubmitting, status }) => (
+          {({
+            values,
+            errors,
+            touched,
+            handleChange,
+            handleBlur,
+            setFieldValue,
+            setStatus,
+            isSubmitting,
+            status,
+          }) => (
             <Form>
               <Stack spacing={3}>
                 {status?.submitError && (
@@ -162,7 +183,12 @@ export function BorrowerFormView({ isEdit = false, initialData }: BorrowerFormVi
                     name="loanAmount"
                     type="number"
                     value={values.loanAmount || ''}
-                    onChange={(e) => setFieldValue('loanAmount', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setFieldValue(
+                        'loanAmount',
+                        e.target.value === '' ? 0 : parseFloat(e.target.value) || 0
+                      )
+                    }
                     onBlur={handleBlur}
                     error={Boolean(touched.loanAmount && errors.loanAmount)}
                     helperText={touched.loanAmount && errors.loanAmount}
@@ -220,7 +246,12 @@ export function BorrowerFormView({ isEdit = false, initialData }: BorrowerFormVi
                   rows={3}
                 />
                 <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end', pt: 2 }}>
-                  <Button variant="outlined" color="inherit" onClick={() => navigate('/borrower-management')} disabled={isSubmitting}>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={() => navigate('/borrower-management')}
+                    disabled={isSubmitting}
+                  >
                     Cancel
                   </Button>
                   <LoadingButton

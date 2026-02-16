@@ -1,12 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { useParams, useRouter } from 'src/routes/hooks';
 
 import { CONFIG } from 'src/config-global';
-
-import { BankDetailsView, type BankDetailsResponse } from 'src/sections/bank/view/bank-details-view';
-
 import bankService from 'src/redux/services/bank.services';
+
+import {
+  BankDetailsView,
+  type BankDetailsResponse,
+} from 'src/sections/bank/view/bank-details-view';
 
 // ----------------------------------------------------------------------
 

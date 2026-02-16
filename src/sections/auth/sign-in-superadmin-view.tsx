@@ -3,8 +3,7 @@
  */
 
 import { useState } from 'react';
-
-import { Formik, Form } from 'formik';
+import { Form, Formik } from 'formik';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -21,8 +20,8 @@ import { useRouter } from 'src/routes/hooks';
 import { getUserHomePath } from 'src/utils/role-home-path';
 
 import { useAuth } from 'src/hooks';
-import { setLoggingIn } from 'src/redux/slice/authSlice';
 import { useAppDispatch } from 'src/store';
+import { setLoggingIn } from 'src/redux/slice/authSlice';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -76,12 +75,19 @@ export function SignInSuperAdminView() {
         </Stack>
       </Stack>
 
-      <Formik initialValues={{ email: '', password: '' }} validationSchema={signInSchema} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={{ email: '', password: '' }}
+        validationSchema={signInSchema}
+        onSubmit={handleSubmit}
+      >
         {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
           <Form>
             <Stack spacing={3}>
               {error && (
-                <Alert severity="error" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                <Alert
+                  severity="error"
+                  sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                >
                   {error}
                 </Alert>
               )}
@@ -101,7 +107,11 @@ export function SignInSuperAdminView() {
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+                        <Iconify
+                          icon="eva:email-outline"
+                          width={20}
+                          sx={{ color: 'text.disabled' }}
+                        />
                       </InputAdornment>
                     ),
                   },
@@ -124,13 +134,23 @@ export function SignInSuperAdminView() {
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+                        <Iconify
+                          icon="eva:lock-outline"
+                          width={20}
+                          sx={{ color: 'text.disabled' }}
+                        />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                          <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          <Iconify
+                            icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                          />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -144,7 +164,15 @@ export function SignInSuperAdminView() {
                 type="submit"
                 variant="contained"
                 disabled={isSubmitting || isLoading}
-                sx={{ mt: 1, py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 600, textTransform: 'none', boxShadow: 'none' }}
+                sx={{
+                  mt: 1,
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                }}
               >
                 {isSubmitting || isLoading ? (
                   <Stack direction="row" spacing={1} alignItems="center">

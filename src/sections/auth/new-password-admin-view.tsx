@@ -3,15 +3,12 @@
  */
 
 import { useState } from 'react';
-
-import { Formik, Form } from 'formik';
-
+import { Form, Formik } from 'formik';
 import { toast } from 'react-toastify';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -58,7 +55,18 @@ export function NewPasswordAdminView() {
   return (
     <Stack spacing={4}>
       <Stack spacing={2} alignItems="center">
-        <Box sx={{ width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2, bgcolor: '#4D0CE7', color: '#ffffff' }}>
+        <Box
+          sx={{
+            width: 72,
+            height: 72,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 2,
+            bgcolor: '#4D0CE7',
+            color: '#ffffff',
+          }}
+        >
           <Iconify icon="solar:lock-password-bold-duotone" width={40} />
         </Box>
         <Stack spacing={1} alignItems="center">
@@ -66,7 +74,11 @@ export function NewPasswordAdminView() {
             <Typography variant="h4" fontWeight={700}>
               Reset Password
             </Typography>
-            <Chip label="Operations" size="small" sx={{ bgcolor: '#4D0CE7', color: 'white', fontWeight: 600 }} />
+            <Chip
+              label="Operations"
+              size="small"
+              sx={{ bgcolor: '#4D0CE7', color: 'white', fontWeight: 600 }}
+            />
           </Stack>
           <Typography variant="body2" color="text.secondary">
             Enter your new password to regain access
@@ -94,7 +106,11 @@ export function NewPasswordAdminView() {
                     input: {
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+                          <Iconify
+                            icon="eva:email-outline"
+                            width={20}
+                            sx={{ color: 'text.disabled' }}
+                          />
                         </InputAdornment>
                       ),
                     },
@@ -118,13 +134,23 @@ export function NewPasswordAdminView() {
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+                        <Iconify
+                          icon="eva:lock-outline"
+                          width={20}
+                          sx={{ color: 'text.disabled' }}
+                        />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                          <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          <Iconify
+                            icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                          />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -148,13 +174,23 @@ export function NewPasswordAdminView() {
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+                        <Iconify
+                          icon="eva:lock-outline"
+                          width={20}
+                          sx={{ color: 'text.disabled' }}
+                        />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end" size="small">
-                          <Iconify icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                        <IconButton
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          edge="end"
+                          size="small"
+                        >
+                          <Iconify
+                            icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                          />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -168,7 +204,15 @@ export function NewPasswordAdminView() {
                 type="submit"
                 variant="contained"
                 disabled={isSubmitting}
-                sx={{ mt: 1, py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 600, textTransform: 'none', boxShadow: 'none' }}
+                sx={{
+                  mt: 1,
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                }}
               >
                 {isSubmitting ? (
                   <Stack direction="row" spacing={1} alignItems="center">
@@ -180,7 +224,12 @@ export function NewPasswordAdminView() {
                 )}
               </Button>
               <Box textAlign="center">
-                <Link variant="body2" fontWeight={600} onClick={() => router.push('/sign-in/admin')} sx={{ cursor: 'pointer' }}>
+                <Link
+                  variant="body2"
+                  fontWeight={600}
+                  onClick={() => router.push('/sign-in/admin')}
+                  sx={{ cursor: 'pointer' }}
+                >
                   Back to Sign In
                 </Link>
               </Box>

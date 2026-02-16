@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useFormik } from 'formik';
+import { useMemo, useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -95,7 +95,10 @@ function getBankFormSchema(isEditMode: boolean) {
     country: Yup.string().trim(),
     adminEmail: isEditMode
       ? Yup.string().trim()
-      : Yup.string().required('Admin email is required').email('Enter a valid email address').trim(),
+      : Yup.string()
+          .required('Admin email is required')
+          .email('Enter a valid email address')
+          .trim(),
     password: isEditMode
       ? Yup.string().trim()
       : Yup.string()
@@ -166,8 +169,12 @@ export function BankFormView({ bankId }: BankFormViewProps) {
         router.push('/bank-management');
       } catch (err: unknown) {
         const errorMsg =
-          (err as { response?: { data?: { message?: string }; message?: string }; message?: string })
-            ?.response?.data?.message ||
+          (
+            err as {
+              response?: { data?: { message?: string }; message?: string };
+              message?: string;
+            }
+          )?.response?.data?.message ||
           (err as { message?: string })?.message ||
           'Failed to save bank';
         formik.setStatus({ submitError: errorMsg });
@@ -560,7 +567,10 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         error={Boolean(touched.adminEmail && errors.adminEmail)}
-                        helperText={(touched.adminEmail && errors.adminEmail) || 'This will be used for bank admin login'}
+                        helperText={
+                          (touched.adminEmail && errors.adminEmail) ||
+                          'This will be used for bank admin login'
+                        }
                         placeholder="admin@bank.com"
                       />
                     </Grid>
@@ -621,9 +631,13 @@ export function BankFormView({ bankId }: BankFormViewProps) {
                 </Box>
               )}
 
-                          {/* Action Buttons */}
+              {/* Action Buttons */}
               <Box display="flex" gap={2} justifyContent="flex-end" sx={{ pt: 2 }}>
-                <Button variant="outlined" onClick={() => router.back()} disabled={formik.isSubmitting}>
+                <Button
+                  variant="outlined"
+                  onClick={() => router.back()}
+                  disabled={formik.isSubmitting}
+                >
                   Cancel
                 </Button>
                 <Button

@@ -3,26 +3,26 @@
  * Full-page view of a single bank with all details in a readable layout.
  */
 
+import { varAlpha } from 'minimal-shared/utils';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-
-import { varAlpha } from 'minimal-shared/utils';
+import Typography from '@mui/material/Typography';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { fDateTime } from 'src/utils/format-time';
+import { fCurrency } from 'src/utils/format-number';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
-
-import { fCurrency } from 'src/utils/format-number';
-import { fDateTime } from 'src/utils/format-time';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -36,15 +36,7 @@ function formatDate(value: string | undefined): string {
   }
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: string;
-  label: string;
-  value: React.ReactNode;
-}) {
+function InfoRow({ icon, label, value }: { icon: string; label: string; value: React.ReactNode }) {
   return (
     <Stack direction="row" alignItems="flex-start" spacing={1.5} sx={{ py: 1.25 }}>
       <Box
@@ -88,8 +80,7 @@ function SectionCard({
       sx={{
         overflow: 'hidden',
         borderRadius: 2,
-        boxShadow: (theme) =>
-          `0 0 0 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
+        boxShadow: (theme) => `0 0 0 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
       }}
     >
       <Box
@@ -165,7 +156,7 @@ type BankDetailsViewProps = {
 
 export function BankDetailsView({ bank, loading, onEdit }: BankDetailsViewProps) {
   const router = useRouter();
-  
+
   if (loading) {
     return (
       <DashboardContent>
@@ -211,7 +202,11 @@ export function BankDetailsView({ bank, loading, onEdit }: BankDetailsViewProps)
           ? 'error'
           : 'default';
   const subColor =
-    b.subscriptionStatus === 'active' ? 'success' : b.subscriptionStatus === 'expired' ? 'error' : 'default';
+    b.subscriptionStatus === 'active'
+      ? 'success'
+      : b.subscriptionStatus === 'expired'
+        ? 'error'
+        : 'default';
 
   return (
     <DashboardContent>
@@ -267,10 +262,26 @@ export function BankDetailsView({ bank, loading, onEdit }: BankDetailsViewProps)
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow icon="solar:calendar-bold-duotone" label="Established Date" value={formatDate(b.establishedDate)} />
-                <InfoRow icon="solar:calendar-bold-duotone" label="Subscription Date" value={formatDate(b.subscriptionDate)} />
-                <InfoRow icon="solar:clock-circle-bold-duotone" label="Created" value={formatDate(b.createdAt)} />
-                <InfoRow icon="solar:clock-circle-bold-duotone" label="Last Updated" value={formatDate(b.updatedAt)} />
+                <InfoRow
+                  icon="solar:calendar-bold-duotone"
+                  label="Established Date"
+                  value={formatDate(b.establishedDate)}
+                />
+                <InfoRow
+                  icon="solar:calendar-bold-duotone"
+                  label="Subscription Date"
+                  value={formatDate(b.subscriptionDate)}
+                />
+                <InfoRow
+                  icon="solar:clock-circle-bold-duotone"
+                  label="Created"
+                  value={formatDate(b.createdAt)}
+                />
+                <InfoRow
+                  icon="solar:clock-circle-bold-duotone"
+                  label="Last Updated"
+                  value={formatDate(b.updatedAt)}
+                />
               </Grid>
             </Grid>
           </SectionCard>
@@ -279,7 +290,11 @@ export function BankDetailsView({ bank, loading, onEdit }: BankDetailsViewProps)
           <SectionCard title="Contact & Address" icon="solar:letter-bold-duotone">
             <Grid container spacing={0}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow icon="solar:letter-bold-duotone" label="Admin Email" value={b.adminEmail} />
+                <InfoRow
+                  icon="solar:letter-bold-duotone"
+                  label="Admin Email"
+                  value={b.adminEmail}
+                />
                 <InfoRow icon="solar:letter-bold-duotone" label="Bank Email" value={b.email} />
                 <InfoRow icon="solar:phone-bold-duotone" label="Phone" value={b.phone} />
                 <InfoRow icon="solar:phone-bold-duotone" label="Fax" value={b.fax} />
@@ -304,11 +319,7 @@ export function BankDetailsView({ bank, loading, onEdit }: BankDetailsViewProps)
                   label="Capital Amount"
                   value={b.capitalAmount != null ? fCurrency(Number(b.capitalAmount)) : '—'}
                 />
-                <InfoRow
-                  icon="solar:user-id-bold-duotone"
-                  label="User ID"
-                  value={b.userId}
-                />
+                <InfoRow icon="solar:user-id-bold-duotone" label="User ID" value={b.userId} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <InfoRow

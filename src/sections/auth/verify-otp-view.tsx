@@ -2,9 +2,8 @@
  * Verify OTP View - Formik + Yup validation
  */
 
+import { Form, Formik } from 'formik';
 import { useState, useEffect } from 'react';
-
-import { Formik, Form } from 'formik';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -77,7 +76,13 @@ export function VerifyOtpView() {
   const otpBoxSx = {
     width: { xs: 48, sm: 56 },
     '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderWidth: 2 } },
-    '& input': { padding: { xs: '14px 0', sm: '16px 0' }, textAlign: 'center', fontSize: '1.75rem', fontWeight: 700, letterSpacing: '0.1em' },
+    '& input': {
+      padding: { xs: '14px 0', sm: '16px 0' },
+      textAlign: 'center',
+      fontSize: '1.75rem',
+      fontWeight: 700,
+      letterSpacing: '0.1em',
+    },
   };
 
   return (
@@ -89,7 +94,13 @@ export function VerifyOtpView() {
         <Typography variant="body2" color="text.secondary" textAlign="center">
           Enter the 6-digit code sent to your email
         </Typography>
-        {email && <Chip label={email} size="small" sx={{ bgcolor: 'action.hover', fontWeight: 500, fontSize: '0.8125rem' }} />}
+        {email && (
+          <Chip
+            label={email}
+            size="small"
+            sx={{ bgcolor: 'action.hover', fontWeight: 500, fontSize: '0.8125rem' }}
+          />
+        )}
       </Stack>
 
       <Formik
@@ -107,7 +118,8 @@ export function VerifyOtpView() {
             if (v && index < 5) document.getElementById(`otp-${index + 1}`)?.focus();
           };
           const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-            if (e.key === 'Backspace' && !otpArr[index] && index > 0) document.getElementById(`otp-${index - 1}`)?.focus();
+            if (e.key === 'Backspace' && !otpArr[index] && index > 0)
+              document.getElementById(`otp-${index - 1}`)?.focus();
           };
           const handlePaste = (e: React.ClipboardEvent) => {
             e.preventDefault();
@@ -118,13 +130,21 @@ export function VerifyOtpView() {
             <Form>
               <Stack spacing={3}>
                 {(status?.submitError || (errors.otp && touched.otp)) && (
-                  <Alert severity="error" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                  <Alert
+                    severity="error"
+                    sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                  >
                     {status?.submitError || errors.otp}
                   </Alert>
                 )}
                 {success && (
-                  <Alert severity="success" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
-                    {verificationType === 'registration' ? '✓ Account verified! Redirecting to sign in...' : '✓ OTP verified! Redirecting...'}
+                  <Alert
+                    severity="success"
+                    sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                  >
+                    {verificationType === 'registration'
+                      ? '✓ Account verified! Redirecting to sign in...'
+                      : '✓ OTP verified! Redirecting...'}
                   </Alert>
                 )}
                 <Box sx={{ display: 'flex', gap: { xs: 1, sm: 1.5 }, justifyContent: 'center' }}>
@@ -149,25 +169,58 @@ export function VerifyOtpView() {
                   type="submit"
                   variant="contained"
                   disabled={isSubmitting || success}
-                  sx={{ py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 600, textTransform: 'none', boxShadow: 'none' }}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    boxShadow: 'none',
+                  }}
                 >
                   {isSubmitting ? (
                     <Stack direction="row" spacing={1} alignItems="center">
                       <CircularProgress size={20} color="inherit" />
                       <span>Verifying...</span>
                     </Stack>
-                  ) : success ? 'Verified!' : 'Verify Code'}
+                  ) : success ? (
+                    'Verified!'
+                  ) : (
+                    'Verify Code'
+                  )}
                 </Button>
                 <Box textAlign="center">
                   <Typography variant="body2" color="text.secondary" display="inline">
                     Didn&apos;t receive code?{' '}
                   </Typography>
-                  <Button variant="text" size="small" onClick={handleResend} disabled={resendDisabled || resendLoading || success} sx={{ minWidth: 'auto', fontWeight: 600, textTransform: 'none', px: 0.5 }}>
-                    {resendLoading ? <CircularProgress size={16} /> : resendDisabled ? `Resend in ${countdown}s` : 'Resend Code'}
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={handleResend}
+                    disabled={resendDisabled || resendLoading || success}
+                    sx={{ minWidth: 'auto', fontWeight: 600, textTransform: 'none', px: 0.5 }}
+                  >
+                    {resendLoading ? (
+                      <CircularProgress size={16} />
+                    ) : resendDisabled ? (
+                      `Resend in ${countdown}s`
+                    ) : (
+                      'Resend Code'
+                    )}
                   </Button>
                 </Box>
                 <Box textAlign="center">
-                  <Link variant="body2" fontWeight={600} onClick={() => router.push('/sign-in')} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+                  <Link
+                    variant="body2"
+                    fontWeight={600}
+                    onClick={() => router.push('/sign-in')}
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      cursor: 'pointer',
+                    }}
+                  >
                     <Iconify icon="eva:arrow-ios-back-outline" width={16} />
                     Back to Sign In
                   </Link>

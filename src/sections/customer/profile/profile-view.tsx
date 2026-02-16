@@ -1,5 +1,5 @@
-import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { Form, Formik } from 'formik';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -72,7 +72,11 @@ export function ProfileView() {
         <Stack spacing={3}>
           <Typography variant="h4">Update Profile</Typography>
 
-          <Formik initialValues={initialValues} validationSchema={profileSchema} onSubmit={handleSubmit}>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={profileSchema}
+            onSubmit={handleSubmit}
+          >
             {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
               <Form>
                 <Stack spacing={3}>
@@ -181,7 +185,9 @@ export function ProfileView() {
                               input: {
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>PKR</Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                      PKR
+                                    </Typography>
                                   </InputAdornment>
                                 ),
                               },
@@ -203,7 +209,9 @@ export function ProfileView() {
                               input: {
                                 startAdornment: (
                                   <InputAdornment position="start">
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>PKR</Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                      PKR
+                                    </Typography>
                                   </InputAdornment>
                                 ),
                               },

@@ -3,8 +3,7 @@
  */
 
 import { useState } from 'react';
-
-import { Formik, Form } from 'formik';
+import { Form, Formik } from 'formik';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -30,7 +29,10 @@ export function ForgotPasswordAdminView() {
   const router = useRouter();
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (values: { email: string }, { setStatus }: { setStatus: (s: any) => void }) => {
+  const handleSubmit = async (
+    values: { email: string },
+    { setStatus }: { setStatus: (s: any) => void }
+  ) => {
     try {
       await authService.forgotPasswordAdmin({ email: values.email });
       setSuccess(true);
@@ -53,17 +55,27 @@ export function ForgotPasswordAdminView() {
         </Typography>
       </Stack>
 
-      <Formik initialValues={{ email: '' }} validationSchema={forgotPasswordSchema} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={{ email: '' }}
+        validationSchema={forgotPasswordSchema}
+        onSubmit={handleSubmit}
+      >
         {({ values, errors, touched, handleChange, handleBlur, isSubmitting, status }) => (
           <Form>
             <Stack spacing={3}>
               {(status?.submitError || (errors.email && touched.email)) && !success && (
-                <Alert severity="error" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                <Alert
+                  severity="error"
+                  sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                >
                   {status?.submitError || errors.email}
                 </Alert>
               )}
               {success && (
-                <Alert severity="success" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                <Alert
+                  severity="success"
+                  sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                >
                   Reset code sent! Check your email for the OTP.
                 </Alert>
               )}
@@ -83,7 +95,11 @@ export function ForgotPasswordAdminView() {
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+                        <Iconify
+                          icon="eva:email-outline"
+                          width={20}
+                          sx={{ color: 'text.disabled' }}
+                        />
                       </InputAdornment>
                     ),
                   },
@@ -96,7 +112,14 @@ export function ForgotPasswordAdminView() {
                 type="submit"
                 variant="contained"
                 disabled={isSubmitting || success}
-                sx={{ py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 600, textTransform: 'none', boxShadow: 'none' }}
+                sx={{
+                  py: 1.5,
+                  borderRadius: 2,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: 'none',
+                }}
               >
                 {isSubmitting ? (
                   <Stack direction="row" spacing={1} alignItems="center">
@@ -110,7 +133,12 @@ export function ForgotPasswordAdminView() {
                 )}
               </Button>
               <Box textAlign="center">
-                <Link variant="body2" fontWeight={600} onClick={() => router.push('/sign-in/admin')} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+                <Link
+                  variant="body2"
+                  fontWeight={600}
+                  onClick={() => router.push('/sign-in/admin')}
+                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}
+                >
                   <Iconify icon="eva:arrow-ios-back-outline" width={16} />
                   Back to Sign In
                 </Link>

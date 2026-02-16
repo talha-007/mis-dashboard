@@ -2,11 +2,9 @@
  * Verify OTP Admin View - Formik + Yup validation
  */
 
-import { useState, useEffect } from 'react';
-
-import { Formik, Form } from 'formik';
-
+import { Form, Formik } from 'formik';
 import { toast } from 'react-toastify';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -52,7 +50,10 @@ export function VerifyOtpAdminView() {
       const response = await authService.verifyEmailAdmin({ otp: values.otp, email });
       if (response.status === 200) {
         setSuccess(true);
-        setTimeout(() => router.push(`/admin/new-password?email=${encodeURIComponent(email)}`), 2000);
+        setTimeout(
+          () => router.push(`/admin/new-password?email=${encodeURIComponent(email)}`),
+          2000
+        );
       } else {
         setStatus({ submitError: (response as any).data?.message || 'Verification failed' });
       }
@@ -77,7 +78,13 @@ export function VerifyOtpAdminView() {
   const otpBoxSx = {
     width: { xs: 48, sm: 56 },
     '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused fieldset': { borderWidth: 2 } },
-    '& input': { padding: { xs: '14px 0', sm: '16px 0' }, textAlign: 'center', fontSize: '1.75rem', fontWeight: 700, letterSpacing: '0.1em' },
+    '& input': {
+      padding: { xs: '14px 0', sm: '16px 0' },
+      textAlign: 'center',
+      fontSize: '1.75rem',
+      fontWeight: 700,
+      letterSpacing: '0.1em',
+    },
   };
 
   return (
@@ -89,10 +96,20 @@ export function VerifyOtpAdminView() {
         <Typography variant="body2" color="text.secondary" textAlign="center">
           Enter the 6-digit code sent to your email
         </Typography>
-        {email && <Chip label={email} size="small" sx={{ bgcolor: 'action.hover', fontWeight: 500, fontSize: '0.8125rem' }} />}
+        {email && (
+          <Chip
+            label={email}
+            size="small"
+            sx={{ bgcolor: 'action.hover', fontWeight: 500, fontSize: '0.8125rem' }}
+          />
+        )}
       </Stack>
 
-      <Formik initialValues={{ otp: '' }} validationSchema={verifyOtpSchema} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={{ otp: '' }}
+        validationSchema={verifyOtpSchema}
+        onSubmit={handleSubmit}
+      >
         {({ values, errors, touched, setFieldValue, isSubmitting, setFieldTouched, status }) => {
           const otpArr = (values.otp || '').padEnd(6, ' ').slice(0, 6).split('');
           const handleOtpChange = (index: number, v: string) => {
@@ -103,7 +120,8 @@ export function VerifyOtpAdminView() {
             if (v && index < 5) document.getElementById(`otp-admin-${index + 1}`)?.focus();
           };
           const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-            if (e.key === 'Backspace' && !otpArr[index] && index > 0) document.getElementById(`otp-admin-${index - 1}`)?.focus();
+            if (e.key === 'Backspace' && !otpArr[index] && index > 0)
+              document.getElementById(`otp-admin-${index - 1}`)?.focus();
           };
           const handlePaste = (e: React.ClipboardEvent) => {
             e.preventDefault();
@@ -114,13 +132,21 @@ export function VerifyOtpAdminView() {
             <Form>
               <Stack spacing={3}>
                 {(status?.submitError || (errors.otp && touched.otp)) && (
-                  <Alert severity="error" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
+                  <Alert
+                    severity="error"
+                    sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                  >
                     {status?.submitError || errors.otp}
                   </Alert>
                 )}
                 {success && (
-                  <Alert severity="success" sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}>
-                    {verificationType === 'registration' ? '✓ Account verified!' : '✓ OTP verified! Redirecting to reset password...'}
+                  <Alert
+                    severity="success"
+                    sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+                  >
+                    {verificationType === 'registration'
+                      ? '✓ Account verified!'
+                      : '✓ OTP verified! Redirecting to reset password...'}
                   </Alert>
                 )}
                 <Box sx={{ display: 'flex', gap: { xs: 1, sm: 1.5 }, justifyContent: 'center' }}>
@@ -145,25 +171,52 @@ export function VerifyOtpAdminView() {
                   type="submit"
                   variant="contained"
                   disabled={isSubmitting || success}
-                  sx={{ py: 1.5, borderRadius: 2, fontSize: '1rem', fontWeight: 600, textTransform: 'none', boxShadow: 'none' }}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    boxShadow: 'none',
+                  }}
                 >
                   {isSubmitting ? (
                     <Stack direction="row" spacing={1} alignItems="center">
                       <CircularProgress size={20} color="inherit" />
                       <span>Verifying...</span>
                     </Stack>
-                  ) : success ? 'Verified!' : 'Verify Code'}
+                  ) : success ? (
+                    'Verified!'
+                  ) : (
+                    'Verify Code'
+                  )}
                 </Button>
                 <Box textAlign="center">
                   <Typography variant="body2" color="text.secondary" display="inline">
                     Didn&apos;t receive code?{' '}
                   </Typography>
-                  <Button variant="text" size="small" onClick={handleResend} disabled={resendDisabled || success} sx={{ minWidth: 'auto', fontWeight: 600, textTransform: 'none', px: 0.5 }}>
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={handleResend}
+                    disabled={resendDisabled || success}
+                    sx={{ minWidth: 'auto', fontWeight: 600, textTransform: 'none', px: 0.5 }}
+                  >
                     {resendDisabled ? `Resend in ${countdown}s` : 'Resend Code'}
                   </Button>
                 </Box>
                 <Box textAlign="center">
-                  <Link variant="body2" fontWeight={600} onClick={() => router.push('/sign-in/admin')} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}>
+                  <Link
+                    variant="body2"
+                    fontWeight={600}
+                    onClick={() => router.push('/sign-in/admin')}
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      cursor: 'pointer',
+                    }}
+                  >
                     <Iconify icon="eva:arrow-ios-back-outline" width={16} />
                     Back to Sign In
                   </Link>

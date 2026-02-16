@@ -47,7 +47,20 @@ const responseErrorInterceptor = async (error: any) => {
   // 403 Forbidden - redirect to unauthorized
   if (response?.status === 403) {
     console.warn('[API] 403 Forbidden - access denied');
-    if (typeof window !== 'undefined') {
+
+    // IMPORTANT:
+    // When the app boots we call `/api/users/me` (and sometimes `/api/customers/me`)
+    // inside `initializeAuth()`. If those endpoints return 403 and we hard-redirect
+    // here, the app reloads, re-calls `/me`, and we end up in an infinite redirect loop.
+    //
+    // To avoid that, we SKIP the global 403 redirect for the `/me` endpoints and let
+    // the auth initializer fall back to unauthenticated state (showing the sign‑in page).
+    const url: string = response.config?.url ?? '';
+    const isMeEndpoint =
+      url.includes('/api/users/me') ||
+      url.includes('/api/customers/me');
+
+    if (!isMeEndpoint && typeof window !== 'undefined') {
       window.location.href = '/unauthorized';
     }
   }

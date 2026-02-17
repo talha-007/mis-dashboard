@@ -13,6 +13,7 @@ import { UserRole } from 'src/types/auth.types';
 
 // Import pages directly from their source, not from sections (avoid circular deps)
 const ApplyLoanPage = lazy(() => import('src/pages/customer/apply-loan'));
+const ApplyLoanFormPage = lazy(() => import('src/pages/customer/apply-loan-form'));
 const AssessmentPage = lazy(() => import('src/pages/customer/assessment'));
 const DocumentsPage = lazy(() => import('src/pages/customer/documents'));
 const InstallmentsPage = lazy(() => import('src/pages/customer/installments'));
@@ -26,6 +27,22 @@ export const customerRoutes: RouteObject[] = [
     element: (
       <RoleGuard requiredRole={UserRole.CUSTOMER}>
         <ApplyLoanPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'apply-loan/new',
+    element: (
+      <RoleGuard requiredRole={UserRole.CUSTOMER}>
+        <ApplyLoanFormPage />
+      </RoleGuard>
+    ),
+  },
+  {
+    path: 'apply-loan/:id',
+    element: (
+      <RoleGuard requiredRole={UserRole.CUSTOMER}>
+        <ApplyLoanFormPage />
       </RoleGuard>
     ),
   },

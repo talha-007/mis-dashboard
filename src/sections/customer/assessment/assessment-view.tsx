@@ -152,7 +152,7 @@ export function CustomerAssessmentView() {
               variant="contained"
               size="large"
               startIcon={<Iconify icon="solar:document-add-bold" />}
-              onClick={() => navigate('/apply-loan')}
+              onClick={() => navigate('/apply-loan/new')}
             >
               Apply for loan
             </Button>

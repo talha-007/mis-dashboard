@@ -83,13 +83,21 @@ function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
   const lastName = rest.join(' ') || firstName;
   const subscriptionStatus =
     bankData?.subscriptionStatus ?? meData.subscriptionStatus ?? loginUser.subscriptionStatus;
+
+  // Normalize role coming from /me:
+  // Backend sends role: "user" for customers, but our app expects "customer".
+  let normalizedRole = meData.role ?? loginUser.role;
+  if (normalizedRole === 'user') {
+    normalizedRole = UserRole.CUSTOMER;
+  }
+
   return {
     ...loginUser,
     id: meData.id ?? loginUser.id,
     email: meData.email ?? loginUser.email,
     firstName: meData.firstName ?? loginUser.firstName ?? firstName,
     lastName: meData.lastName ?? loginUser.lastName ?? lastName,
-    role: meData.role ?? loginUser.role,
+    role: normalizedRole,
     subscriptionStatus,
     permissions: loginUser.permissions ?? [],
     isActive: loginUser.isActive ?? true,
@@ -123,6 +131,13 @@ async function fetchMeApi(): Promise<{ user: User; bank: AuthBank | null } | nul
     return { user: merged, bank };
   } catch {
     try {
+      // Only call customer /me when the cached user is a CUSTOMER.
+      // This prevents bank admins from accidentally calling /api/customers/me.
+      const cached = getUserData<User>();
+      if (!cached || cached.role !== UserRole.CUSTOMER) {
+        return null;
+      }
+
       const response = await authService.getCurrentUser({});
       const data = response.data?.data ?? response.data;
       if (!data) return null;

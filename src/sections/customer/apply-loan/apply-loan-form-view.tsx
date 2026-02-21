@@ -21,8 +21,8 @@ import { useParams, useRouter } from 'src/routes/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 import loanApplicationService from 'src/redux/services/loan-applications';
 
-import { Iconify } from 'src/components/iconify';
 import { FormField } from 'src/components/form';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -217,8 +217,8 @@ export function ApplyLoanFormView({ embedded, assessmentSubmissionId }: ApplyLoa
         router.push('/apply-loan');
       } catch (err: unknown) {
         const msg =
-          (err as { response?: { data?: { message?: string } }; message?: string })?.response
-            ?.data?.message ||
+          (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+            ?.message ||
           (err as { message?: string })?.message ||
           'Failed to submit application. Please try again.';
         formik.setStatus({ submitError: msg });
@@ -226,8 +226,18 @@ export function ApplyLoanFormView({ embedded, assessmentSubmissionId }: ApplyLoa
     },
   });
 
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting, status, setStatus, setFieldValue } =
-    formik;
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    isSubmitting,
+    status,
+    setStatus,
+    setFieldValue,
+  } = formik;
 
   const handleCnicChange = useCallback(
     (e: React.ChangeEvent<unknown>) => {
@@ -266,7 +276,10 @@ export function ApplyLoanFormView({ embedded, assessmentSubmissionId }: ApplyLoa
           <Alert severity="warning" sx={{ mb: 2 }}>
             Application not found or you don&apos;t have access to it.
           </Alert>
-          <Button startIcon={<Iconify icon="eva:arrow-back-fill" />} onClick={() => router.push('/apply-loan')}>
+          <Button
+            startIcon={<Iconify icon="eva:arrow-back-fill" />}
+            onClick={() => router.push('/apply-loan')}
+          >
             Back to applications
           </Button>
         </Container>

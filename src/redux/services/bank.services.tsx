@@ -1,5 +1,5 @@
-import superadminService from './superadmin.services';
 import bankAdminService from './bank-admin.services';
+import superadminService from './superadmin.services';
 
 /**
  * Bank Service (facade)
@@ -20,8 +20,7 @@ const deleteBank = (id: string) => superadminService.deleteBank(id);
 const changeBankStatus = (id: string, status: string) =>
   superadminService.changeBankStatus(id, { status });
 
-const searchBankByCode = (code: string) =>
-  superadminService.getBanks({ search: code });
+const searchBankByCode = (code: string) => superadminService.getBanks({ search: code });
 
 const getBankSubscriptionDetails = (bankId: string) =>
   superadminService.getSubscriptionById(bankId);

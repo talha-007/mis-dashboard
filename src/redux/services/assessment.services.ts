@@ -16,30 +16,32 @@ import systemUserService from './system-user.services';
  */
 
 function mapToBankAssessment(raw: any): BankAssessment {
-  const questions: BankAssessment['questions'] = (raw?.questions ?? []).map((q: any, index: number) => {
-    if (q.type === 'multiple_choice') {
+  const questions: BankAssessment['questions'] = (raw?.questions ?? []).map(
+    (q: any, index: number) => {
+      if (q.type === 'multiple_choice') {
+        return {
+          _id: String(q._id ?? q.id ?? index),
+          type: 'multiple_choice' as const,
+          text: q.text,
+          order: q.order ?? index + 1,
+          options: (q.options ?? []).map((o: any, i: number) => ({
+            _id: String(o._id ?? o.id ?? i),
+            text: o.text ?? o.label ?? '',
+            points: Number(o.points ?? o.value ?? o.score ?? 0),
+          })),
+        };
+      }
       return {
         _id: String(q._id ?? q.id ?? index),
-        type: 'multiple_choice' as const,
-        text: q.text,
+        type: 'custom_field' as const,
+        fieldKey: q.fieldKey ?? q.label ?? `field_${index + 1}`,
+        label: q.label ?? q.fieldKey ?? `Field ${index + 1}`,
+        inputType: q.inputType === 'text' ? 'text' : 'number',
         order: q.order ?? index + 1,
-        options: (q.options ?? []).map((o: any, i: number) => ({
-          _id: String(o._id ?? o.id ?? i),
-          text: o.text ?? o.label ?? '',
-          points: Number(o.points ?? o.value ?? o.score ?? 0),
-        })),
+        unit: q.unit,
       };
     }
-    return {
-      _id: String(q._id ?? q.id ?? index),
-      type: 'custom_field' as const,
-      fieldKey: q.fieldKey ?? q.label ?? `field_${index + 1}`,
-      label: q.label ?? q.fieldKey ?? `Field ${index + 1}`,
-      inputType: q.inputType === 'text' ? 'text' : 'number',
-      order: q.order ?? index + 1,
-      unit: q.unit,
-    };
-  });
+  );
   const totalMaxScore = questions.reduce((sum, q) => {
     if (q.type === 'multiple_choice' && q.options?.length) {
       return sum + Math.max(...q.options.map((o) => o.points));
@@ -64,7 +66,10 @@ const getBankAssessment = (_bankId?: string) =>
     return { data: mapToBankAssessment(bankQuestions) };
   });
 
-const updateBankAssessment = (_bankId: string, payload: { questions: BankAssessment['questions'] }) => {
+const updateBankAssessment = (
+  _bankId: string,
+  payload: { questions: BankAssessment['questions'] }
+) => {
   const body = {
     questions: payload.questions.map((q, index) => {
       if (q.type === 'multiple_choice') {
@@ -118,7 +123,7 @@ const submitAssessment = (
 const getMyLatestSubmission = () =>
   systemUserService.getMyAssessments().then((res) => {
     const list = res.data?.data ?? res.data;
-    const arr = Array.isArray(list) ? list : list?.assessments ?? [];
+    const arr = Array.isArray(list) ? list : (list?.assessments ?? []);
     const latest = arr[0] ?? null;
     return { data: latest as AssessmentSubmission | null };
   });

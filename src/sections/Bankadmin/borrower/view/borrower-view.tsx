@@ -63,7 +63,6 @@ export function BorrowerView() {
       if (response.status === 200) {
         setBorrowers(response.data.borrowers);
       }
-
     } catch (err: any) {
       const errorMessage = err?.message || 'Failed to load borrowers';
       setError(errorMessage);

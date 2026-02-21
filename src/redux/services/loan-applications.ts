@@ -7,11 +7,9 @@ import systemUserService from './system-user.services';
  * Endpoints: /api/v1/systemUser/loan-applications, /api/v1/bankAdmin/loan-applications
  */
 
-const create = (data: Record<string, unknown>) =>
-  systemUserService.createLoanApplication(data);
+const create = (data: Record<string, unknown>) => systemUserService.createLoanApplication(data);
 
-const list = (params?: Record<string, unknown>) =>
-  bankAdminService.getLoanApplications(params);
+const list = (params?: Record<string, unknown>) => bankAdminService.getLoanApplications(params);
 
 const get = (id: string) => bankAdminService.getLoanApplicationById(id);
 

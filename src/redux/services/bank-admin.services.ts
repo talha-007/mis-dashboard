@@ -22,7 +22,8 @@ const updateBank = (id: string, data: any) => callAPi.put(`/api/v1/bankAdmin/ban
 const createBorrower = (data: any) => callAPi.post('/api/v1/bankAdmin/borrowers', data);
 const getBorrowers = (params?: any) => callAPi.get('/api/v1/bankAdmin/borrowers', { params });
 const getBorrowerById = (id: string) => callAPi.get(`/api/v1/bankAdmin/borrowers/${id}`);
-const updateBorrower = (id: string, data: any) => callAPi.put(`/api/v1/bankAdmin/borrowers/${id}`, data);
+const updateBorrower = (id: string, data: any) =>
+  callAPi.put(`/api/v1/bankAdmin/borrowers/${id}`, data);
 const deleteBorrower = (id: string) => callAPi.delete(`/api/v1/bankAdmin/borrowers/${id}`);
 
 // --- Loan Applications ---
@@ -44,7 +45,8 @@ const createOrUpdateBankQuestions = (data: any) =>
   callAPi.post('/api/v1/bankAdmin/bank-questions', data);
 const toggleBankQuestionsStatus = (data: any) =>
   callAPi.put('/api/v1/bankAdmin/bank-questions/toggle-status', data);
-const addQuestion = (data: any) => callAPi.post('/api/v1/bankAdmin/bank-questions/add-question', data);
+const addQuestion = (data: any) =>
+  callAPi.post('/api/v1/bankAdmin/bank-questions/add-question', data);
 const updateQuestion = (questionIndex: number, data: any) =>
   callAPi.put(`/api/v1/bankAdmin/bank-questions/update-question/${questionIndex}`, data);
 const removeQuestion = (questionIndex: number) =>
@@ -56,8 +58,7 @@ const getBankQuestionsForCustomer = (bankId: string) =>
 const createPaymentLedger = (data: any) => callAPi.post('/api/v1/bankAdmin/payment-ledgers', data);
 const getPaymentLedgers = (params?: any) =>
   callAPi.get('/api/v1/bankAdmin/payment-ledgers', { params });
-const getPaymentLedgerById = (id: string) =>
-  callAPi.get(`/api/v1/bankAdmin/payment-ledgers/${id}`);
+const getPaymentLedgerById = (id: string) => callAPi.get(`/api/v1/bankAdmin/payment-ledgers/${id}`);
 const updatePaymentLedger = (id: string, data: any) =>
   callAPi.put(`/api/v1/bankAdmin/payment-ledgers/${id}`, data);
 const deletePaymentLedger = (id: string) =>
@@ -78,6 +79,13 @@ const deleteRecoveryOverdue = (id: string) =>
 // --- Installments ---
 const getInstallmentsByCustomerId = (customerId: string) =>
   callAPi.get(`/api/v1/bankAdmin/installments/${customerId}`);
+
+// --- Users (General) ---
+const createUser = (data: any) => callAPi.post('/api/users/general', data);
+const getUsers = (params?: any) => callAPi.get('/api/users/general', { params });
+const getUserById = (userId: string) => callAPi.get(`/api/users/general/${userId}`);
+const updateUser = (userId: string, data: any) => callAPi.put(`/api/users/general/${userId}`, data);
+const deleteUser = (userId: string) => callAPi.delete(`/api/users/general/${userId}`);
 
 // --- Subscriptions (create - Bank Token) ---
 const createSubscription = (data: any) => callAPi.post('/api/v1/subscriptions', data);
@@ -118,6 +126,11 @@ const bankAdminService = {
   updateRecoveryOverdue,
   deleteRecoveryOverdue,
   getInstallmentsByCustomerId,
+  createUser,
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
   createSubscription,
 };
 

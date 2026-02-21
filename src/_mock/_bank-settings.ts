@@ -49,6 +49,10 @@ export interface SystemSettings {
 
 export const _systemSettings: SystemSettings = {
   masterAccessControl: { enableAllBanks: false, maintenanceMode: false },
-  globalSecurity: { requireTwoFactorAuth: false, defaultSessionTimeout: 30, enforcePasswordPolicy: true },
+  globalSecurity: {
+    requireTwoFactorAuth: false,
+    defaultSessionTimeout: 30,
+    enforcePasswordPolicy: true,
+  },
   notifications: { emailAlerts: false, smsAlerts: false, systemMaintenanceAlerts: false },
 };

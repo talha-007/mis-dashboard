@@ -1,9 +1,9 @@
 import type { MeUser, MeProfileResponse } from 'src/types/me.types';
 
 import commonService from './common.services';
-import superadminService from './superadmin.services';
-import bankAdminService from './bank-admin.services';
 import customerService from './customer.services';
+import bankAdminService from './bank-admin.services';
+import superadminService from './superadmin.services';
 
 /**
  * Auth Service (facade)

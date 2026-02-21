@@ -1,0 +1,254 @@
+import { toast } from 'react-toastify';
+import { useState, useEffect, useCallback } from 'react';
+
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import Table from '@mui/material/Table';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import TableRow from '@mui/material/TableRow';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import LoadingButton from '@mui/lab/LoadingButton';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TableContainer from '@mui/material/TableContainer';
+import TablePagination from '@mui/material/TablePagination';
+import CircularProgress from '@mui/material/CircularProgress';
+
+import { useRouter } from 'src/routes/hooks';
+
+import { DashboardContent } from 'src/layouts/dashboard';
+import usersService from 'src/redux/services/users.services';
+
+import { Iconify } from 'src/components/iconify';
+import { Scrollbar } from 'src/components/scrollbar';
+
+import { UsersTableRow } from '../users-table-row';
+import { UsersTableHead } from '../users-table-head';
+import { UsersTableToolbar } from '../users-table-toolbar';
+
+const TABLE_HEAD = [
+  { id: 'firstName', label: 'First Name', width: 150 },
+  { id: 'lastName', label: 'Last Name', width: 150 },
+  { id: 'email', label: 'Email', width: 200 },
+  { id: 'phone', label: 'Phone', width: 150 },
+  { id: 'role', label: 'Role', width: 120 },
+ 
+  { id: '', label: '', width: 80 },
+];
+
+export function UsersView() {
+  const router = useRouter();
+
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    open: false,
+    id: null as string | null,
+  });
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const params = {
+        page: page + 1,
+        limit: rowsPerPage,
+      };
+      const response = await usersService.list(params);
+
+      if (response.status === 200 && response.data) {
+        const { users = [], pagination = {} } = response.data;
+
+        // Extract users array and set table data
+        setTableData(Array.isArray(users) ? users : []);
+
+        // Set pagination info
+        setTotalCount(pagination.total || 0);
+        setTotalPages(pagination.totalPages || 1);
+
+        setError(null);
+      }
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to fetch users';
+      setError(errorMessage);
+      console.error('Error fetching users:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [page, rowsPerPage]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleAddUser = () => {
+    router.push('/users-management/add');
+  };
+
+  const handleEditRow = (userId: string) => {
+    router.push(`/users-management/edit/${userId}`);
+  };
+
+  const handleViewRow = (userId: string) => {
+    router.push(`/users-management/view/${userId}`);
+  };
+
+  const handleDeleteRow = (userId: string) => {
+    setDeleteConfirm({ open: true, id: userId });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm.id) return;
+
+    setIsDeleting(true);
+    try {
+      await usersService.deleteById(deleteConfirm.id);
+      toast.success('User deleted successfully!');
+      setDeleteConfirm({ open: false, id: null });
+      fetchUsers();
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to delete user';
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirm({ open: false, id: null });
+  };
+
+  return (
+    <DashboardContent>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Box>
+          <h2>Users Management</h2>
+          <p style={{ color: '#999', marginTop: 4 }}>Manage general users in the system</p>
+        </Box>
+        <Button
+          variant="contained"
+          color="inherit"
+          startIcon={<Iconify icon="eva:plus-fill" />}
+          onClick={handleAddUser}
+        >
+          Add User
+        </Button>
+      </Box>
+
+      {error && (
+        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Card>
+        <UsersTableToolbar />
+
+        {isLoading ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 400,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <Scrollbar>
+              <TableContainer sx={{ overflow: 'unset' }}>
+                <Table sx={{ minWidth: 800 }}>
+                  <UsersTableHead headLabel={TABLE_HEAD} />
+                  <TableBody>
+                    {tableData.length > 0 ? (
+                      tableData.map((row) => (
+                        <UsersTableRow
+                          key={row.id}
+                          id={row.id}
+                          firstName={row.name || ''}
+                          lastName={row.lastname || ''}
+                          email={row.email}
+                          phone={row.phone || 'N/A'}
+                          role={row.role || 'user'}
+                         
+                          onViewRow={handleViewRow}
+                          onEditRow={handleEditRow}
+                          onDeleteRow={handleDeleteRow}
+                        />
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={TABLE_HEAD.length} sx={{ textAlign: 'center', py: 3 }}>
+                          No users found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Scrollbar>
+
+            <TablePagination
+              page={page}
+              component="div"
+              count={totalCount}
+              rowsPerPage={rowsPerPage}
+              onPageChange={handleChangePage}
+              rowsPerPageOptions={[5, 10, 25]}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </>
+        )}
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirm.open} onClose={handleCancelDelete}>
+        <DialogTitle>Delete User?</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this user? This action cannot be undone.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} disabled={isDeleting}>
+            Cancel
+          </Button>
+          <LoadingButton
+            onClick={handleConfirmDelete}
+            loading={isDeleting}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
+    </DashboardContent>
+  );
+}

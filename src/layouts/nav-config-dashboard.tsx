@@ -54,6 +54,11 @@ export const adminNavData: NavItem[] = [
     icon: icon('borrowers'),
   },
   {
+    title: 'Customer Management',
+    path: '/users-management',
+    icon: icon('customers'),
+  },
+  {
     title: 'Loan Applications',
     path: '/loan-applications',
     icon: icon('applications'),

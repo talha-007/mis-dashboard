@@ -240,7 +240,6 @@ export function AssessmentView() {
             >
               Add question (score)
             </Button>
-           
           </Box>
         </Card>
       ) : (

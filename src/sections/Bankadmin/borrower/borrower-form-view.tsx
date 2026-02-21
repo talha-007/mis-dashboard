@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
-import { Form, Formik } from 'formik';
 import { useCallback } from 'react';
+import { Form, Formik } from 'formik';
 import { toast } from 'react-toastify';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -105,10 +105,7 @@ function BorrowerFormFields({
   const handleLoanAmountChange = useCallback(
     (e: React.ChangeEvent<unknown>) => {
       const target = (e as React.ChangeEvent<HTMLInputElement>).target;
-      setFieldValue(
-        'loanAmount',
-        target.value === '' ? 0 : parseFloat(target.value) || 0
-      );
+      setFieldValue('loanAmount', target.value === '' ? 0 : parseFloat(target.value) || 0);
     },
     [setFieldValue]
   );
@@ -202,12 +199,7 @@ function BorrowerFormFields({
           rows={3}
         />
         <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end', pt: 2 }}>
-          <Button
-            variant="outlined"
-            color="inherit"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+          <Button variant="outlined" color="inherit" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           <LoadingButton

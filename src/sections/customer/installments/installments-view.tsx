@@ -31,7 +31,9 @@ export function InstallmentsView() {
   const [orderBy, setOrderBy] = useState('month');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [installments, setInstallments] = useState<import('src/_mock/_installment').Installment[]>([]);
+  const [installments, setInstallments] = useState<import('src/_mock/_installment').Installment[]>(
+    []
+  );
 
   const dataFiltered = applyFilter({
     inputData: installments,

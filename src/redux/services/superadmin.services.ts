@@ -8,8 +8,12 @@ import { callAPi } from './http-common';
 
 const login = (data: any) => callAPi.post('/api/v1/superadmin-login', data);
 
-const getSystemUsers = (params?: { search?: string; page?: number; limit?: number; role?: string }) =>
-  callAPi.get('/api/v1/users', { params });
+const getSystemUsers = (params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+  role?: string;
+}) => callAPi.get('/api/v1/users', { params });
 
 const getBanks = (params?: any) => callAPi.get('/api/v1/superAdmin/banks/', { params });
 
@@ -22,7 +26,8 @@ const changeBankStatus = (id: string, data: any) =>
 
 const deleteBank = (id: string) => callAPi.delete(`/api/v1/superAdmin/banks/${id}`);
 
-const getSubscriptions = (params?: any) => callAPi.get('/api/v1/superAdmin/subscriptions', { params });
+const getSubscriptions = (params?: any) =>
+  callAPi.get('/api/v1/superAdmin/subscriptions', { params });
 
 const getSubscriptionById = (id: string) => callAPi.get(`/api/v1/superAdmin/subscriptions/${id}`);
 

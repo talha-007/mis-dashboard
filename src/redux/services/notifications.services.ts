@@ -12,8 +12,7 @@ const getAll = (userId: string, params?: any) =>
 const getUnreadCount = (userId: string) =>
   callAPi.get(`/api/v1/notifications/user/${userId}/unread-count`);
 
-const getById = (notificationId: string) =>
-  callAPi.get(`/api/v1/notifications/${notificationId}`);
+const getById = (notificationId: string) => callAPi.get(`/api/v1/notifications/${notificationId}`);
 
 const markAsRead = (notificationId: string) =>
   callAPi.put(`/api/v1/notifications/${notificationId}/read`);

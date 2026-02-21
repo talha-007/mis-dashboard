@@ -6,11 +6,9 @@ import { callAPi } from './http-common';
  * Endpoints: /api/v1/*
  */
 
-const createLoanApplication = (data: any) =>
-  callAPi.post('/api/v1/loan-applications', data);
+const createLoanApplication = (data: any) => callAPi.post('/api/v1/loan-applications', data);
 
-const submitAssessment = (data: any) =>
-  callAPi.post('/api/v1/assessments/submit', data);
+const submitAssessment = (data: any) => callAPi.post('/api/v1/assessments/submit', data);
 
 const getMyAssessments = (params?: any) =>
   callAPi.get('/api/v1/assessments/my-assessments', { params });

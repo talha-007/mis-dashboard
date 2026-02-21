@@ -27,7 +27,9 @@ export function PaymentView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
-  const [payments, setPayments] = useState<{ id: string; date: string; borrower: string; amount: number; status: string }[]>([]);
+  const [payments, setPayments] = useState<
+    { id: string; date: string; borrower: string; amount: number; status: string }[]
+  >([]);
 
   const dataFiltered = applyFilter({
     inputData: payments,

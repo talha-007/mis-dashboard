@@ -149,7 +149,6 @@ export const routesSection: RouteObject[] = [
       ...superAdminRoutes,
       ...adminRoutes,
       ...customerRoutes,
-
     ],
   },
 

@@ -10,13 +10,15 @@ import superadminService from './superadmin.services';
 const getPaymentLedgers = (params?: any) => bankAdminService.getPaymentLedgers(params);
 const getPaymentLedgerById = (id: string) => bankAdminService.getPaymentLedgerById(id);
 const createPaymentLedger = (data: any) => bankAdminService.createPaymentLedger(data);
-const updatePaymentLedger = (id: string, data: any) => bankAdminService.updatePaymentLedger(id, data);
+const updatePaymentLedger = (id: string, data: any) =>
+  bankAdminService.updatePaymentLedger(id, data);
 const deletePaymentLedger = (id: string) => bankAdminService.deletePaymentLedger(id);
 
 const getBankSubscriptions = (params?: any) => superadminService.getSubscriptions(params);
 const getSubscriptionById = (id: string) => superadminService.getSubscriptionById(id);
 const createSubscription = (data: any) => bankAdminService.createSubscription(data);
-const updateSubscription = (id: string, data: any) => superadminService.updateSubscription(id, data);
+const updateSubscription = (id: string, data: any) =>
+  superadminService.updateSubscription(id, data);
 const deleteSubscription = (id: string) => superadminService.deleteSubscription(id);
 
 // Legacy names for compatibility

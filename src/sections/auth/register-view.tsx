@@ -7,7 +7,7 @@ import type { RegisterData } from 'src/types/auth.types';
 
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
-import { useState, useEffect, useCallback, memo } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -164,10 +164,13 @@ const FormPasswordField = memo(function FormPasswordField({
           ),
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={onTogglePassword} edge="end" size="small" aria-label="toggle password">
-                <Iconify
-                  icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
-                />
+              <IconButton
+                onClick={onTogglePassword}
+                edge="end"
+                size="small"
+                aria-label="toggle password"
+              >
+                <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
               </IconButton>
             </InputAdornment>
           ),

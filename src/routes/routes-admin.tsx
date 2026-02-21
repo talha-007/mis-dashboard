@@ -25,6 +25,10 @@ const CreditProposalReportsPage = lazy(() => import('src/pages/admin/credit-prop
 const CreditProposalReportDetailPage = lazy(
   () => import('src/pages/admin/credit-proposal-report-detail')
 );
+const UsersManagementPage = lazy(() => import('src/pages/admin/users-management'));
+const UsersAddPage = lazy(() => import('src/pages/admin/users-add'));
+const UsersEditPage = lazy(() => import('src/pages/admin/users-edit'));
+const UsersDetailPage = lazy(() => import('src/pages/admin/users-detail'));
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -112,6 +116,38 @@ export const adminRoutes: RouteObject[] = [
     element: (
       <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
         <MISReportsPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'users-management',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <UsersManagementPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'users-management/add',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <UsersAddPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'users-management/edit/:userId',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <UsersEditPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'users-management/view/:userId',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <UsersDetailPage />
       </MultiRoleGuard>
     ),
   },

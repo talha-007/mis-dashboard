@@ -24,7 +24,6 @@ import { bankDynamicRoutes } from './routes-bank-dynamic';
 
 // Dashboard
 export const DashboardPage = lazy(() => import('src/pages/dashboard/dashboard'));
-export const BlogPage = lazy(() => import('src/pages/dashboard/blog'));
 
 // Super Admin
 export const BankManagementPage = lazy(() => import('src/pages/super-admin/bank-management'));
@@ -151,7 +150,6 @@ export const routesSection: RouteObject[] = [
       ...adminRoutes,
       ...customerRoutes,
 
-      { path: 'blog', element: <BlogPage /> },
     ],
   },
 

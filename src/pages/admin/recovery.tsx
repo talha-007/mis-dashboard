@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { RecoveryView } from 'src/sections/recovery/view';
+import { RecoveryView } from 'src/sections/Bankadmin/recovery/view';
 
 // ----------------------------------------------------------------------
 

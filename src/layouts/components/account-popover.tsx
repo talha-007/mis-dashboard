@@ -17,8 +17,13 @@ import { useRouter, usePathname } from 'src/routes/hooks';
 
 import { clearAuthToken } from 'src/utils/auth-storage';
 
-import { _myAccount } from 'src/_mock';
 import { logout } from 'src/redux/slice/authSlice';
+
+const placeholderAccount = {
+  displayName: 'User',
+  email: '',
+  photoURL: '',
+};
 
 // ----------------------------------------------------------------------
 
@@ -68,8 +73,8 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         }}
         {...other}
       >
-        <Avatar src={_myAccount.photoURL} alt={_myAccount.displayName} sx={{ width: 1, height: 1 }}>
-          {_myAccount.displayName.charAt(0).toUpperCase()}
+        <Avatar src={placeholderAccount.photoURL} alt={placeholderAccount.displayName} sx={{ width: 1, height: 1 }}>
+          {placeholderAccount.displayName.charAt(0).toUpperCase()}
         </Avatar>
       </IconButton>
 
@@ -87,11 +92,11 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       >
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {_myAccount?.displayName}
+            {placeholderAccount?.displayName}
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {_myAccount?.email}
+            {placeholderAccount?.email}
           </Typography>
         </Box>
 

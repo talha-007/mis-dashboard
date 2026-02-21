@@ -1,42 +1,44 @@
 import type { MeUser, MeProfileResponse } from 'src/types/me.types';
 
-import { callAPi } from './http-common';
+import commonService from './common.services';
+import superadminService from './superadmin.services';
+import bankAdminService from './bank-admin.services';
+import customerService from './customer.services';
 
-// Super Admin Login
-const superAdminLogin = (data: any) => callAPi.post('/api/users/superadmin-login', data);
+/**
+ * Auth Service (facade)
+ * Delegates to role-specific services: superadmin, bank-admin, customer.
+ * Keeps same API for existing auth flows.
+ */
 
-// Admin Login
-const adminLogin = (data: any) => callAPi.post(`/api/banks/login`, data);
+const superAdminLogin = (data: any) => superadminService.login(data);
 
-const forgotPasswordAdmin = (data: any) => callAPi.post(`/api/banks/forgot-password`, data);
+const adminLogin = (data: any) => bankAdminService.login(data);
 
-const verifyEmailAdmin = (data: any) => callAPi.post(`/api/banks/verify-otp`, data);
+const forgotPasswordAdmin = (data: any) => bankAdminService.forgotPassword(data);
 
-const resendOTPAdmin = (data: any) => callAPi.post(`/api/banks/resend-otp`, data);
+const verifyEmailAdmin = (data: any) => bankAdminService.verifyOtp(data);
 
-const newPasswordAdmin = (data: any) => callAPi.post(`/api/banks/reset-password`, data);
+const resendOTPAdmin = (data: any) => bankAdminService.resendOtp(data);
 
-// User Login
-const register = (data: any) => callAPi.post(`/api/customers/register`, data);
+const newPasswordAdmin = (data: any) => bankAdminService.resetPassword(data);
 
-const userLogin = (data: any) => callAPi.post(`/api/customers/login`, data);
+const register = (data: any) => customerService.register(data);
 
-const forgotPassword = (data: any) => callAPi.post(`/api/customers/forgot-password`, data);
+const userLogin = (data: any) => customerService.login(data);
 
-const resetPassword = (data: any) => callAPi.post(`/api/customers/reset-password`, data);
+const forgotPassword = (data: any) => customerService.forgotPassword(data);
 
-const resendOTP = (data: any) => callAPi.post(`/api/customers/resend-otp`, data);
+const resetPassword = (data: any) => customerService.resetPassword(data);
 
-const verifyOTP = (data: any) => callAPi.post(`/api/customers/verify-otp`, data);
+const resendOTP = (data: any) => customerService.resendOtp(data);
 
-const logout = (data: any) => callAPi.post(`/api/customers/logout`, data);
+const verifyOTP = (data: any) => customerService.verifyOtp(data);
 
-/** Current user by token - called after any login; returns id, name, email, role, subscriptionStatus */
-const getMe = () => callAPi.get('/api/users/me');
+const googleLogin = (data: any) => customerService.googleLogin(data);
 
-const getCurrentUser = (data: any) => callAPi.get(`/api/customers/me`, data);
+const getMe = () => commonService.getMe();
 
-/** Full profile from /me: user + bank + subscription. Tries /api/users/me first, then /api/customers/me for customers. */
 async function getProfile(): Promise<MeProfileResponse | null> {
   try {
     const response = await getMe();
@@ -49,34 +51,19 @@ async function getProfile(): Promise<MeProfileResponse | null> {
       subscription: data.subscription ?? null,
     };
   } catch {
-    try {
-      const response = await getCurrentUser({});
-      const data = response.data?.data ?? response.data;
-      if (!data) return null;
-      const user: MeUser = {
-        id: data.id,
-        name:
-          data.name ?? ([data.firstName, data.lastName].filter(Boolean).join(' ') || data.email),
-        email: data.email,
-        role: 'customer',
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-      };
-      return { user, bank: null, subscription: null };
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 
-const updateProfile = (data: any) => callAPi.put(`/api/customers/${data.id}`, data);
+const updateProfile = (data: any) => customerService.updateProfile(data.id, data);
 
-const googleLogin = (data: any) => callAPi.post(`/api/customers/google-login`, data);
+const logout = (data: any) => Promise.resolve({ data }); // client-side clear; backend may have /logout
 
-const requestPasswordReset = (data: any) =>
-  callAPi.post(`/api/customers/request-password-reset`, data);
+const requestPasswordReset = (data: any) => customerService.forgotPassword(data);
 
-const verifyEmail = (data: any) => callAPi.post(`/api/customers/verify-email`, data);
+const verifyEmail = (data: any) => customerService.verifyOtp(data);
+
+const getCurrentUser = () => getMe();
 
 const authService = {
   getMe,

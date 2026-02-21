@@ -99,6 +99,8 @@ export function SignInAdminView() {
         initialValues={{ email: '', password: '' }}
         validationSchema={signInSchema}
         onSubmit={handleSubmit}
+        validateOnChange={false}
+        validateOnBlur
       >
         {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
           <Form>

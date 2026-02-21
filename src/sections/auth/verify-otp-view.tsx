@@ -107,6 +107,8 @@ export function VerifyOtpView() {
         initialValues={{ otp: '' }}
         validationSchema={verifyOtpSchema}
         onSubmit={handleSubmit}
+        validateOnChange={false}
+        validateOnBlur
       >
         {({ values, errors, touched, setFieldValue, isSubmitting, setFieldTouched, status }) => {
           const otpArr = (values.otp || '').padEnd(6, ' ').slice(0, 6).split('');

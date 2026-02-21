@@ -8,7 +8,7 @@ import bankService from 'src/redux/services/bank.services';
 import {
   BankDetailsView,
   type BankDetailsResponse,
-} from 'src/sections/bank/view/bank-details-view';
+} from 'src/sections/Superadmin/bank/view/bank-details-view';
 
 // ----------------------------------------------------------------------
 

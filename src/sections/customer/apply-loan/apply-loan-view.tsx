@@ -1,8 +1,7 @@
 import type { CustomerLoanApplication } from 'src/_mock/_customer-loan-application';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
@@ -16,54 +15,87 @@ import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
+
 import { DashboardContent } from 'src/layouts/dashboard';
-import { _customerLoanApplications } from 'src/_mock/_customer-loan-application';
+import loanApplicationService from 'src/redux/services/loan-applications';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 // ----------------------------------------------------------------------
 
-const STORAGE_KEY = 'customer_loan_applications';
-
-function loadApplications(): CustomerLoanApplication[] {
-  if (typeof window === 'undefined') return _customerLoanApplications;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return _customerLoanApplications;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length ? parsed : _customerLoanApplications;
-  } catch {
-    return _customerLoanApplications;
-  }
-}
-
-function saveApplications(apps: CustomerLoanApplication[]) {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
-  } catch {
-    // ignore
-  }
+/** Map API loan application to list shape (id, customerName, cnic, city, loanAmount, installmentAmount, status, etc.) */
+function mapApiToApplication(item: Record<string, unknown>): CustomerLoanApplication {
+  const id = String(item.id ?? item._id ?? '');
+  const loanAmount = Number(item.loanAmount ?? 0);
+  const installmentAmount = Number(item.installmentAmount ?? 0);
+  return {
+    id,
+    customerName: String(item.customerName ?? item.name ?? ''),
+    fatherName: String(item.fatherName ?? ''),
+    cnic: String(item.cnic ?? ''),
+    city: String(item.city ?? ''),
+    region: String(item.region ?? ''),
+    loanAmount,
+    installmentAmount,
+    businessIncome: 0,
+    investmentIncome: 0,
+    salaryIncome: 0,
+    houseRental: 0,
+    carRental: 0,
+    utilitiesBill: 0,
+    installmentsOther: 0,
+    fuelExpenses: 0,
+    groceryExpenses: 0,
+    medicalBills: 0,
+    insurance: 0,
+    fees: 0,
+    otherExpenses: 0,
+    miscellaneous: 0,
+    status: (item.status as CustomerLoanApplication['status']) ?? 'submitted',
+    createdAt: String(item.createdAt ?? ''),
+    updatedAt: String(item.updatedAt ?? ''),
+  };
 }
 
 export function ApplyLoanView() {
   const router = useRouter();
   const [applications, setApplications] = useState<CustomerLoanApplication[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setApplications(loadApplications());
+  const fetchApplications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await loanApplicationService.list();
+      const raw = res.data?.data ?? res.data;
+      const list = Array.isArray(raw) ? raw : raw?.applications ?? raw?.list ?? [];
+      const mapped = (list as Record<string, unknown>[]).map(mapApiToApplication).filter((a) => a.id);
+      setApplications(mapped.length ? mapped : []);
+    } catch {
+      setApplications([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleDelete = (id: string) => {
-    setApplications((prev) => {
-      const next = prev.filter((app) => app.id !== id);
-      saveApplications(next);
-      return next;
-    });
-  };
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
+
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        await loanApplicationService.deleteById(id);
+        setApplications((prev) => prev.filter((app) => app.id !== id));
+      } catch {
+        setApplications((prev) => prev.filter((app) => app.id !== id));
+      }
+    },
+    []
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -97,6 +129,11 @@ export function ApplyLoanView() {
 
           {/* Applications Table */}
           <Card>
+            {loading ? (
+              <Stack alignItems="center" justifyContent="center" sx={{ py: 6 }}>
+                <CircularProgress />
+              </Stack>
+            ) : (
             <Scrollbar>
               <TableContainer sx={{ minWidth: 800 }}>
                 <Table>
@@ -145,8 +182,8 @@ export function ApplyLoanView() {
                 </Table>
               </TableContainer>
             </Scrollbar>
+            )}
           </Card>
-
         </Stack>
       </Container>
     </DashboardContent>

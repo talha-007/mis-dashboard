@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
+import { useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -7,11 +8,11 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import { FormField } from 'src/components/form';
 
 const sanitizePhone = (value: string) => value.replace(/[^\d+\s\-()]/g, '');
 const sanitizeCnic = (value: string) => {
@@ -60,6 +61,179 @@ const initialValues: ProfileFormValues = {
   monthlyExpense: '30000',
 };
 
+const pkrSlotProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          PKR
+        </Typography>
+      </InputAdornment>
+    ),
+  },
+} as const;
+
+type ProfileFormFieldsProps = {
+  values: ProfileFormValues;
+  errors: Record<string, string | undefined>;
+  touched: Record<string, boolean | undefined>;
+  handleChange: (e: React.ChangeEvent<unknown>) => void;
+  handleBlur: (e: React.FocusEvent<unknown>) => void;
+  setFieldValue: (field: string, value: unknown) => void;
+};
+
+function ProfileFormFields({
+  values,
+  errors,
+  touched,
+  handleChange,
+  handleBlur,
+  setFieldValue,
+}: ProfileFormFieldsProps) {
+  const handlePhoneChange = useCallback(
+    (e: React.ChangeEvent<unknown>) => {
+      const target = (e as React.ChangeEvent<HTMLInputElement>).target;
+      setFieldValue('phone', sanitizePhone(target.value));
+    },
+    [setFieldValue]
+  );
+  const handleCnicChange = useCallback(
+    (e: React.ChangeEvent<unknown>) => {
+      const target = (e as React.ChangeEvent<HTMLInputElement>).target;
+      setFieldValue('cnic', sanitizeCnic(target.value));
+    },
+    [setFieldValue]
+  );
+  return (
+    <Form>
+      <Stack spacing={3}>
+        <Card>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 3 }}>
+              Personal Information
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="First Name"
+                  name="firstName"
+                  value={values.firstName}
+                  error={errors.firstName}
+                  touched={touched.firstName}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="Last Name"
+                  name="lastName"
+                  value={values.lastName}
+                  error={errors.lastName}
+                  touched={touched.lastName}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={values.email}
+                  error={errors.email}
+                  touched={touched.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="Phone"
+                  name="phone"
+                  value={values.phone}
+                  error={errors.phone}
+                  touched={touched.phone}
+                  onChange={handlePhoneChange}
+                  onBlur={handleBlur}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="CNIC"
+                  name="cnic"
+                  value={values.cnic}
+                  error={errors.cnic}
+                  touched={touched.cnic}
+                  onChange={handleCnicChange}
+                  onBlur={handleBlur}
+                  inputProps={{ maxLength: 15 }}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="Address"
+                  name="address"
+                  value={values.address}
+                  error={errors.address}
+                  touched={touched.address}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </Card>
+
+        <Card>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 3 }}>
+              Financial Information
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="Monthly Income"
+                  name="monthlyIncome"
+                  type="number"
+                  value={values.monthlyIncome}
+                  error={errors.monthlyIncome}
+                  touched={touched.monthlyIncome}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  slotProps={pkrSlotProps}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormField
+                  label="Monthly Expense"
+                  name="monthlyExpense"
+                  type="number"
+                  value={values.monthlyExpense}
+                  error={errors.monthlyExpense}
+                  touched={touched.monthlyExpense}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  slotProps={pkrSlotProps}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </Card>
+
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button type="button" variant="outlined" size="large">
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained" size="large">
+            Update Profile
+          </Button>
+        </Box>
+      </Stack>
+    </Form>
+  );
+}
+
 export function ProfileView() {
   const handleSubmit = (values: ProfileFormValues) => {
     console.log('Profile updated:', values);
@@ -76,162 +250,18 @@ export function ProfileView() {
             initialValues={initialValues}
             validationSchema={profileSchema}
             onSubmit={handleSubmit}
+            validateOnChange={false}
+            validateOnBlur
           >
             {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
-              <Form>
-                <Stack spacing={3}>
-                  <Card>
-                    <Box sx={{ p: 3 }}>
-                      <Typography variant="h6" sx={{ mb: 3 }}>
-                        Personal Information
-                      </Typography>
-                      <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="First Name"
-                            name="firstName"
-                            value={values.firstName}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.firstName && errors.firstName)}
-                            helperText={touched.firstName && errors.firstName}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Last Name"
-                            name="lastName"
-                            value={values.lastName}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.lastName && errors.lastName)}
-                            helperText={touched.lastName && errors.lastName}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Email"
-                            name="email"
-                            type="email"
-                            value={values.email}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.email && errors.email)}
-                            helperText={touched.email && errors.email}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Phone"
-                            name="phone"
-                            value={values.phone}
-                            onChange={(e) => setFieldValue('phone', sanitizePhone(e.target.value))}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.phone && errors.phone)}
-                            helperText={touched.phone && errors.phone}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="CNIC"
-                            name="cnic"
-                            value={values.cnic}
-                            onChange={(e) => setFieldValue('cnic', sanitizeCnic(e.target.value))}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.cnic && errors.cnic)}
-                            helperText={touched.cnic && errors.cnic}
-                            inputProps={{ maxLength: 15 }}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Address"
-                            name="address"
-                            value={values.address}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.address && errors.address)}
-                            helperText={touched.address && errors.address}
-                          />
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Card>
-
-                  <Card>
-                    <Box sx={{ p: 3 }}>
-                      <Typography variant="h6" sx={{ mb: 3 }}>
-                        Financial Information
-                      </Typography>
-                      <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Monthly Income"
-                            name="monthlyIncome"
-                            type="number"
-                            value={values.monthlyIncome}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.monthlyIncome && errors.monthlyIncome)}
-                            helperText={touched.monthlyIncome && errors.monthlyIncome}
-                            slotProps={{
-                              input: {
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                      PKR
-                                    </Typography>
-                                  </InputAdornment>
-                                ),
-                              },
-                            }}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                          <TextField
-                            fullWidth
-                            label="Monthly Expense"
-                            name="monthlyExpense"
-                            type="number"
-                            value={values.monthlyExpense}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={Boolean(touched.monthlyExpense && errors.monthlyExpense)}
-                            helperText={touched.monthlyExpense && errors.monthlyExpense}
-                            slotProps={{
-                              input: {
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                                      PKR
-                                    </Typography>
-                                  </InputAdornment>
-                                ),
-                              },
-                            }}
-                          />
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Card>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                    <Button type="button" variant="outlined" size="large">
-                      Cancel
-                    </Button>
-                    <Button type="submit" variant="contained" size="large">
-                      Update Profile
-                    </Button>
-                  </Box>
-                </Stack>
-              </Form>
+              <ProfileFormFields
+                values={values}
+                errors={errors}
+                touched={touched}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+                setFieldValue={setFieldValue}
+              />
             )}
           </Formik>
         </Stack>

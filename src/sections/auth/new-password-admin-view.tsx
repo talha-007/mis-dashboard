@@ -90,6 +90,8 @@ export function NewPasswordAdminView() {
         initialValues={{ newPassword: '', confirmPassword: '' }}
         validationSchema={newPasswordAdminSchema}
         onSubmit={handleSubmit}
+        validateOnChange={false}
+        validateOnBlur
       >
         {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
           <Form>

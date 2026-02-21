@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { AssessmentView } from 'src/sections/assessment/view';
+import { AssessmentView } from 'src/sections/Bankadmin/assessment/view';
 
 // ----------------------------------------------------------------------
 

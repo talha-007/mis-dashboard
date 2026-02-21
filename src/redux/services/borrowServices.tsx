@@ -1,25 +1,20 @@
-import { callAPi } from './http-common';
+import bankAdminService from './bank-admin.services';
 
 /**
- * Borrower Service
- * Handles API calls for borrower management
- * Endpoints: /api/borrowers
+ * Borrower Service (facade)
+ * Delegates to bank-admin.service borrowers API.
+ * Endpoints: /api/v1/bankAdmin/borrowers
  */
 
-// Create a new borrower
-const create = (data: any) => callAPi.post('/api/borrowers', data);
+const create = (data: any) => bankAdminService.createBorrower(data);
 
-// Get all borrowers with optional pagination and filters
-const list = (params?: any) => callAPi.get('/api/borrowers', { params });
+const list = (params?: any) => bankAdminService.getBorrowers(params);
 
-// Get a single borrower by ID
-const get = (id: string) => callAPi.get(`/api/borrowers/${id}`);
+const get = (id: string) => bankAdminService.getBorrowerById(id);
 
-// Update a borrower
-const update = (id: string, data: any) => callAPi.put(`/api/borrowers/${id}`, data);
+const update = (id: string, data: any) => bankAdminService.updateBorrower(id, data);
 
-// Delete a borrower
-const deleteById = (id: string) => callAPi.delete(`/api/borrowers/${id}`);
+const deleteById = (id: string) => bankAdminService.deleteBorrower(id);
 
 const borrowerService = {
   create,

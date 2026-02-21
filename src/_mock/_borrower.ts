@@ -1,4 +1,4 @@
-import type { BorrowerProps } from 'src/sections/borrower/borrower-table-row';
+import type { BorrowerProps } from 'src/sections/Bankadmin/borrower/borrower-table-row';
 
 // ----------------------------------------------------------------------
 

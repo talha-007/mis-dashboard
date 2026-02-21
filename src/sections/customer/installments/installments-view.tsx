@@ -10,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
-import { _installments } from 'src/_mock/_installment';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
@@ -32,9 +31,10 @@ export function InstallmentsView() {
   const [orderBy, setOrderBy] = useState('month');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [installments, setInstallments] = useState<import('src/_mock/_installment').Installment[]>([]);
 
   const dataFiltered = applyFilter({
-    inputData: _installments,
+    inputData: installments,
     comparator: getComparator(order, orderBy),
     filterName,
   });
@@ -52,7 +52,7 @@ export function InstallmentsView() {
 
   const handleSelectAllRows = useCallback((checked: boolean) => {
     if (checked) {
-      const newSelecteds = _installments.map((n) => n.id);
+      const newSelecteds = installments.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
@@ -125,7 +125,7 @@ export function InstallmentsView() {
                 <InstallmentTableHead
                   order={order}
                   orderBy={orderBy}
-                  rowCount={_installments.length}
+                  rowCount={installments.length}
                   numSelected={selected.length}
                   onSort={handleSort}
                   onSelectAllRows={handleSelectAllRows}
@@ -150,7 +150,7 @@ export function InstallmentsView() {
 
                   <TableEmptyRows
                     height={68}
-                    emptyRows={emptyRows(page, rowsPerPage, _installments.length)}
+                    emptyRows={emptyRows(page, rowsPerPage, installments.length)}
                   />
 
                   {notFound && <TableNoData searchQuery={filterName} />}
@@ -162,7 +162,7 @@ export function InstallmentsView() {
           <TablePagination
             component="div"
             page={page}
-            count={_installments.length}
+            count={installments.length}
             rowsPerPage={rowsPerPage}
             onPageChange={handleChangePage}
             rowsPerPageOptions={[5, 10, 25]}

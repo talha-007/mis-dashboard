@@ -2,7 +2,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { CONFIG } from 'src/config-global';
 
-import { BankFormView } from 'src/sections/bank/form';
+import { BankFormView } from 'src/sections/Superadmin/bank/form';
 
 // ----------------------------------------------------------------------
 

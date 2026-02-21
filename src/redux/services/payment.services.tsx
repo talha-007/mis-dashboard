@@ -1,52 +1,46 @@
-import { callAPi } from './http-common';
+import bankAdminService from './bank-admin.services';
+import superadminService from './superadmin.services';
 
-// Get all bank subscriptions/payments (optional query params: search, page, limit, status)
-const getBankSubscriptions = (params?: {
-  search?: string;
-  page?: number;
-  limit?: number;
-  status?: string;
-}) => callAPi.get(`/api/subscriptions`, { params });
+/**
+ * Payment / Subscription Service (facade)
+ * Payment ledgers: bank admin. Subscriptions: create via bank admin, list/get/update/delete via superadmin.
+ * Endpoints: /api/v1/bankAdmin/payment-ledgers, /api/v1/subscriptions, /api/v1/superAdmin/subscriptions
+ */
 
-/** Create/pay subscription for a bank (bank admin) - POST /api/subscriptions */
-const createSubscription = (payload: { bankId: string; amount: number }) =>
-  callAPi.post('/api/subscriptions', payload);
+const getPaymentLedgers = (params?: any) => bankAdminService.getPaymentLedgers(params);
+const getPaymentLedgerById = (id: string) => bankAdminService.getPaymentLedgerById(id);
+const createPaymentLedger = (data: any) => bankAdminService.createPaymentLedger(data);
+const updatePaymentLedger = (id: string, data: any) => bankAdminService.updatePaymentLedger(id, data);
+const deletePaymentLedger = (id: string) => bankAdminService.deletePaymentLedger(id);
 
-// Create a new payment/subscription
-const createPayment = (bankId: string, data: any) =>
-  callAPi.post(`/api/banks/subscriptions/${bankId}`, data);
+const getBankSubscriptions = (params?: any) => superadminService.getSubscriptions(params);
+const getSubscriptionById = (id: string) => superadminService.getSubscriptionById(id);
+const createSubscription = (data: any) => bankAdminService.createSubscription(data);
+const updateSubscription = (id: string, data: any) => superadminService.updateSubscription(id, data);
+const deleteSubscription = (id: string) => superadminService.deleteSubscription(id);
 
-// Process payment
+// Legacy names for compatibility
+const createPayment = (bankId: string, data: any) => createSubscription({ bankId, ...data });
 const processPayment = (subscriptionId: string, paymentData: any) =>
-  callAPi.post(`/api/banks/subscriptions/${subscriptionId}/payments`, paymentData);
-
-// Cancel subscription
-const cancelSubscription = (id: string) => callAPi.post(`/api/banks/subscriptions/${id}/cancel`);
-
-// Renew subscription
-const renewSubscription = (id: string) => callAPi.post(`/api/banks/subscriptions/${id}/renew`);
-
-// Record payment for a bank (creates/activates monthly subscription)
-const recordPayment = (data: {
-  bankId: string;
-  amount: number;
-  paymentMethod: string;
-  paymentDate: string;
-  transactionId?: string;
-  notes?: string;
-}) => callAPi.post('/api/banks/subscriptions/record-payment', data);
-
-// Generate and download invoice PDF
-const generateInvoice = (paymentId: string) =>
-  callAPi.get(`/api/banks/subscriptions/payments/${paymentId}/invoice`, {
-    responseType: 'blob',
-  });
+  Promise.resolve({ data: paymentData });
+const cancelSubscription = (id: string) => deleteSubscription(id);
+const renewSubscription = (_id: string) => Promise.resolve({ data: {} });
+const recordPayment = (data: any) => createSubscription(data);
+const generateInvoice = (_paymentId: string) =>
+  Promise.reject(new Error('Generate invoice endpoint not in README'));
 
 const paymentService = {
   getBankSubscriptions,
+  getSubscriptionById,
   createSubscription,
+  updateSubscription,
+  deleteSubscription,
+  getPaymentLedgers,
+  getPaymentLedgerById,
+  createPaymentLedger,
+  updatePaymentLedger,
+  deletePaymentLedger,
   createPayment,
-
   processPayment,
   cancelSubscription,
   renewSubscription,

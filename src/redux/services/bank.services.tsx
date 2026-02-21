@@ -1,45 +1,30 @@
-import { callAPi } from './http-common';
+import superadminService from './superadmin.services';
+import bankAdminService from './bank-admin.services';
 
-// Get all banks (with search, pagination, and sorting)
-const getBanks = (params?: {
-  search?: string;
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}) => {
-  const queryParams = new URLSearchParams();
-  if (params?.search) queryParams.append('search', params.search);
-  if (params?.page) queryParams.append('page', params.page.toString());
-  if (params?.limit) queryParams.append('limit', params.limit.toString());
-  if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
-  if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+/**
+ * Bank Service (facade)
+ * Superadmin: list, get, add, delete, status, subscription.
+ * Bank Admin: update bank.
+ */
 
-  const queryString = queryParams.toString();
-  return callAPi.get(`/api/banks/${queryString ? `?${queryString}` : ''}`);
-};
+const getBanks = (params?: any) => superadminService.getBanks(params);
 
-// Get a single bank by ID
-const getBankById = (id: string) => callAPi.get(`/api/banks/${id}`);
+const getBankById = (id: string) => superadminService.getBankById(id);
 
-// Search bank by code
-const searchBankByCode = (code: string) => callAPi.get(`/api/banks/search?code=${code}`);
+const addBank = (data: any) => superadminService.addBank(data);
 
-// Get bank subscription details (last payment, next payment)
-const getBankSubscriptionDetails = (bankId: string) =>
-  callAPi.get(`/api/banks/${bankId}/subscription-details`);
+const updateBank = (id: string, data: any) => bankAdminService.updateBank(id, data);
 
-// Create a new bank
-const addBank = (data: any) => callAPi.post('/api/banks/addBank', data);
-
-// Update a bank
-const updateBank = (id: string, data: any) => callAPi.put(`/api/banks/${id}`, data);
-
-// Delete a bank
-const deleteBank = (id: string) => callAPi.delete(`/api/banks/${id}`);
+const deleteBank = (id: string) => superadminService.deleteBank(id);
 
 const changeBankStatus = (id: string, status: string) =>
-  callAPi.put(`/api/banks/${id}/status`, { status });
+  superadminService.changeBankStatus(id, { status });
+
+const searchBankByCode = (code: string) =>
+  superadminService.getBanks({ search: code });
+
+const getBankSubscriptionDetails = (bankId: string) =>
+  superadminService.getSubscriptionById(bankId);
 
 const bankService = {
   getBanks,

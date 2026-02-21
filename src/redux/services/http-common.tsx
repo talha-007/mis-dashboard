@@ -58,7 +58,8 @@ const responseErrorInterceptor = async (error: any) => {
     const url: string = response.config?.url ?? '';
     const isMeEndpoint =
       url.includes('/api/users/me') ||
-      url.includes('/api/customers/me');
+      url.includes('/api/customers/me') ||
+      url.includes('/api/v1/me');
 
     if (!isMeEndpoint && typeof window !== 'undefined') {
       window.location.href = '/unauthorized';

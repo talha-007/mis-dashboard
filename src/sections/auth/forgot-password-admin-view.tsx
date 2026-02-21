@@ -59,6 +59,8 @@ export function ForgotPasswordAdminView() {
         initialValues={{ email: '' }}
         validationSchema={forgotPasswordSchema}
         onSubmit={handleSubmit}
+        validateOnChange={false}
+        validateOnBlur
       >
         {({ values, errors, touched, handleChange, handleBlur, isSubmitting, status }) => (
           <Form>

@@ -7,7 +7,7 @@ import type { RegisterData } from 'src/types/auth.types';
 
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -71,6 +71,338 @@ const sanitizeCnic = (value: string) => {
 };
 
 // ----------------------------------------------------------------------
+// Memoized field components so only the field being edited re-renders
+// ----------------------------------------------------------------------
+
+type FormFieldProps = {
+  name: string;
+  value: string | undefined;
+  error: string | undefined;
+  touched: boolean | undefined;
+  onChange: (e: React.ChangeEvent<unknown>) => void;
+  onBlur: (e: React.FocusEvent<unknown>) => void;
+  helperText?: React.ReactNode;
+  disabled?: boolean;
+  sx?: object;
+  slotProps?: React.ComponentProps<typeof TextField>['slotProps'];
+} & Omit<
+  React.ComponentProps<typeof TextField>,
+  'name' | 'value' | 'onChange' | 'onBlur' | 'error' | 'helperText'
+>;
+
+const FormField = memo(function FormField({
+  name,
+  value,
+  error,
+  touched,
+  onChange,
+  onBlur,
+  helperText: helperTextProp,
+  disabled,
+  sx,
+  slotProps: slotPropsProp,
+  ...rest
+}: FormFieldProps) {
+  const showError = Boolean(touched && error);
+  const helperText = showError ? error : helperTextProp;
+  return (
+    <TextField
+      fullWidth
+      name={name}
+      value={value ?? ''}
+      onChange={onChange}
+      onBlur={onBlur}
+      error={showError}
+      helperText={helperText}
+      disabled={disabled}
+      sx={sx}
+      slotProps={slotPropsProp}
+      {...rest}
+    />
+  );
+});
+
+type FormPasswordFieldProps = FormFieldProps & {
+  showPassword: boolean;
+  onTogglePassword: () => void;
+};
+
+const FormPasswordField = memo(function FormPasswordField({
+  name,
+  value,
+  error,
+  touched,
+  onChange,
+  onBlur,
+  showPassword,
+  onTogglePassword,
+  helperText: helperTextProp,
+  disabled,
+  sx,
+  ...rest
+}: FormPasswordFieldProps) {
+  const showError = Boolean(touched && error);
+  const helperText = showError ? error : helperTextProp;
+  return (
+    <TextField
+      fullWidth
+      name={name}
+      value={value}
+      type={showPassword ? 'text' : 'password'}
+      onChange={onChange}
+      onBlur={onBlur}
+      error={showError}
+      helperText={helperText}
+      disabled={disabled}
+      sx={sx}
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">
+              <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={onTogglePassword} edge="end" size="small" aria-label="toggle password">
+                <Iconify
+                  icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                />
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
+      }}
+      {...rest}
+    />
+  );
+});
+
+// Stable slotProps so memoized fields don't re-render when other fields change
+const emailSlotProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+      </InputAdornment>
+    ),
+  },
+} as const;
+
+const phoneSlotProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <Iconify icon="eva:phone-outline" width={20} sx={{ color: 'text.disabled' }} />
+      </InputAdornment>
+    ),
+  },
+} as const;
+
+const cnicSlotProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <Iconify icon="eva:id-card-outline" width={20} sx={{ color: 'text.disabled' }} />
+      </InputAdornment>
+    ),
+  },
+} as const;
+
+// ----------------------------------------------------------------------
+
+type RegisterFormFieldsProps = {
+  values: RegisterFormValues;
+  errors: Record<string, string | undefined>;
+  touched: Record<string, boolean | undefined>;
+  handleChange: (e: React.ChangeEvent<unknown>) => void;
+  handleBlur: (e: React.FocusEvent<unknown>) => void;
+  setFieldValue: (field: string, value: unknown) => void;
+  error: string | null;
+  isLoading: boolean;
+  showPassword: boolean;
+  showConfirmPassword: boolean;
+  onTogglePassword: () => void;
+  onToggleConfirmPassword: () => void;
+  textFieldSx: object;
+};
+
+function RegisterFormFields({
+  values,
+  errors,
+  touched,
+  handleChange,
+  handleBlur,
+  setFieldValue,
+  error,
+  isLoading,
+  showPassword,
+  showConfirmPassword,
+  onTogglePassword,
+  onToggleConfirmPassword,
+  textFieldSx,
+}: RegisterFormFieldsProps) {
+  const handlePhoneChange = useCallback(
+    (e: React.ChangeEvent<unknown>) => {
+      const target = (e as React.ChangeEvent<HTMLInputElement>).target;
+      setFieldValue('phone', sanitizePhone(target.value));
+    },
+    [setFieldValue]
+  );
+  const handleCnicChange = useCallback(
+    (e: React.ChangeEvent<unknown>) => {
+      const target = (e as React.ChangeEvent<HTMLInputElement>).target;
+      setFieldValue('cnic', sanitizeCnic(target.value));
+    },
+    [setFieldValue]
+  );
+
+  return (
+    <Form>
+      <Stack spacing={3}>
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <FormField
+            name="name"
+            label="First Name"
+            placeholder="John"
+            value={values.name}
+            error={errors.name}
+            touched={touched.name}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            sx={textFieldSx}
+          />
+          <FormField
+            name="lastname"
+            label="Last Name"
+            placeholder="Doe"
+            value={values.lastname}
+            error={errors.lastname}
+            touched={touched.lastname}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            disabled={isLoading}
+            sx={textFieldSx}
+          />
+        </Stack>
+
+        <FormField
+          name="email"
+          type="email"
+          label="Email Address"
+          placeholder="john.doe@example.com"
+          value={values.email}
+          error={errors.email}
+          touched={touched.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          disabled={isLoading}
+          slotProps={emailSlotProps}
+          sx={textFieldSx}
+        />
+
+        <FormField
+          name="phone"
+          label="Phone Number"
+          placeholder="+1 (555) 123-4567"
+          value={values.phone}
+          error={errors.phone}
+          touched={touched.phone}
+          onChange={handlePhoneChange}
+          onBlur={handleBlur}
+          disabled={isLoading}
+          slotProps={phoneSlotProps}
+          sx={textFieldSx}
+        />
+
+        <FormField
+          name="cnic"
+          label="CNIC"
+          placeholder="12345-6789012-3"
+          value={values.cnic}
+          error={errors.cnic}
+          touched={touched.cnic}
+          onChange={handleCnicChange}
+          onBlur={handleBlur}
+          disabled={isLoading}
+          inputProps={{ maxLength: 15 }}
+          slotProps={cnicSlotProps}
+          sx={textFieldSx}
+        />
+
+        <FormPasswordField
+          name="password"
+          label="Password"
+          placeholder="••••••••"
+          value={values.password}
+          error={errors.password}
+          touched={touched.password}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          showPassword={showPassword}
+          onTogglePassword={onTogglePassword}
+          helperText="Must be at least 8 characters"
+          disabled={isLoading}
+          sx={textFieldSx}
+        />
+
+        <FormPasswordField
+          name="confirmPassword"
+          label="Confirm Password"
+          placeholder="••••••••"
+          value={values.confirmPassword}
+          error={errors.confirmPassword}
+          touched={touched.confirmPassword}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          showPassword={showConfirmPassword}
+          onTogglePassword={onToggleConfirmPassword}
+          disabled={isLoading}
+          sx={textFieldSx}
+        />
+
+        <Button
+          fullWidth
+          size="large"
+          type="submit"
+          variant="contained"
+          disabled={isLoading}
+          sx={{
+            mt: 1,
+            py: 1.5,
+            borderRadius: 2,
+            fontSize: '1rem',
+            fontWeight: 600,
+            textTransform: 'none',
+            boxShadow: 'none',
+            '&:hover': { boxShadow: 'none' },
+          }}
+        >
+          {isLoading ? (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CircularProgress size={20} color="inherit" />
+              <span>Creating Account...</span>
+            </Stack>
+          ) : (
+            'Create Account'
+          )}
+        </Button>
+      </Stack>
+    </Form>
+  );
+}
+
+// ----------------------------------------------------------------------
 
 export function RegisterView() {
   const router = useRouter();
@@ -78,6 +410,8 @@ export function RegisterView() {
   const { bankSlug, initializeBankContext } = useBankContext();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const toggleShowPassword = useCallback(() => setShowPassword((s) => !s), []);
+  const toggleShowConfirmPassword = useCallback(() => setShowConfirmPassword((s) => !s), []);
 
   useEffect(() => {
     if (bankSlug) {
@@ -275,247 +609,25 @@ export function RegisterView() {
                 initialValues={initialValues}
                 validationSchema={registerValidationSchema}
                 onSubmit={handleSubmit}
+                validateOnChange={false}
+                validateOnBlur
               >
                 {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
-                  <Form>
-                    <Stack spacing={3}>
-                      {error && (
-                        <Alert
-                          severity="error"
-                          sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
-                        >
-                          {error}
-                        </Alert>
-                      )}
-
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                        <TextField
-                          fullWidth
-                          name="name"
-                          label="First Name"
-                          placeholder="John"
-                          value={values.name}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          error={Boolean(touched.name && errors.name)}
-                          helperText={touched.name && errors.name}
-                          disabled={isLoading}
-                          sx={textFieldSx}
-                        />
-                        <TextField
-                          fullWidth
-                          name="lastname"
-                          label="Last Name"
-                          placeholder="Doe"
-                          value={values.lastname}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          error={Boolean(touched.lastname && errors.lastname)}
-                          helperText={touched.lastname && errors.lastname}
-                          disabled={isLoading}
-                          sx={textFieldSx}
-                        />
-                      </Stack>
-
-                      <TextField
-                        fullWidth
-                        name="email"
-                        type="email"
-                        label="Email Address"
-                        placeholder="john.doe@example.com"
-                        value={values.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(touched.email && errors.email)}
-                        helperText={touched.email && errors.email}
-                        disabled={isLoading}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Iconify
-                                  icon="eva:email-outline"
-                                  width={20}
-                                  sx={{ color: 'text.disabled' }}
-                                />
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                        sx={textFieldSx}
-                      />
-
-                      <TextField
-                        fullWidth
-                        name="phone"
-                        label="Phone Number"
-                        placeholder="+1 (555) 123-4567"
-                        value={values.phone}
-                        onChange={(e) => setFieldValue('phone', sanitizePhone(e.target.value))}
-                        onBlur={handleBlur}
-                        error={Boolean(touched.phone && errors.phone)}
-                        helperText={touched.phone && errors.phone}
-                        disabled={isLoading}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Iconify
-                                  icon="eva:phone-outline"
-                                  width={20}
-                                  sx={{ color: 'text.disabled' }}
-                                />
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                        sx={textFieldSx}
-                      />
-
-                      <TextField
-                        fullWidth
-                        name="cnic"
-                        label="CNIC"
-                        placeholder="12345-6789012-3"
-                        value={values.cnic}
-                        onChange={(e) => setFieldValue('cnic', sanitizeCnic(e.target.value))}
-                        onBlur={handleBlur}
-                        error={Boolean(touched.cnic && errors.cnic)}
-                        helperText={touched.cnic && errors.cnic}
-                        disabled={isLoading}
-                        inputProps={{ maxLength: 15 }}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Iconify
-                                  icon="eva:id-card-outline"
-                                  width={20}
-                                  sx={{ color: 'text.disabled' }}
-                                />
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                        sx={textFieldSx}
-                      />
-
-                      <TextField
-                        fullWidth
-                        name="password"
-                        label="Password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={values.password}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(touched.password && errors.password)}
-                        helperText={
-                          (touched.password && errors.password) || 'Must be at least 8 characters'
-                        }
-                        disabled={isLoading}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Iconify
-                                  icon="eva:lock-outline"
-                                  width={20}
-                                  sx={{ color: 'text.disabled' }}
-                                />
-                              </InputAdornment>
-                            ),
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  edge="end"
-                                  size="small"
-                                >
-                                  <Iconify
-                                    icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
-                                  />
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                        sx={textFieldSx}
-                      />
-
-                      <TextField
-                        fullWidth
-                        name="confirmPassword"
-                        label="Confirm Password"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        value={values.confirmPassword}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        error={Boolean(touched.confirmPassword && errors.confirmPassword)}
-                        helperText={touched.confirmPassword && errors.confirmPassword}
-                        disabled={isLoading}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <Iconify
-                                  icon="eva:lock-outline"
-                                  width={20}
-                                  sx={{ color: 'text.disabled' }}
-                                />
-                              </InputAdornment>
-                            ),
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                  edge="end"
-                                  size="small"
-                                >
-                                  <Iconify
-                                    icon={
-                                      showConfirmPassword
-                                        ? 'solar:eye-bold'
-                                        : 'solar:eye-closed-bold'
-                                    }
-                                  />
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                        sx={textFieldSx}
-                      />
-
-                      <Button
-                        fullWidth
-                        size="large"
-                        type="submit"
-                        variant="contained"
-                        disabled={isLoading}
-                        sx={{
-                          mt: 1,
-                          py: 1.5,
-                          borderRadius: 2,
-                          fontSize: '1rem',
-                          fontWeight: 600,
-                          textTransform: 'none',
-                          boxShadow: 'none',
-                          '&:hover': { boxShadow: 'none' },
-                        }}
-                      >
-                        {isLoading ? (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <CircularProgress size={20} color="inherit" />
-                            <span>Creating Account...</span>
-                          </Stack>
-                        ) : (
-                          'Create Account'
-                        )}
-                      </Button>
-                    </Stack>
-                  </Form>
+                  <RegisterFormFields
+                    values={values}
+                    errors={errors}
+                    touched={touched}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    error={error}
+                    isLoading={isLoading}
+                    showPassword={showPassword}
+                    showConfirmPassword={showConfirmPassword}
+                    onTogglePassword={toggleShowPassword}
+                    onToggleConfirmPassword={toggleShowConfirmPassword}
+                    textFieldSx={textFieldSx}
+                  />
                 )}
               </Formik>
 

@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { BankView } from 'src/sections/bank/view';
+import { BankView } from 'src/sections/Superadmin/bank/view';
 
 // ----------------------------------------------------------------------
 

@@ -1,8 +1,4 @@
-import type {
-  BankAssessment,
-  AssessmentAnswer,
-  CustomFieldValue,
-} from 'src/types/assessment.types';
+import type { BankAssessment, AssessmentAnswer } from 'src/types/assessment.types';
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -12,7 +8,6 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Radio from '@mui/material/Radio';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControl from '@mui/material/FormControl';
@@ -26,10 +21,9 @@ import assessmentService from 'src/redux/services/assessment.services';
 
 import { Iconify } from 'src/components/iconify';
 
-import { isCustomField, isMultipleChoice } from 'src/types/assessment.types';
+import { isMultipleChoice } from 'src/types/assessment.types';
 
-type AnswerState = Record<string, string>; // questionId -> optionId
-type CustomFieldState = Record<string, string | number>; // fieldId -> value
+type AnswerState = Record<string, string>;
 
 export function CustomerAssessmentView() {
   const navigate = useNavigate();
@@ -38,11 +32,7 @@ export function CustomerAssessmentView() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<AnswerState>({});
-  const [customValues, setCustomValues] = useState<CustomFieldState>({});
-  const [submittedResult, setSubmittedResult] = useState<{
-    score: number;
-    totalScore: number;
-  } | null>(null);
+  const [submittedResult, setSubmittedResult] = useState<boolean>(false);
 
   const fetchAssessment = useCallback(async () => {
     try {
@@ -66,21 +56,8 @@ export function CustomerAssessmentView() {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
-  const handleCustomFieldChange = (fieldId: string, value: string | number) => {
-    setCustomValues((prev) => ({ ...prev, [fieldId]: value }));
-  };
-
   const mcQuestions = assessment?.questions?.filter(isMultipleChoice) ?? [];
-  const customFields = assessment?.questions?.filter(isCustomField) ?? [];
-
-  const allMcAnswered = mcQuestions.length === 0 || mcQuestions.every((q) => answers[q._id]);
-  const allCustomFilled =
-    customFields.length === 0 ||
-    customFields.every((f) => {
-      const v = customValues[f._id];
-      return v !== undefined && v !== '' && String(v).trim() !== '';
-    });
-  const allAnswered = allMcAnswered && allCustomFilled;
+  const allAnswered = mcQuestions.length === 0 || mcQuestions.every((q) => answers[q._id]);
 
   const buildAnswerPayload = (): AssessmentAnswer[] => {
     if (!assessment) return [];
@@ -97,28 +74,17 @@ export function CustomerAssessmentView() {
       });
   };
 
-  const buildCustomFieldPayload = (): CustomFieldValue[] =>
-    customFields
-      .filter((f) => customValues[f._id] !== undefined && String(customValues[f._id]).trim() !== '')
-      .map((f) => ({
-        fieldId: f._id,
-        value:
-          f.inputType === 'number' ? Number(customValues[f._id]) || 0 : String(customValues[f._id]),
-      }));
-
   const handleSubmit = async () => {
     if (!allAnswered) return;
     try {
       setSubmitting(true);
       setError(null);
-      const answerPayload = buildAnswerPayload();
-      const customPayload = buildCustomFieldPayload();
-      const res = await assessmentService.submitAssessment(
-        answerPayload,
-        customPayload,
+      await assessmentService.submitAssessment(
+        buildAnswerPayload(),
+        [],
         assessment?.totalMaxScore ?? 100
       );
-      setSubmittedResult({ score: res.data.score, totalScore: res.data.totalScore });
+      setSubmittedResult(true);
     } catch (err: any) {
       setError(err.message || 'Failed to submit assessment');
     } finally {
@@ -127,8 +93,6 @@ export function CustomerAssessmentView() {
   };
 
   if (submittedResult) {
-    const { score, totalScore } = submittedResult;
-    const pct = totalScore ? Math.round((score / totalScore) * 100) : 0;
     return (
       <DashboardContent>
         <Box maxWidth={560} mx="auto" textAlign="center">
@@ -136,17 +100,10 @@ export function CustomerAssessmentView() {
             Assessment complete
           </Typography>
           <Card sx={{ p: 4, mb: 3 }}>
-            <Typography variant="h2" fontWeight="bold" color="primary.main">
-              {score} / {totalScore}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-              Your credit score is {score} out of {totalScore} ({pct}%).
+            <Typography variant="body1" color="text.secondary">
+              Thank you for completing the assessment. You can now proceed to apply for a loan.
             </Typography>
           </Card>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            You can now apply for a loan. Your score and entered details will be included for the
-            bank to review.
-          </Typography>
           <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
             <Button
               variant="contained"
@@ -159,9 +116,8 @@ export function CustomerAssessmentView() {
             <Button
               variant="outlined"
               onClick={() => {
-                setSubmittedResult(null);
+                setSubmittedResult(false);
                 setAnswers({});
-                setCustomValues({});
               }}
             >
               Retake assessment
@@ -182,7 +138,7 @@ export function CustomerAssessmentView() {
     );
   }
 
-  if (!assessment?.questions?.length) {
+  if (!mcQuestions.length) {
     return (
       <DashboardContent>
         <Typography variant="h4" sx={{ mb: 2 }}>
@@ -201,8 +157,7 @@ export function CustomerAssessmentView() {
         Credit assessment
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Answer the questions and fill in your income/expense details. Your credit score is out of{' '}
-        {assessment.totalMaxScore} (from multiple-choice questions only).
+        Answer the questions below. Your responses will be reviewed with your loan application.
       </Typography>
 
       {error && (
@@ -212,71 +167,28 @@ export function CustomerAssessmentView() {
       )}
 
       <Stack spacing={3}>
-        {assessment.questions.map((item, index) => {
-          if (isMultipleChoice(item)) {
-            const q = item;
-            return (
-              <Card key={q._id} sx={{ p: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  {index + 1}. {q.text}
-                </Typography>
-                <FormControl component="fieldset">
-                  <RadioGroup
-                    value={answers[q._id] ?? ''}
-                    onChange={(e) => handleOptionChange(q._id, e.target.value)}
-                  >
-                    {q.options.map((opt) => (
-                      <FormControlLabel
-                        key={opt._id}
-                        value={opt._id}
-                        control={<Radio />}
-                        label={
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            sx={{ width: '100%' }}
-                          >
-                            <span>{opt.text}</span>
-                            <Typography variant="caption" color="text.secondary">
-                              {opt.points} pts
-                            </Typography>
-                          </Stack>
-                        }
-                      />
-                    ))}
-                  </RadioGroup>
-                </FormControl>
-              </Card>
-            );
-          }
-          if (isCustomField(item)) {
-            const f = item;
-            const val = customValues[f._id];
-            return (
-              <Card key={f._id} sx={{ p: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  {index + 1}. {f.label}
-                  {f.unit ? ` (${f.unit})` : ''}
-                </Typography>
-                <TextField
-                  fullWidth
-                  type={f.inputType}
-                  value={val ?? ''}
-                  onChange={(e) =>
-                    handleCustomFieldChange(
-                      f._id,
-                      f.inputType === 'number' ? Number(e.target.value) || 0 : e.target.value
-                    )
-                  }
-                  placeholder={f.inputType === 'number' ? '0' : 'Enter value'}
-                  inputProps={f.inputType === 'number' ? { min: 0 } : undefined}
-                />
-              </Card>
-            );
-          }
-          return null;
-        })}
+        {mcQuestions.map((q, index) => (
+          <Card key={q._id} sx={{ p: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 2 }}>
+              {index + 1}. {q.text}
+            </Typography>
+            <FormControl component="fieldset">
+              <RadioGroup
+                value={answers[q._id] ?? ''}
+                onChange={(e) => handleOptionChange(q._id, e.target.value)}
+              >
+                {q.options.map((opt) => (
+                  <FormControlLabel
+                    key={opt._id}
+                    value={opt._id}
+                    control={<Radio />}
+                    label={opt.text}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          </Card>
+        ))}
       </Stack>
 
       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>

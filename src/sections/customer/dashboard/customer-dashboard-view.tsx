@@ -12,14 +12,20 @@ import TableContainer from '@mui/material/TableContainer';
 import { fCurrency } from 'src/utils/format-number';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { customerDashboardStats } from 'src/_mock/_customer-dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
 
 // ----------------------------------------------------------------------
 
+const defaultStats = {
+  activeLoan: { amount: 0, currency: 'PKR' as const },
+  nextInstallment: { amount: 0, currency: 'PKR' as const },
+  dueDate: '',
+  loanDetails: { totalTenure: '', paid: 0, remaining: 0, status: '' },
+};
+
 export function CustomerDashboardView() {
-  const stats = customerDashboardStats;
+  const stats = defaultStats;
 
   return (
     <DashboardContent>

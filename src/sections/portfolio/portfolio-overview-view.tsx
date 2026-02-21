@@ -29,7 +29,7 @@ import paymentService from 'src/redux/services/payment.services';
 
 import { Iconify } from 'src/components/iconify';
 
-import { BankPaymentDialog } from 'src/sections/bank/payments/bank-payment-dialog';
+import { BankPaymentDialog } from 'src/sections/Superadmin/bank/payments/bank-payment-dialog';
 
 import { UserRole } from 'src/types/auth.types';
 

@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { CreditProposalReportListView } from 'src/sections/credit-proposal-report/view';
+import { CreditProposalReportListView } from 'src/sections/Bankadmin/credit-proposal-report/view';
 
 // ----------------------------------------------------------------------
 

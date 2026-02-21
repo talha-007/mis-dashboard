@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { SettingsView } from 'src/sections/settings';
+import { SettingsView } from 'src/sections/Superadmin/settings';
 
 // ----------------------------------------------------------------------
 

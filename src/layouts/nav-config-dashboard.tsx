@@ -97,11 +97,11 @@ export const customerNavData: NavItem[] = [
     path: '/',
     icon: icon('ic-analytics'),
   },
-  {
-    title: 'Assessment',
-    path: '/assessment',
-    icon: icon('ic-analytics'),
-  },
+  // {
+  //   title: 'Assessment',
+  //   path: '/assessment',
+  //   icon: icon('ic-analytics'),
+  // },
   {
     title: 'Apply for Loan',
     path: '/apply-loan',

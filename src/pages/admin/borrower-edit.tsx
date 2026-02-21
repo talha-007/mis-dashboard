@@ -8,7 +8,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import borrowerService from 'src/redux/services/borrowServices';
 
-import { BorrowerFormView } from 'src/sections/borrower/borrower-form-view';
+import { BorrowerFormView } from 'src/sections/Bankadmin/borrower/borrower-form-view';
 
 export default function BorrowerEditPage() {
   const { id } = useParams();

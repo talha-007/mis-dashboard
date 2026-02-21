@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet-async';
 
 import { CONFIG } from 'src/config-global';
 
-import { SubscriptionRequiredView } from 'src/sections/subscription/subscription-required-view';
+import { SubscriptionRequiredView } from 'src/sections/Superadmin/subscription/subscription-required-view';
 
 export default function SubscriptionRequiredPage() {
   return (

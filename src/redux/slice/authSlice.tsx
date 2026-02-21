@@ -108,7 +108,7 @@ function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
 }
 
 /**
- * Call /me API: try /api/users/me first (admin/superadmin), fallback to /api/customers/me for customers
+ * Call /me API: /api/users/me fetches data for all logged-in roles (superadmin, admin, customer).
  */
 async function fetchMeApi(): Promise<{ user: User; bank: AuthBank | null } | null> {
   try {
@@ -130,23 +130,7 @@ async function fetchMeApi(): Promise<{ user: User; bank: AuthBank | null } | nul
     if (bank) setBankData(bank);
     return { user: merged, bank };
   } catch {
-    try {
-      // Only call customer /me when the cached user is a CUSTOMER.
-      // This prevents bank admins from accidentally calling /api/customers/me.
-      const cached = getUserData<User>();
-      if (!cached || cached.role !== UserRole.CUSTOMER) {
-        return null;
-      }
-
-      const response = await authService.getCurrentUser({});
-      const data = response.data?.data ?? response.data;
-      if (!data) return null;
-      const user = customerToUser(data);
-      setUserData(user);
-      return { user, bank: null };
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 

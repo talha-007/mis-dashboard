@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { CreditRatingView } from 'src/sections/credit-rating/view';
+import { CreditRatingView } from 'src/sections/Bankadmin/credit-rating/view';
 
 // ----------------------------------------------------------------------
 

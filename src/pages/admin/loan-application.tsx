@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { LoanApplicationView } from 'src/sections/loan-application/view';
+import { LoanApplicationView } from 'src/sections/Bankadmin/loan-application/view';
 
 // ----------------------------------------------------------------------
 

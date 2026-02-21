@@ -1,23 +1,8 @@
-/**
- * Mock Customer Dashboard Data
- */
-
 export const customerDashboardStats = {
-  activeLoan: {
-    amount: 200000,
-    currency: 'PKR',
-  },
-  nextInstallment: {
-    amount: 18500,
-    currency: 'PKR',
-  },
-  dueDate: '15 Oct',
-  loanDetails: {
-    totalTenure: '24 Months',
-    paid: 8,
-    remaining: 16,
-    status: 'On Track',
-  },
+  activeLoan: { amount: 0, currency: 'PKR' as const },
+  nextInstallment: { amount: 0, currency: 'PKR' as const },
+  dueDate: '',
+  loanDetails: { totalTenure: '', paid: 0, remaining: 0, status: '' },
 };
 
 export type CustomerDashboardStats = typeof customerDashboardStats;

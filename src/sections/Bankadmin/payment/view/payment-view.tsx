@@ -45,63 +45,67 @@ export function PaymentView() {
 
   // Map API response to PaymentProps type
   // API structure: { id, amount, customerName, date, description, paymentType, status, subType, type }
-  const mapApiToPayment = useCallback((item: any) => ({
+  const mapApiToPayment = useCallback(
+    (item: any) => ({
       id: item.id || item._id || '',
       date: item.date || item.paymentDate || item.createdAt || new Date().toISOString(),
       borrower: item.customerName || item.borrowerName || item.borrower || 'N/A',
       amount: Number(item.amount || 0), // Can be negative for refunds
       status: item.status || 'pending',
-    }), []);
+    }),
+    []
+  );
 
   // Fetch payments from API
   const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params: any = {
         type: 'borrower_ledgers',
         page: table.page + 1,
         limit: table.rowsPerPage,
       };
-      
+
       // Add payment type filter if not 'all'
       if (paymentType !== 'all') {
         params.paymentType = paymentType;
       }
-      
+
       // Add search parameter if filterName is provided
       if (filterName.trim()) {
         params.search = filterName.trim();
       }
-      
+
       const response = await bankAdminService.getAllPayments(params);
       console.log(response);
-      
+
       if (response.status === 200) {
         // Extract data from response - payments, pagination, and summary are at response.data level
         // Structure: { message, payments: [...], pagination: {...}, summary: {...}, filters: {...} }
         const data = response.data?.data || response.data;
         const paymentsList = data?.payments || [];
-        
+
         // Map API response to PaymentProps type
         const mapped = Array.isArray(paymentsList)
           ? paymentsList.map(mapApiToPayment).filter((item) => item.id)
           : [];
-        
+
         setPayments(mapped);
-        
+
         // Set pagination info from server response
         const pagination = data?.pagination || {};
         setTotalCount(pagination.total || mapped.length);
-        
+
         // Set summary if available
         if (data?.summary) {
           setSummary(data.summary);
         }
       }
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load payments';
+      const errorMessage =
+        err?.response?.data?.message || err?.message || 'Failed to load payments';
       setError(errorMessage);
       setPayments([]);
       setTotalCount(0);
@@ -119,10 +123,13 @@ export function PaymentView() {
   const dataFiltered = payments;
   const notFound = !dataFiltered.length && !!filterName && !loading;
 
-  const handlePaymentTypeChange = useCallback((_event: React.SyntheticEvent, newValue: 'all' | 'recovery' | 'penalty' | 'fee') => {
-    setPaymentType(newValue);
-    table.onResetPage(); // Reset to first page when changing type
-  }, [table]);
+  const handlePaymentTypeChange = useCallback(
+    (_event: React.SyntheticEvent, newValue: 'all' | 'recovery' | 'penalty' | 'fee') => {
+      setPaymentType(newValue);
+      table.onResetPage(); // Reset to first page when changing type
+    },
+    [table]
+  );
 
   return (
     <DashboardContent>
@@ -162,7 +169,9 @@ export function PaymentView() {
 
         {/* Summary Display */}
         {summary && (
-          <Box sx={{ p: 2, bgcolor: 'background.neutral', borderBottom: 1, borderColor: 'divider' }}>
+          <Box
+            sx={{ p: 2, bgcolor: 'background.neutral', borderBottom: 1, borderColor: 'divider' }}
+          >
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Summary
             </Typography>
@@ -183,7 +192,8 @@ export function PaymentView() {
                 Total Amount: <strong>{fCurrency(Math.abs(summary.totalAmount || 0))}</strong>
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Completed: <strong style={{ color: 'success.main' }}>{summary.completedCount || 0}</strong>
+                Completed:{' '}
+                <strong style={{ color: 'success.main' }}>{summary.completedCount || 0}</strong>
               </Typography>
               {summary.pendingCount > 0 && (
                 <Typography variant="body2" color="warning.main">
@@ -241,7 +251,9 @@ export function PaymentView() {
                       <TableRow>
                         <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {notFound ? `No payments found for "${filterName}"` : 'No payments found'}
+                            {notFound
+                              ? `No payments found for "${filterName}"`
+                              : 'No payments found'}
                           </Typography>
                         </TableCell>
                       </TableRow>

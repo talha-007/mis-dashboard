@@ -42,50 +42,60 @@ export function InstallmentsView() {
   const [totalPages, setTotalPages] = useState(0);
 
   // Map API response to Installment type
-  const mapApiToInstallment = useCallback((item: any): import('src/_mock/_installment').Installment => ({
+  const mapApiToInstallment = useCallback(
+    (item: any): import('src/_mock/_installment').Installment => ({
       id: String(item.id || item._id || ''),
-      month: item.month || item.monthName || new Date(item.dueDate || item.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }),
+      month:
+        item.month ||
+        item.monthName ||
+        new Date(item.dueDate || item.createdAt).toLocaleString('default', {
+          month: 'long',
+          year: 'numeric',
+        }),
       amount: Number(item.amount || 0),
       status: item.status || 'pending',
       dueDate: item.dueDate || item.createdAt || '',
-    }), []);
+    }),
+    []
+  );
 
   // Fetch installment history from API
   const fetchInstallments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params: any = {
         page: page + 1, // Convert 0-based to 1-based for server
         limit: rowsPerPage,
       };
-      
+
       // Add search parameter if filterName is provided
       if (filterName.trim()) {
         params.search = filterName.trim();
       }
-      
+
       const response = await loanApplicationService.getInstallmentHistory(params);
-      
+
       if (response.status === 200) {
         const data = response.data?.data || response.data;
         const installmentsList = data?.installments || data?.history || data || [];
-        
+
         // Map API response to Installment type
         const mapped = Array.isArray(installmentsList)
           ? installmentsList.map(mapApiToInstallment).filter((item) => item.id)
           : [];
-        
+
         setInstallments(mapped);
-        
+
         // Set pagination info from server response
         const pagination = data?.pagination || {};
         setTotalCount(pagination.total || mapped.length);
         setTotalPages(pagination.totalPages || 1);
       }
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to fetch installment history';
+      const errorMessage =
+        err?.response?.data?.message || err?.message || 'Failed to fetch installment history';
       setError(errorMessage);
       setInstallments([]);
       setTotalCount(0);
@@ -232,7 +242,9 @@ export function InstallmentsView() {
                         <TableRow>
                           <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
                             <Typography variant="body2" color="text.secondary">
-                              {notFound ? `No installments found for "${filterName}"` : 'No installments found'}
+                              {notFound
+                                ? `No installments found for "${filterName}"`
+                                : 'No installments found'}
                             </Typography>
                           </TableCell>
                         </TableRow>

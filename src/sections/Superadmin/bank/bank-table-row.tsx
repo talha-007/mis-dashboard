@@ -46,7 +46,7 @@ type BankTableRowProps = {
 export function BankTableRow({
   row,
   selected,
- 
+
   onView,
   onEdit,
   onDelete,

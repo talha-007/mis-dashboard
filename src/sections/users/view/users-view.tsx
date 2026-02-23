@@ -7,6 +7,7 @@ import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import { Typography } from '@mui/material';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -62,20 +63,20 @@ export function UsersView() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Server-side pagination and search: send page, limit, and search to server
       const params: any = {
         page: page + 1, // Convert 0-based to 1-based for server
         limit: rowsPerPage,
       };
-      
+
       // Add search parameter if filterName is provided
       if (filterName.trim()) {
         params.search = filterName.trim();
       }
-      
+
       const response = await usersService.list(params);
-      
+
       if (response.status === 200) {
         const data = response.data?.data || response.data;
         const { users = [], pagination = {} } = data;
@@ -148,7 +149,7 @@ export function UsersView() {
       await usersService.deleteById(deleteConfirm.id);
       toast.success('User deleted successfully!');
       setDeleteConfirm({ open: false, id: null });
-      
+
       // After deletion, handle server-side pagination:
       // If we're on a page that will become empty (last item), go back one page
       // Otherwise, refetch current page

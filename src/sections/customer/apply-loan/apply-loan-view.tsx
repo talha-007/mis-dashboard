@@ -32,11 +32,12 @@ function mapApiToApplication(item: Record<string, unknown>): CustomerLoanApplica
   // Handle both 'amount' and 'loanAmount' fields from API
   const loanAmount = Number(item.loanAmount ?? item.amount ?? 0);
   const installmentAmount = Number(item.installmentAmount ?? 0);
-  
+
   // Extract bank info if available (could be object or just ID)
   const bank = item.bank || item.bankId;
-  const bankName = typeof bank === 'object' && bank !== null ? String((bank as any).name ?? '') : '';
-  
+  const bankName =
+    typeof bank === 'object' && bank !== null ? String((bank as any).name ?? '') : '';
+
   return {
     id,
     customerName: String(item.customerName ?? item.name ?? ''),
@@ -76,7 +77,7 @@ export function ApplyLoanView() {
       setLoading(true);
       const res = await loanApplicationService.getCustomerLoanApplications();
       console.log(res);
-      
+
       if (res.status === 200) {
         // Handle different response structures:
         // 1. res.data.data.loanApplications (nested)
@@ -84,17 +85,17 @@ export function ApplyLoanView() {
         // 3. res.data (if it's the array directly)
         const responseData = res.data?.data || res.data;
         const loanApplications = responseData?.loanApplications || responseData;
-        
+
         // Ensure we have an array
-        const list = Array.isArray(loanApplications) 
-          ? loanApplications 
+        const list = Array.isArray(loanApplications)
+          ? loanApplications
           : (loanApplications?.applications ?? loanApplications?.list ?? []);
-        
+
         // Map each application to the expected shape
         const mapped = (list as Record<string, unknown>[])
           .map(mapApiToApplication)
           .filter((a) => a.id); // Filter out any invalid entries
-        
+
         setApplications(mapped.length ? mapped : []);
       }
     } catch (error) {
@@ -206,7 +207,8 @@ export function ApplyLoanView() {
                         <TableRow>
                           <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                             <Typography variant="body2" color="text.secondary">
-                              No loan applications found. Click &quot;New Application&quot; to create one.
+                              No loan applications found. Click &quot;New Application&quot; to
+                              create one.
                             </Typography>
                           </TableCell>
                         </TableRow>

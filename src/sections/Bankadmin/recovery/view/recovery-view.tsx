@@ -46,7 +46,7 @@ export function RecoveryView() {
   const mapApiToRecovery = useCallback((item: any): RecoveryProps => {
     const daysLate = Number(item.daysLate || 0);
     const isOverdue = item.isOverdue || daysLate > 0;
-    
+
     // Determine status based on API status and isOverdue flag
     let status: 'overdue' | 'recovered' | 'defaulted' = 'overdue';
     if (item.status === 'recovered' || item.status === 'paid') {
@@ -83,22 +83,22 @@ export function RecoveryView() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params: any = {
         page: table.page + 1,
         limit: table.rowsPerPage,
       };
-      
+
       // Add type filter if not 'all'
       if (typeFilter !== 'all') {
         params.type = typeFilter;
       }
-      
+
       // Add search parameter if filterName is provided
       if (filterName.trim()) {
         params.search = filterName.trim();
       }
-      const response = await bankAdminService.getRecoveryOverview(params);      
+      const response = await bankAdminService.getRecoveryOverview(params);
       if (response.status === 200) {
         const data = response.data?.data || response.data;
         const installmentsList = data?.installments || [];
@@ -116,7 +116,8 @@ export function RecoveryView() {
         }
       }
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load recoveries';
+      const errorMessage =
+        err?.response?.data?.message || err?.message || 'Failed to load recoveries';
       setError(errorMessage);
       setRecoveries([]);
       setTotalCount(0);
@@ -134,27 +135,33 @@ export function RecoveryView() {
   const dataFiltered = recoveries;
   const notFound = !dataFiltered.length && !!filterName && !loading;
 
-  const handleMarkDefaulter = useCallback(async (id: string) => {
-    // TODO: Implement API call to mark as defaulter
-    setRecoveries((prev) =>
-      prev.map((recovery) =>
-        recovery.id === id
-          ? {
-              ...recovery,
-              isDefaulter: true,
-              status: 'defaulted' as const,
-            }
-          : recovery
-      )
-    );
-    // Refresh data after marking as defaulter
-    await fetchRecoveries();
-  }, [fetchRecoveries]);
+  const handleMarkDefaulter = useCallback(
+    async (id: string) => {
+      // TODO: Implement API call to mark as defaulter
+      setRecoveries((prev) =>
+        prev.map((recovery) =>
+          recovery.id === id
+            ? {
+                ...recovery,
+                isDefaulter: true,
+                status: 'defaulted' as const,
+              }
+            : recovery
+        )
+      );
+      // Refresh data after marking as defaulter
+      await fetchRecoveries();
+    },
+    [fetchRecoveries]
+  );
 
-  const handleTypeChange = useCallback((_event: React.SyntheticEvent, newValue: 'all' | 'overdues' | 'dues') => {
-    setTypeFilter(newValue);
-    table.onResetPage(); // Reset to first page when changing type
-  }, [table]);
+  const handleTypeChange = useCallback(
+    (_event: React.SyntheticEvent, newValue: 'all' | 'overdues' | 'dues') => {
+      setTypeFilter(newValue);
+      table.onResetPage(); // Reset to first page when changing type
+    },
+    [table]
+  );
 
   return (
     <DashboardContent>
@@ -192,7 +199,9 @@ export function RecoveryView() {
 
         {/* Summary Display */}
         {summary && (
-          <Box sx={{ p: 2, bgcolor: 'background.neutral', borderBottom: 1, borderColor: 'divider' }}>
+          <Box
+            sx={{ p: 2, bgcolor: 'background.neutral', borderBottom: 1, borderColor: 'divider' }}
+          >
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Summary
             </Typography>
@@ -201,7 +210,8 @@ export function RecoveryView() {
                 Total Dues: <strong>{summary.totalDues || summary.duesCount || 0}</strong>
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Overdues: <strong style={{ color: 'error.main' }}>{summary.overduesCount || 0}</strong>
+                Overdues:{' '}
+                <strong style={{ color: 'error.main' }}>{summary.overduesCount || 0}</strong>
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Total Due Amount: <strong>{fCurrency(summary.totalDueAmount || 0)}</strong>
@@ -265,7 +275,9 @@ export function RecoveryView() {
                       <TableRow>
                         <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {notFound ? `No recoveries found for "${filterName}"` : 'No recoveries found'}
+                            {notFound
+                              ? `No recoveries found for "${filterName}"`
+                              : 'No recoveries found'}
                           </Typography>
                         </TableCell>
                       </TableRow>

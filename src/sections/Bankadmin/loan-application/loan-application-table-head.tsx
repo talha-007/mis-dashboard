@@ -25,7 +25,6 @@ export function LoanApplicationTableHead({
   rowCount,
   headLabel,
   numSelected,
-
 }: LoanApplicationTableHeadProps) {
   return (
     <TableHead>

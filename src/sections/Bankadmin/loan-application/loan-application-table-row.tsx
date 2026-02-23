@@ -41,7 +41,7 @@ type LoanApplicationTableRowProps = {
 export function LoanApplicationTableRow({
   row,
   selected,
-  
+
   onApprove,
   onReject,
 }: LoanApplicationTableRowProps) {

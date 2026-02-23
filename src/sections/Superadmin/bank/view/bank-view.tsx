@@ -236,7 +236,7 @@ export function BankView() {
                           key={row._id}
                           row={row}
                           selected={table.selected.includes(row._id)}
-                          // onSelectRow={() => table.onSelectRow(row._id)}  
+                          // onSelectRow={() => table.onSelectRow(row._id)}
                           onView={() => handleOpenView(row)}
                           onEdit={() => handleOpenFormPage(row)}
                           onUpdateStatus={() => handleOpenStatusDialog(row)}

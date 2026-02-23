@@ -25,7 +25,6 @@ export function CreditProposalReportTableHead({
   rowCount,
   headLabel,
   numSelected,
-
 }: CreditProposalReportTableHeadProps) {
   return (
     <TableHead>

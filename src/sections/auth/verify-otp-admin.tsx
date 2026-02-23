@@ -53,7 +53,10 @@ export function VerifyOtpAdminView() {
         setSuccess(true);
         // Pass OTP to reset password page
         setTimeout(
-          () => router.push(`/admin/new-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(values.otp)}`),
+          () =>
+            router.push(
+              `/admin/new-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(values.otp)}`
+            ),
           2000
         );
       } else {

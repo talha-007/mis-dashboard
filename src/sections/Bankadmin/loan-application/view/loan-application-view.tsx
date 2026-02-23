@@ -249,7 +249,9 @@ export function LoanApplicationView() {
                     <TableRow>
                       <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                         <Typography variant="body2" color="text.secondary">
-                          {filterName ? `No loan applications found for "${filterName}"` : 'No loan applications found'}
+                          {filterName
+                            ? `No loan applications found for "${filterName}"`
+                            : 'No loan applications found'}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -262,7 +264,9 @@ export function LoanApplicationView() {
                     />
                   )}
 
-                  {filterName && !applications.length && !loading && <TableNoData searchQuery={filterName} />}
+                  {filterName && !applications.length && !loading && (
+                    <TableNoData searchQuery={filterName} />
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

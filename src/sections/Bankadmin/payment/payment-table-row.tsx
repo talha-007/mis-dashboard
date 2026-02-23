@@ -31,7 +31,7 @@ type PaymentTableRowProps = {
   // onSelectRow: () => void;
 };
 
-export function PaymentTableRow({ row, selected,  }: PaymentTableRowProps) {
+export function PaymentTableRow({ row, selected }: PaymentTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: MouseEvent<HTMLButtonElement>) => {

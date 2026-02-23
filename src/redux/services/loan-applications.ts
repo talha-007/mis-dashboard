@@ -11,7 +11,8 @@ const create = (data: Record<string, unknown>) => systemUserService.createLoanAp
 
 const list = (params?: Record<string, unknown>) => bankAdminService.getLoanApplications(params);
 
-const getCustomerLoanApplications = (params?: Record<string, unknown>) => bankAdminService.getCustomerLoanApplications(params);
+const getCustomerLoanApplications = (params?: Record<string, unknown>) =>
+  bankAdminService.getCustomerLoanApplications(params);
 
 const get = (id: string) => bankAdminService.getLoanApplicationById(id);
 
@@ -27,7 +28,8 @@ const getDueInstallment = () => bankAdminService.getDueInstallment();
 
 const payInstallment = (installmentId: string) => bankAdminService.payInstallment(installmentId);
 
-const getInstallmentHistory = (params?: Record<string, unknown>) => bankAdminService.getInstallmentHistory(params);
+const getInstallmentHistory = (params?: Record<string, unknown>) =>
+  bankAdminService.getInstallmentHistory(params);
 
 const loanApplicationService = {
   create,

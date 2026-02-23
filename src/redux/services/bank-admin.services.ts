@@ -102,16 +102,19 @@ const deleteUser = (userId: string) => callAPi.delete(`/api/users/general/${user
 const createSubscription = (data: any) => callAPi.post('/api/v1/subscriptions', data);
 
 // get customer's loan applications
-const getCustomerLoanApplications = (params?: any) => callAPi.get('/api/loan-applications', { params });
+const getCustomerLoanApplications = (params?: any) =>
+  callAPi.get('/api/loan-applications', { params });
 
 // get due installment
 const getDueInstallment = () => callAPi.get(`/api/installments/due`);
 
 // pay installment
-const payInstallment = ( installmentId: string ) => callAPi.post(`/api/installments/repay`,{ installmentId });
+const payInstallment = (installmentId: string) =>
+  callAPi.post(`/api/installments/repay`, { installmentId });
 
 // get installment history
-const getInstallmentHistory = (params?: any) => callAPi.get('/api/installments/history', { params });
+const getInstallmentHistory = (params?: any) =>
+  callAPi.get('/api/installments/history', { params });
 
 // --- Stats ---
 const getStats = () => callAPi.get('/api/v1/stats/bank-admin');

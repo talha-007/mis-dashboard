@@ -10,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
 
-
 type CreditProposalReportTableRowProps = {
   row: CreditProposalReport;
   selected: boolean;
@@ -23,7 +22,7 @@ type CreditProposalReportTableRowProps = {
 export function CreditProposalReportTableRow({
   row,
   selected,
-  
+
   onView,
   onApprove,
   onReject,

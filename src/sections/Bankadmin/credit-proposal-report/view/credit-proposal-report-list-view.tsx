@@ -53,10 +53,11 @@ export function CreditProposalReportListView() {
   // Map API response to CreditProposalReport type
   const mapApiToReport = useCallback((item: any): CreditProposalReport => {
     // Get loan application data from loanApplications array (first one if available)
-    const loanApp = Array.isArray(item.loanApplications) && item.loanApplications.length > 0
-      ? item.loanApplications[0]
-      : null;
-    
+    const loanApp =
+      Array.isArray(item.loanApplications) && item.loanApplications.length > 0
+        ? item.loanApplications[0]
+        : null;
+
     return {
       _id: item.id || item._id || '',
       customerId: item.customer?.id || item.customerId || '',
@@ -67,14 +68,23 @@ export function CreditProposalReportListView() {
         phone: item.customer?.phone || '',
       },
       assessmentSubmissionId: item.assessment?.id || item.assessmentSubmissionId || '',
-      score: item.creditAnalysis?.creditScore || item.creditAnalysis?.rating || item.assessment?.earnedPoints || 0,
+      score:
+        item.creditAnalysis?.creditScore ||
+        item.creditAnalysis?.rating ||
+        item.assessment?.earnedPoints ||
+        0,
       totalScore: item.assessment?.totalPoints || item.assessment?.totalQuestions || 100,
       loanApplicationId: loanApp?.id || loanApp?._id || item.loanApplicationId || '',
       loanAmount: loanApp?.amount || item.creditAnalysis?.recommendations?.maxAmount || 0,
       loanType: loanApp?.loanType || loanApp?.type || '',
       loanPurpose: loanApp?.loanPurpose || loanApp?.purpose || '',
       status: (loanApp?.status || item.status || 'pending') as CreditProposalReport['status'],
-      submittedAt: loanApp?.submittedAt || loanApp?.createdAt || item.submittedAt || item.createdAt || new Date().toISOString(),
+      submittedAt:
+        loanApp?.submittedAt ||
+        loanApp?.createdAt ||
+        item.submittedAt ||
+        item.createdAt ||
+        new Date().toISOString(),
       answersSnapshot: item.answersSnapshot || [],
       customFieldSnapshot: item.customFieldSnapshot || [],
     };
@@ -84,17 +94,17 @@ export function CreditProposalReportListView() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const params: any = {
         page: page + 1,
         limit: rowsPerPage,
       };
-      
+
       // Add search parameter if filterName is provided
       if (filterName.trim()) {
         params.search = filterName.trim();
       }
-      
+
       // Add sorting parameters
       if (orderBy === 'score' || orderBy === 'creditScore') {
         params.sortBy = 'creditScore';
@@ -103,27 +113,27 @@ export function CreditProposalReportListView() {
         params.sortBy = 'submittedAt';
         params.sortOrder = order;
       }
-      
+
       const response = await assessmentService.getCreditProposalReports(params);
       console.log('response', response);
-      
+
       if (response.status === 200) {
         // Extract data from response - reports, pagination, and summary are at response.data level
         // Structure: { message, pagination: {...}, reports: [...], summary: {...} }
         const responseData = response.data?.data || response.data;
         const reportsList = responseData?.reports || [];
-        
+
         // Map API response to CreditProposalReport type
         const mapped = Array.isArray(reportsList)
           ? reportsList.map(mapApiToReport).filter((item) => item._id)
           : [];
-        
+
         setReports(mapped);
-        
+
         // Set pagination info from server response
         const pagination = responseData?.pagination || {};
         setTotalCount(pagination.total || mapped.length);
-        
+
         // Set summary if available
         if (responseData?.summary) {
           setSummary(responseData.summary);
@@ -184,33 +194,39 @@ export function CreditProposalReportListView() {
     [navigate]
   );
 
-  const handleApprove = useCallback(async (id: string) => {
-    try {
-      const response = await assessmentService.approveLoanApplication(id);
-      if (response.status === 200) {
-        setSuccessMessage('Loan application approved.');
-        // Refresh the reports list to get updated data
-        await fetchReports();
+  const handleApprove = useCallback(
+    async (id: string) => {
+      try {
+        const response = await assessmentService.approveLoanApplication(id);
+        if (response.status === 200) {
+          setSuccessMessage('Loan application approved.');
+          // Refresh the reports list to get updated data
+          await fetchReports();
+        }
+      } catch (err: any) {
+        const errorMessage = err?.response?.data?.message || err?.message || 'Failed to approve';
+        setError(errorMessage);
       }
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to approve';
-      setError(errorMessage);
-    }
-  }, [fetchReports]);
+    },
+    [fetchReports]
+  );
 
-  const handleReject = useCallback(async (id: string) => {
-    try {
-      const response = await assessmentService.rejectLoanApplication(id);
-      if (response.status === 200) {
-        setSuccessMessage('Loan application rejected.');
-        // Refresh the reports list to get updated data
-        await fetchReports();
+  const handleReject = useCallback(
+    async (id: string) => {
+      try {
+        const response = await assessmentService.rejectLoanApplication(id);
+        if (response.status === 200) {
+          setSuccessMessage('Loan application rejected.');
+          // Refresh the reports list to get updated data
+          await fetchReports();
+        }
+      } catch (err: any) {
+        const errorMessage = err?.response?.data?.message || err?.message || 'Failed to reject';
+        setError(errorMessage);
       }
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to reject';
-      setError(errorMessage);
-    }
-  }, [fetchReports]);
+    },
+    [fetchReports]
+  );
 
   // Client-side filtering removed since we're using server-side search
   const dataFiltered = reports;
@@ -255,15 +271,18 @@ export function CreditProposalReportListView() {
             // fetchReports will be called automatically via useEffect dependency
           }}
         />
-        
+
         {summary && (
-          <Box sx={{ p: 2, bgcolor: 'background.neutral', borderBottom: 1, borderColor: 'divider' }}>
+          <Box
+            sx={{ p: 2, bgcolor: 'background.neutral', borderBottom: 1, borderColor: 'divider' }}
+          >
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Summary: {summary.totalReports} reports | Average Score: {summary.averageCreditScore?.toFixed(1) || 'N/A'}
+              Summary: {summary.totalReports} reports | Average Score:{' '}
+              {summary.averageCreditScore?.toFixed(1) || 'N/A'}
             </Typography>
           </Box>
         )}
-        
+
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
             <Table sx={{ minWidth: 800 }}>
@@ -303,7 +322,7 @@ export function CreditProposalReportListView() {
             </Table>
           </TableContainer>
         </Scrollbar>
-        
+
         {/* Server-side pagination: count is total from server, not current page items */}
         <TablePagination
           component="div"

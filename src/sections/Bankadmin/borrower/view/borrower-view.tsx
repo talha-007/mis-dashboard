@@ -59,17 +59,17 @@ export function BorrowerView() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const params: any = {
         page: table.page + 1,
         limit: table.rowsPerPage,
       };
-      
+
       // Add search parameter if filterName is provided
       if (filterName.trim()) {
         params.search = filterName.trim();
       }
-      
+
       const response = await borrowerService.list(params);
 
       if (response.status === 200) {
@@ -77,7 +77,7 @@ export function BorrowerView() {
         const data = response.data?.data || response.data;
         const borrowersData = data?.borrowers || data?.borrower || [];
         const pagination = data?.pagination || response.data?.pagination;
-                
+
         // Transform API response to match BorrowerProps
         // API structure: { id, name, cnic, loanAmount, rating, status }
         const transformedBorrowers: BorrowerProps[] = Array.isArray(borrowersData)
@@ -241,7 +241,9 @@ export function BorrowerView() {
                       <TableRow>
                         <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {notFound ? `No borrowers found for "${filterName}"` : 'No borrowers found'}
+                            {notFound
+                              ? `No borrowers found for "${filterName}"`
+                              : 'No borrowers found'}
                           </Typography>
                         </TableCell>
                       </TableRow>

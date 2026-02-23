@@ -58,7 +58,13 @@ export function VerifyOtpView() {
         // For password reset, verify OTP then redirect to reset password with OTP
         await authService.verifyEmail(verifyData);
         setSuccess(true);
-        setTimeout(() => router.push(`/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpCode)}`), 1000);
+        setTimeout(
+          () =>
+            router.push(
+              `/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpCode)}`
+            ),
+          1000
+        );
       }
     } catch (err: any) {
       setStatus({ submitError: err?.message || 'Invalid or expired OTP. Please try again.' });

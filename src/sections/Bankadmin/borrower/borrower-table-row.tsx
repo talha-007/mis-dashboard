@@ -101,9 +101,11 @@ export function BorrowerTableRow({
           <Stack spacing={0.5}>
             <Typography variant="subtitle2">{row.name}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {row.cnic} 
+              {row.cnic}
             </Typography>
-            <Typography variant="caption" color="text.secondary">{row.email}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {row.email}
+            </Typography>
           </Stack>
         </TableCell>
 

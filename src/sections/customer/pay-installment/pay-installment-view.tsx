@@ -39,16 +39,17 @@ export function PayInstallmentView() {
       setLoading(true);
       setError(null);
       const response = await loanApplicationService.getDueInstallment();
-        console.log(response);
-        
+      console.log(response);
+
       if (response.status === 200) {
         // dueInstallments is an array - get the first one (or handle multiple)
-        const dueInstallments = response.data?.dueInstallments || response.data?.data?.dueInstallments;
-        
+        const dueInstallments =
+          response.data?.dueInstallments || response.data?.data?.dueInstallments;
+
         if (Array.isArray(dueInstallments) && dueInstallments.length > 0) {
           // Get the first due installment (or you could show all)
           const installment = dueInstallments[0];
-          
+
           setDueInstallment({
             id: installment.id,
             amount: Number(installment.amount || 0),
@@ -65,7 +66,8 @@ export function PayInstallmentView() {
         }
       }
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to fetch due installment';
+      const errorMessage =
+        err?.response?.data?.message || err?.message || 'Failed to fetch due installment';
       setError(errorMessage);
       console.error('Error fetching due installment:', err);
     } finally {
@@ -83,18 +85,18 @@ export function PayInstallmentView() {
       setError('Installment ID is missing');
       return;
     }
-    
+
     const installmentId = dueInstallment.id;
-    
+
     try {
       setLoading(true);
       setError(null);
       setSuccess(false);
-      
+
       // Service sends installmentId in payload: { installmentId }
       const response = await loanApplicationService.payInstallment(installmentId);
       console.log(response);
-      
+
       if (response.status === 200) {
         setSuccess(true);
         // Refresh the due installment list after successful payment
@@ -104,7 +106,8 @@ export function PayInstallmentView() {
         setError('Payment failed');
       }
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Failed to pay installment';
+      const errorMessage =
+        err?.response?.data?.message || err?.message || 'Failed to pay installment';
       setError(errorMessage);
       console.error('Error paying installment:', err);
       // Refresh to get updated status
@@ -143,7 +146,7 @@ export function PayInstallmentView() {
                 Payment successful! Your installment has been paid.
               </Alert>
             )}
-            
+
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
                 Payable Amount
@@ -186,10 +189,10 @@ export function PayInstallmentView() {
               </Box>
             )}
 
-            <Button 
-              fullWidth 
-              variant="contained" 
-              size="large" 
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
               onClick={handlePayNow}
               disabled={loading}
             >

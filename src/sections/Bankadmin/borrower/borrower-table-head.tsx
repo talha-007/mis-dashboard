@@ -25,7 +25,6 @@ export function BorrowerTableHead({
   rowCount,
   headLabel,
   numSelected,
-
 }: BorrowerTableHeadProps) {
   return (
     <TableHead>

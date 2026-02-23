@@ -99,7 +99,11 @@ export function BorrowerDetailView() {
         const response = await borrowerService.get(id as string);
         console.log(response);
         if (response.status === 200) {
-          const data = response.data?.data?.borrower || response.data?.borrower || response.data?.data || response.data;
+          const data =
+            response.data?.data?.borrower ||
+            response.data?.borrower ||
+            response.data?.data ||
+            response.data;
           if (data) {
             setBorrower(data);
           }
@@ -498,7 +502,8 @@ export function BorrowerDetailView() {
                     <Grid size={{ xs: 12 }}>
                       <Stack spacing={2}>
                         <Typography variant="subtitle2" color="text.secondary">
-                          Overdue Installments ({borrower.installmentStats.overdueInstallments.length})
+                          Overdue Installments (
+                          {borrower.installmentStats.overdueInstallments.length})
                         </Typography>
                         <Alert severity="error">
                           {borrower.installmentStats.overdueInstallments.length} installment(s) are

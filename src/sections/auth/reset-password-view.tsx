@@ -37,11 +37,11 @@ export function ResetPasswordView() {
   const emailFromParams = searchParams.get('email') || '';
   const otpFromParams = searchParams.get('otp') || '';
   const emailToUse = emailFromParams || user?.email || '';
-  
+
   // Detect if this is admin route (check current pathname)
   const isAdmin = window.location.pathname.includes('/admin/');
   const signInPath = isAdmin ? '/sign-in/admin' : '/sign-in';
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 

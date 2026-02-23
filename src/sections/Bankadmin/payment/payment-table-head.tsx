@@ -32,7 +32,7 @@ export function PaymentTableHead({
   headLabel,
   numSelected,
   onSort,
- 
+
   sx,
 }: PaymentTableHeadProps) {
   return (

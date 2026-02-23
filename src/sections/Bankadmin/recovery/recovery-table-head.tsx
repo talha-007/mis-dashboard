@@ -25,7 +25,6 @@ export function RecoveryTableHead({
   rowCount,
   headLabel,
   numSelected,
-
 }: RecoveryTableHeadProps) {
   return (
     <TableHead>

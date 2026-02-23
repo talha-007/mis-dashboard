@@ -305,7 +305,6 @@ export function BankPaymentsView() {
               <MenuItem value="expired">Expired</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="cancelled">Cancelled</MenuItem>
-             
             </TextField>
           </Box>
         </Box>

@@ -95,7 +95,6 @@ export default function Page() {
         setIsLoading(true);
         const response = await usersService.get(userId);
         setUserData(response.data.user);
-        
       } catch (err: any) {
         const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load user';
         setError(errorMessage);
@@ -113,7 +112,14 @@ export default function Page() {
       <>
         <title>{`User Details - ${CONFIG.appName}`}</title>
         <DashboardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '400px',
+            }}
+          >
             <CircularProgress />
           </Box>
         </DashboardContent>
@@ -186,7 +192,10 @@ export default function Page() {
             <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
               Personal Information
             </Typography>
-            <DetailRow label="Full Name" value={userData.fullName || `${userData.name} ${userData.lastname}`} />
+            <DetailRow
+              label="Full Name"
+              value={userData.fullName || `${userData.name} ${userData.lastname}`}
+            />
             <DetailRow label="First Name" value={userData.name} />
             <DetailRow label="Last Name" value={userData.lastname} />
             <DetailRow label="Email" value={userData.email} />

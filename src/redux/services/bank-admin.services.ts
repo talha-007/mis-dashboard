@@ -35,6 +35,8 @@ const updateLoanApplication = (id: string, data: any) =>
   callAPi.put(`/api/v1/bankAdmin/loan-applications/${id}`, data);
 const deleteLoanApplication = (id: string) =>
   callAPi.delete(`/api/v1/bankAdmin/loan-applications/${id}`);
+const updateLoanApplicationStatus = (id: string, data: any) =>
+  callAPi.put(`/api/v1/bankAdmin/loan-applications/${id}/status`, data);
 
 // --- Assessments ---
 const getAssessments = (params?: any) => callAPi.get('/api/v1/bankAdmin/assessments', { params });
@@ -80,6 +82,10 @@ const deleteRecoveryOverdue = (id: string) =>
 const getInstallmentsByCustomerId = (customerId: string) =>
   callAPi.get(`/api/v1/bankAdmin/installments/${customerId}`);
 
+// Get recovery overview (dues and overdues)
+const getRecoveryOverview = (params?: any) =>
+  callAPi.get('/api/v1/bankAdmin/installments/recovery-overview', { params });
+
 // --- Users (General) ---
 const createUser = (data: any) => callAPi.post('/api/users/general', data);
 const getUsers = (params?: any) => callAPi.get('/api/users/general', { params });
@@ -89,6 +95,18 @@ const deleteUser = (userId: string) => callAPi.delete(`/api/users/general/${user
 
 // --- Subscriptions (create - Bank Token) ---
 const createSubscription = (data: any) => callAPi.post('/api/v1/subscriptions', data);
+
+// get customer's loan applications
+const getCustomerLoanApplications = (params?: any) => callAPi.get('/api/loan-applications', { params });
+
+// get due installment
+const getDueInstallment = () => callAPi.get(`/api/installments/due`);
+
+// pay installment
+const payInstallment = ( installmentId: string ) => callAPi.post(`/api/installments/repay`,{ installmentId });
+
+// get installment history
+const getInstallmentHistory = (params?: any) => callAPi.get('/api/installments/history', { params });
 
 const bankAdminService = {
   login,
@@ -106,6 +124,7 @@ const bankAdminService = {
   getLoanApplications,
   getLoanApplicationById,
   updateLoanApplication,
+  updateLoanApplicationStatus,
   deleteLoanApplication,
   getAssessments,
   getBankQuestions,
@@ -132,6 +151,11 @@ const bankAdminService = {
   updateUser,
   deleteUser,
   createSubscription,
+  getCustomerLoanApplications,
+  getDueInstallment,
+  payInstallment,
+  getInstallmentHistory,
+  getRecoveryOverview,
 };
 
 export default bankAdminService;

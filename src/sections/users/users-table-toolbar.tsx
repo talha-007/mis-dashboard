@@ -1,27 +1,25 @@
-import { useState } from 'react';
-
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { Iconify } from 'src/components/iconify';
 
-export function UsersTableToolbar() {
-  const [search, setSearch] = useState('');
+// ----------------------------------------------------------------------
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-    // TODO: Implement actual search functionality
-  };
+interface UsersTableToolbarProps {
+  filterName: string;
+  onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
+export function UsersTableToolbar({ filterName, onFilterName }: UsersTableToolbarProps) {
   return (
     <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ p: 2.5, pr: 1 }}>
       <TextField
         fullWidth
         size="small"
         placeholder="Search user..."
-        value={search}
-        onChange={handleSearch}
+        value={filterName}
+        onChange={onFilterName}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">

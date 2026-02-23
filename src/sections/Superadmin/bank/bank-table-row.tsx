@@ -37,7 +37,7 @@ export type BankProps = {
 type BankTableRowProps = {
   row: BankProps;
   selected: boolean;
-  onSelectRow: () => void;
+  // onSelectRow: () => void;
   onView?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -47,7 +47,7 @@ type BankTableRowProps = {
 export function BankTableRow({
   row,
   selected,
-  onSelectRow,
+ 
   onView,
   onEdit,
   onDelete,
@@ -66,9 +66,9 @@ export function BankTableRow({
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell>{row.name}</TableCell>
 

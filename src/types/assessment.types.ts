@@ -39,7 +39,7 @@ export function isCustomField(item: AssessmentItem): item is AssessmentCustomFie
 }
 
 export type BankAssessment = {
-  bankId: string;
+  slug: string;
   questions: AssessmentItem[]; // MC questions + custom fields
   totalMaxScore: number; // Sum of max points from multiple_choice items (bank decides points per option)
 };
@@ -82,7 +82,7 @@ export type CustomFieldValue = {
 export type AssessmentSubmission = {
   _id: string;
   customerId: string;
-  bankId: string;
+  slug: string;
   score: number; // From multiple-choice answers only; total max 100
   totalScore: number;
   answers: AssessmentAnswer[];

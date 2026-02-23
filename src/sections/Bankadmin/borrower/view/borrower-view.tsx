@@ -42,26 +42,64 @@ export function BorrowerView() {
   const [borrowers, setBorrowers] = useState<BorrowerProps[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({
     open: false,
     id: null,
   });
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch borrowers on component mount
+  // Fetch borrowers on component mount and when pagination/filter changes
   useEffect(() => {
     fetchBorrowers();
-  }, []);
+  }, [table.page, table.rowsPerPage, filterName]);
 
   const fetchBorrowers = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      // TODO: Replace with actual API call when service is ready
-      const response = await borrowerService.list({ page: 1, limit: 100 });
+      
+      const params: any = {
+        page: table.page + 1,
+        limit: table.rowsPerPage,
+      };
+      
+      // Add search parameter if filterName is provided
+      if (filterName.trim()) {
+        params.search = filterName.trim();
+      }
+      
+      const response = await borrowerService.list(params);
 
       if (response.status === 200) {
-        setBorrowers(response.data.borrowers);
+        // Handle different response structures
+        const data = response.data?.data || response.data;
+        const borrowersData = data?.borrowers || data?.borrower || [];
+        const pagination = data?.pagination || response.data?.pagination;
+                
+        // Transform API response to match BorrowerProps
+        // API structure: { id, name, cnic, loanAmount, rating, status }
+        const transformedBorrowers: BorrowerProps[] = Array.isArray(borrowersData)
+          ? borrowersData.map((borrower: any) => ({
+              id: borrower.id || borrower._id || '',
+              name: borrower.name || 'N/A',
+              cnic: borrower.cnic || 'N/A',
+              phone: borrower.phone || borrower.customerId?.phone || 'N/A',
+              email: borrower.email || borrower.customerId?.email || 'N/A',
+              address: borrower.address || '', // Not in API response
+              loanAmount: Number(borrower.loanAmount || 0),
+              loanType: borrower.type || borrower.loanType || 'personal',
+              status: (borrower.status || 'active') as BorrowerProps['status'],
+              rating: Number(borrower.rating || 0),
+              joinDate: borrower.createdAt
+                ? new Date(borrower.createdAt).toLocaleDateString()
+                : borrower.joinDate || 'N/A',
+              lastPayment: borrower.lastPayment || null, // Not in API response
+            }))
+          : [];
+
+        setBorrowers(transformedBorrowers);
+        setTotalCount(pagination?.total || transformedBorrowers.length);
       }
     } catch (err: any) {
       const errorMessage = err?.message || 'Failed to load borrowers';
@@ -123,7 +161,7 @@ export function BorrowerView() {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Borrower Management
         </Typography>
-        <Button
+        {/* <Button
           variant="contained"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={handleAddBorrower}
@@ -136,7 +174,7 @@ export function BorrowerView() {
           }}
         >
           Add Borrower
-        </Button>
+        </Button> */}
       </Box>
 
       <Card>
@@ -159,7 +197,8 @@ export function BorrowerView() {
               filterName={filterName}
               onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setFilterName(event.target.value);
-                table.onResetPage();
+                table.onResetPage(); // Reset to first page when searching
+                // fetchBorrowers will be called automatically via useEffect dependency
               }}
             />
 
@@ -172,12 +211,12 @@ export function BorrowerView() {
                     rowCount={borrowers.length}
                     numSelected={table.selected.length}
                     onSort={table.onSort}
-                    onSelectAllRows={(checked) =>
-                      table.onSelectAllRows(
-                        checked,
-                        borrowers.map((borrower) => borrower.id)
-                      )
-                    }
+                    // onSelectAllRows={(checked) =>
+                    //   table.onSelectAllRows(
+                    //     checked,
+                    //     borrowers.map((borrower) => borrower.id)
+                    //   )
+                    // }
                     headLabel={[
                       { id: 'name', label: 'Borrower' },
                       { id: 'loanAmount', label: 'Loan' },
@@ -187,20 +226,15 @@ export function BorrowerView() {
                     ]}
                   />
                   <TableBody>
-                    {dataFiltered
-                      .slice(
-                        table.page * table.rowsPerPage,
-                        table.page * table.rowsPerPage + table.rowsPerPage
-                      )
-                      .map((row) => (
-                        <BorrowerTableRow
-                          key={row.id}
-                          row={row}
-                          selected={table.selected.includes(row.id)}
-                          onSelectRow={() => table.onSelectRow(row.id)}
-                          onDelete={handleDeleteClick}
-                        />
-                      ))}
+                    {dataFiltered.map((row) => (
+                      <BorrowerTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id)}
+                        onSelectRow={() => table.onSelectRow(row.id)}
+                        onDelete={handleDeleteClick}
+                      />
+                    ))}
 
                     <TableEmptyRows
                       height={68}
@@ -216,7 +250,7 @@ export function BorrowerView() {
             <TablePagination
               component="div"
               page={table.page}
-              count={borrowers.length}
+              count={totalCount}
               rowsPerPage={table.rowsPerPage}
               onPageChange={table.onChangePage}
               rowsPerPageOptions={[5, 10, 25]}

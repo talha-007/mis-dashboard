@@ -30,8 +30,14 @@ import { Scrollbar } from 'src/components/scrollbar';
 /** Map API loan application to list shape (id, customerName, cnic, city, loanAmount, installmentAmount, status, etc.) */
 function mapApiToApplication(item: Record<string, unknown>): CustomerLoanApplication {
   const id = String(item.id ?? item._id ?? '');
-  const loanAmount = Number(item.loanAmount ?? 0);
+  // Handle both 'amount' and 'loanAmount' fields from API
+  const loanAmount = Number(item.loanAmount ?? item.amount ?? 0);
   const installmentAmount = Number(item.installmentAmount ?? 0);
+  
+  // Extract bank info if available (could be object or just ID)
+  const bank = item.bank || item.bankId;
+  const bankName = typeof bank === 'object' && bank !== null ? String((bank as any).name ?? '') : '';
+  
   return {
     id,
     customerName: String(item.customerName ?? item.name ?? ''),
@@ -56,7 +62,7 @@ function mapApiToApplication(item: Record<string, unknown>): CustomerLoanApplica
     otherExpenses: 0,
     miscellaneous: 0,
     status: (item.status as CustomerLoanApplication['status']) ?? 'submitted',
-    createdAt: String(item.createdAt ?? ''),
+    createdAt: String(item.createdAt ?? item.submittedAt ?? ''),
     updatedAt: String(item.updatedAt ?? ''),
   };
 }
@@ -69,14 +75,31 @@ export function ApplyLoanView() {
   const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await loanApplicationService.list();
-      const raw = res.data?.data ?? res.data;
-      const list = Array.isArray(raw) ? raw : (raw?.applications ?? raw?.list ?? []);
-      const mapped = (list as Record<string, unknown>[])
-        .map(mapApiToApplication)
-        .filter((a) => a.id);
-      setApplications(mapped.length ? mapped : []);
-    } catch {
+      const res = await loanApplicationService.getCustomerLoanApplications();
+      console.log(res);
+      
+      if (res.status === 200) {
+        // Handle different response structures:
+        // 1. res.data.data.loanApplications (nested)
+        // 2. res.data.loanApplications (direct)
+        // 3. res.data (if it's the array directly)
+        const responseData = res.data?.data || res.data;
+        const loanApplications = responseData?.loanApplications || responseData;
+        
+        // Ensure we have an array
+        const list = Array.isArray(loanApplications) 
+          ? loanApplications 
+          : (loanApplications?.applications ?? loanApplications?.list ?? []);
+        
+        // Map each application to the expected shape
+        const mapped = (list as Record<string, unknown>[])
+          .map(mapApiToApplication)
+          .filter((a) => a.id); // Filter out any invalid entries
+        
+        setApplications(mapped.length ? mapped : []);
+      }
+    } catch (error) {
+      console.error('Error fetching loan applications:', error);
       setApplications([]);
     } finally {
       setLoading(false);
@@ -145,40 +168,50 @@ export function ApplyLoanView() {
                         <TableCell>Loan Amount</TableCell>
                         <TableCell>Installment Amount</TableCell>
                         <TableCell>Status</TableCell>
-                        <TableCell align="right">Actions</TableCell>
+                        {/* <TableCell align="right">Actions</TableCell> */}
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {applications.map((application) => (
-                        <TableRow key={application.id} hover>
-                          <TableCell>{application.id}</TableCell>
-                          <TableCell>{application.customerName}</TableCell>
-                          <TableCell>{application.cnic}</TableCell>
-                          <TableCell>{application.city}</TableCell>
-                          <TableCell>PKR {application.loanAmount.toLocaleString()}</TableCell>
-                          <TableCell>
-                            PKR {application.installmentAmount.toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={application.status.replace('_', ' ').toUpperCase()}
-                              color={getStatusColor(application.status) as any}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell align="right">
-                            <IconButton
-                              color="primary"
-                              onClick={() => router.push(`/apply-loan/${application.id}`)}
-                            >
-                              <Iconify icon="eva:edit-fill" />
-                            </IconButton>
-                            <IconButton color="error" onClick={() => handleDelete(application.id)}>
-                              <Iconify icon="eva:trash-2-fill" />
-                            </IconButton>
+                      {applications.length > 0 ? (
+                        applications.map((application) => (
+                          <TableRow key={application.id} hover>
+                            <TableCell>{application.id}</TableCell>
+                            <TableCell>{application.customerName}</TableCell>
+                            <TableCell>{application.cnic || 'N/A'}</TableCell>
+                            <TableCell>{application.city || 'N/A'}</TableCell>
+                            <TableCell>PKR {application.loanAmount.toLocaleString()}</TableCell>
+                            <TableCell>
+                              PKR {application.installmentAmount.toLocaleString()}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={application.status.replace('_', ' ').toUpperCase()}
+                                color={getStatusColor(application.status) as any}
+                                size="small"
+                              />
+                            </TableCell>
+                            {/* <TableCell align="right">
+                              <IconButton
+                                color="primary"
+                                onClick={() => router.push(`/apply-loan/${application.id}`)}
+                              >
+                                <Iconify icon="eva:edit-fill" />
+                              </IconButton>
+                              <IconButton color="error" onClick={() => handleDelete(application.id)}>
+                                <Iconify icon="eva:trash-2-fill" />
+                              </IconButton>
+                            </TableCell> */}
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              No loan applications found. Click "New Application" to create one.
+                            </Typography>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>

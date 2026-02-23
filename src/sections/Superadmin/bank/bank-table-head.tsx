@@ -17,7 +17,7 @@ type BankTableHeadProps = {
   numSelected: number;
   order: 'asc' | 'desc';
   onSort: (id: string) => void;
-  onSelectAllRows: (checked: boolean) => void;
+  // onSelectAllRows: (checked: boolean) => void;
   headLabel: {
     id: string;
     label: string;
@@ -33,13 +33,13 @@ export function BankTableHead({
   headLabel,
   numSelected,
   onSort,
-  onSelectAllRows,
+  // onSelectAllRows,
   sx,
 }: BankTableHeadProps) {
   return (
     <TableHead sx={sx}>
       <TableRow>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
@@ -47,7 +47,7 @@ export function BankTableHead({
               onSelectAllRows(event.target.checked)
             }
           />
-        </TableCell>
+        </TableCell> */}
 
         {headLabel.map((headCell) => (
           <TableCell

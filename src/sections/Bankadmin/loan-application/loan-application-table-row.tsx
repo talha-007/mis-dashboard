@@ -7,6 +7,8 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 
+import { useRouter } from 'src/routes/hooks';
+
 import { fCurrency } from 'src/utils/format-number';
 
 import { Label } from 'src/components/label';
@@ -16,14 +18,14 @@ import { Label } from 'src/components/label';
 export type LoanApplicationProps = {
   id: string;
   applicantName: string;
-  applicantId: string;
+  applicantId?: string;
   cnic: string;
   phone: string;
   email: string;
   amount: number;
-  loanType: string;
+  loanType?: string;
   score: number;
-  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'submitted';
   appliedDate: string;
   reviewedBy: string | null;
   reviewedDate: string | null;
@@ -32,7 +34,7 @@ export type LoanApplicationProps = {
 type LoanApplicationTableRowProps = {
   row: LoanApplicationProps;
   selected: boolean;
-  onSelectRow: () => void;
+  // onSelectRow: () => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
 };
@@ -40,10 +42,11 @@ type LoanApplicationTableRowProps = {
 export function LoanApplicationTableRow({
   row,
   selected,
-  onSelectRow,
+  
   onApprove,
   onReject,
 }: LoanApplicationTableRowProps) {
+  const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleApprove = useCallback(async () => {
@@ -58,6 +61,10 @@ export function LoanApplicationTableRow({
     setIsProcessing(false);
   }, [row.id, onReject]);
 
+  const handleViewDetails = useCallback(() => {
+    router.push(`/loan-applications/${row.id}`);
+  }, [row.id, router]);
+
   const getStatusColor = () => {
     switch (row.status) {
       case 'approved':
@@ -67,6 +74,7 @@ export function LoanApplicationTableRow({
       case 'under_review':
         return 'warning';
       case 'pending':
+      case 'submitted':
         return 'info';
       default:
         return 'default';
@@ -80,13 +88,14 @@ export function LoanApplicationTableRow({
     return 'error.main';
   };
 
-  const isPending = row.status === 'pending' || row.status === 'under_review';
+  const isPending =
+    row.status === 'pending' || row.status === 'under_review' || row.status === 'submitted';
 
   return (
     <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-      <TableCell padding="checkbox">
+      {/* <TableCell padding="checkbox">
         <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-      </TableCell>
+      </TableCell> */}
 
       <TableCell component="th" scope="row">
         <Stack spacing={0.5}>
@@ -98,24 +107,30 @@ export function LoanApplicationTableRow({
       </TableCell>
 
       <TableCell>
-        <Stack spacing={0.5}>
-          <Typography variant="body2">{fCurrency(row.amount)}</Typography>
+        <Typography variant="body2">{fCurrency(row.amount)}</Typography>
+        {row.loanType && (
           <Typography variant="caption" color="text.secondary">
             {row.loanType}
           </Typography>
-        </Stack>
+        )}
       </TableCell>
 
       <TableCell align="center">
-        <Typography
-          variant="subtitle2"
-          sx={{
-            color: getScoreColor(row.score),
-            fontWeight: 600,
-          }}
-        >
-          {row.score}
-        </Typography>
+        {row.score > 0 ? (
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: getScoreColor(row.score),
+              fontWeight: 600,
+            }}
+          >
+            {row.score}
+          </Typography>
+        ) : (
+          <Typography variant="caption" color="text.secondary">
+            N/A
+          </Typography>
+        )}
       </TableCell>
 
       <TableCell>
@@ -125,6 +140,22 @@ export function LoanApplicationTableRow({
       <TableCell align="right">
         {isPending ? (
           <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={handleViewDetails}
+              sx={{
+                color: 'grey.800',
+                borderColor: 'grey.500',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  color: 'primary.main',
+                  bgcolor: 'primary.lighter',
+                },
+              }}
+            >
+              View
+            </Button>
             <Button
               size="small"
               variant="contained"
@@ -159,9 +190,27 @@ export function LoanApplicationTableRow({
             </Button>
           </Stack>
         ) : (
-          <Typography variant="caption" color="text.secondary">
-            {row.status === 'approved' ? 'Approved' : 'Rejected'}
-          </Typography>
+          <Stack direction="row" spacing={1} justifyContent="flex-end">
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={handleViewDetails}
+              sx={{
+                color: 'grey.800',
+                borderColor: 'grey.500',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  color: 'primary.main',
+                  bgcolor: 'primary.lighter',
+                },
+              }}
+            >
+              View
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              {row.status === 'approved' ? 'Approved' : 'Rejected'}
+            </Typography>
+          </Stack>
         )}
       </TableCell>
     </TableRow>

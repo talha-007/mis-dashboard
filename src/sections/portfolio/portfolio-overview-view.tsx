@@ -133,6 +133,7 @@ export function PortfolioOverviewView() {
             variant="contained"
             startIcon={<Iconify icon="solar:wallet-money-bold" />}
             onClick={() => setOpenPaymentDialog(true)}
+            size="small"  
           >
             Record Bank Payment
           </Button>

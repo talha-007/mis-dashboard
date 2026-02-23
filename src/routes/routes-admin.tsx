@@ -15,7 +15,9 @@ import { UserRole } from 'src/types/auth.types';
 const BorrowerManagementPage = lazy(() => import('src/pages/admin/borrower-management'));
 const BorrowerAddPage = lazy(() => import('src/pages/admin/borrower-add'));
 const BorrowerEditPage = lazy(() => import('src/pages/admin/borrower-edit'));
+const BorrowerDetailPage = lazy(() => import('src/pages/admin/borrower-detail'));
 const LoanApplicationPage = lazy(() => import('src/pages/admin/loan-application'));
+const LoanApplicationDetailPage = lazy(() => import('src/pages/admin/loan-application-detail'));
 const RecoveryPage = lazy(() => import('src/pages/admin/recovery'));
 const PaymentPage = lazy(() => import('src/pages/admin/payment'));
 const CreditRatingsPage = lazy(() => import('src/pages/admin/credit-ratings'));
@@ -56,10 +58,26 @@ export const adminRoutes: RouteObject[] = [
     ),
   },
   {
+    path: 'borrower-management/view/:id',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <BorrowerDetailPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
     path: 'loan-applications',
     element: (
       <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
         <LoanApplicationPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'loan-applications/:id',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <LoanApplicationDetailPage />
       </MultiRoleGuard>
     ),
   },

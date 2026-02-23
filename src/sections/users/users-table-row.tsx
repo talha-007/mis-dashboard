@@ -60,7 +60,10 @@ export function UsersTableRow({
   };
 
   const getRoleColor = (roleVal: string) => {
-    const roleColors: Record<string, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
+    const roleColors: Record<
+      string,
+      'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+    > = {
       staff: 'default',
       manager: 'primary',
       supervisor: 'secondary',
@@ -68,7 +71,7 @@ export function UsersTableRow({
     return roleColors[roleVal] || 'default';
   };
 
-  const getStatusColor = (statusVal: string) => statusVal === 'active' ? 'success' : 'error';
+  const getStatusColor = (statusVal: string) => (statusVal === 'active' ? 'success' : 'error');
 
   return (
     <>
@@ -80,7 +83,7 @@ export function UsersTableRow({
         <TableCell>
           <Chip label={role} color={getRoleColor(role)} size="small" />
         </TableCell>
-        
+
         <TableCell align="right">
           <IconButton size="small" color="inherit" onClick={handleOpenMenu}>
             <Iconify icon="eva:more-vertical-fill" />

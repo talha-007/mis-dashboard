@@ -16,7 +16,7 @@ type CreditProposalReportTableHeadProps = {
   order: 'asc' | 'desc';
   onSort: (id: string) => void;
   headLabel: HeadCell[];
-  onSelectAllRows: (checked: boolean) => void;
+  // onSelectAllRows: (checked: boolean) => void;
 };
 
 export function CreditProposalReportTableHead({
@@ -26,18 +26,18 @@ export function CreditProposalReportTableHead({
   rowCount,
   headLabel,
   numSelected,
-  onSelectAllRows,
+
 }: CreditProposalReportTableHeadProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={(e) => onSelectAllRows(e.target.checked)}
           />
-        </TableCell>
+        </TableCell> */}
         {headLabel.map((headCell) => (
           <TableCell
             key={headCell.id}

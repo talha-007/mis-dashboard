@@ -18,6 +18,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useParams, useRouter } from 'src/routes/hooks';
 
+import { useAppSelector } from 'src/redux/store';
 import { DashboardContent } from 'src/layouts/dashboard';
 import loanApplicationService from 'src/redux/services/loan-applications';
 
@@ -101,12 +102,13 @@ type ApplyLoanFormViewProps = {
   /** When true, render only the form card (no page title, no DashboardContent wrapper). Used inside ApplyLoanFlowView step 2. */
   embedded?: boolean;
   /** When provided (e.g. from apply-loan flow after assessment), sent in create payload so backend can link loan to assessment. */
-  assessmentSubmissionId?: string;
+  assessment_id?: string;
 };
 
-export function ApplyLoanFormView({ embedded, assessmentSubmissionId }: ApplyLoanFormViewProps) {
+export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormViewProps) {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useAppSelector((state) => state.auth);
   const [existing, setExisting] = useState<CustomerLoanApplication | null>(null);
   const [loadingEdit, setLoadingEdit] = useState(!!id && id !== 'new');
 
@@ -203,9 +205,10 @@ export function ApplyLoanFormView({ embedded, assessmentSubmissionId }: ApplyLoa
         loanAmount: amount,
         durationMonths: duration,
         installmentAmount,
+        bankSlug: user?.bankSlug ?? '',
       };
-      if (assessmentSubmissionId) {
-        payload.assessmentSubmissionId = assessmentSubmissionId;
+      if (assessment_id) {
+        payload.assessment_id = assessment_id;
       }
 
       try {

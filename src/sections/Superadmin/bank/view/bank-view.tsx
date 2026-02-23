@@ -210,12 +210,12 @@ export function BankView() {
                     rowCount={banks.length}
                     numSelected={table.selected.length}
                     onSort={table.onSort}
-                    onSelectAllRows={(checked) =>
-                      table.onSelectAllRows(
-                        checked,
-                        banks.map((bank) => bank._id)
-                      )
-                    }
+                    // onSelectAllRows={(checked) =>
+                    //   table.onSelectAllRows(
+                    //     checked,
+                    //     banks.map((bank) => bank._id)
+                    //   )
+                    // }
                     headLabel={[
                       { id: 'name', label: 'Bank Name' },
                       { id: 'code', label: 'Bank Code' },
@@ -233,7 +233,7 @@ export function BankView() {
                         key={row._id}
                         row={row}
                         selected={table.selected.includes(row._id)}
-                        onSelectRow={() => table.onSelectRow(row._id)}
+                        // onSelectRow={() => table.onSelectRow(row._id)}  
                         onView={() => handleOpenView(row)}
                         onEdit={() => handleOpenFormPage(row)}
                         onUpdateStatus={() => handleOpenStatusDialog(row)}

@@ -6,6 +6,9 @@ import type {
   CreditProposalReport,
 } from 'src/types/assessment.types';
 
+import { callAPi } from './http-common';
+
+import customerService from './customer.services';
 import bankAdminService from './bank-admin.services';
 import systemUserService from './system-user.services';
 
@@ -95,12 +98,18 @@ const updateBankAssessment = (
   }));
 };
 
-const getAssessmentForCustomer = (bankId?: string) =>
-  bankId
-    ? bankAdminService.getBankQuestionsForCustomer(bankId).then((res) => ({
-        data: mapToBankAssessment(res.data?.data ?? res.data),
-      }))
-    : getBankAssessment();
+const getAssessmentForCustomer = (bankId?: string) => {
+  if (bankId) {
+    // Use new customer-side API: /api/v1/bank-questions/customer/:bankId
+    return customerService.getBankQuestionsForCustomer(bankId).then((res) => ({
+      data: mapToBankAssessment(res.data?.data ?? res.data),
+    }));
+  }
+  // Fallback to existing API
+  return bankAdminService.getBankQuestionsForCustomer(bankId || '').then((res) => ({
+    data: mapToBankAssessment(res.data?.data ?? res.data),
+  }));
+};
 
 const submitAssessment = (
   answers: AssessmentAnswer[],
@@ -115,7 +124,8 @@ const submitAssessment = (
     answers,
     customFieldValues: customFieldValues ?? [],
   };
-  return systemUserService.submitAssessment(payload).then((res) => ({
+  // Use new customer-side API: /api/v1/assessments/submit
+  return customerService.submitAssessmentAnswers(payload).then((res) => ({
     data: (res.data?.data ?? res.data) as AssessmentSubmission,
   }));
 };
@@ -128,15 +138,22 @@ const getMyLatestSubmission = () =>
     return { data: latest as AssessmentSubmission | null };
   });
 
-// Credit proposal reports – not in README; placeholder for UI
-const getCreditProposalReports = (_params?: any): Promise<{ data: CreditProposalReport[] }> =>
-  Promise.resolve({ data: [] });
+// Credit proposal reports
+const getCreditProposalReports = (params?: any) => {
+  return callAPi.get('/api/v1/bankAdmin/credit-proposal-reports', { params });
+};
 
-const getCreditProposalReportById = (_id: string): Promise<{ data: CreditProposalReport | null }> =>
-  Promise.resolve({ data: null });
+const getCreditProposalReportById = (id: string) => {
+  return callAPi.get(`/api/v1/bankAdmin/credit-proposal-reports/${id}`);
+};
 
-const approveLoanApplication = (reportId: string) => Promise.resolve({ data: { success: true } });
-const rejectLoanApplication = (reportId: string) => Promise.resolve({ data: { success: true } });
+const approveLoanApplication = (reportId: string) => {
+  return callAPi.post(`/api/v1/bankAdmin/credit-proposal-reports/${reportId}/approve`);
+};
+
+const rejectLoanApplication = (reportId: string) => {
+  return callAPi.post(`/api/v1/bankAdmin/credit-proposal-reports/${reportId}/reject`);
+};
 
 const assessmentService = {
   getBankAssessment,

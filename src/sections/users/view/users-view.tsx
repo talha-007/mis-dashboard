@@ -36,7 +36,7 @@ const TABLE_HEAD = [
   { id: 'email', label: 'Email', width: 200 },
   { id: 'phone', label: 'Phone', width: 150 },
   { id: 'role', label: 'Role', width: 120 },
- 
+
   { id: '', label: '', width: 80 },
 ];
 
@@ -46,6 +46,7 @@ export function UsersView() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [filterName, setFilterName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,44 +61,67 @@ export function UsersView() {
   const fetchUsers = useCallback(async () => {
     try {
       setIsLoading(true);
-      const params = {
-        page: page + 1,
+      setError(null);
+      
+      // Server-side pagination and search: send page, limit, and search to server
+      const params: any = {
+        page: page + 1, // Convert 0-based to 1-based for server
         limit: rowsPerPage,
       };
+      
+      // Add search parameter if filterName is provided
+      if (filterName.trim()) {
+        params.search = filterName.trim();
+      }
+      
       const response = await usersService.list(params);
+      
+      if (response.status === 200) {
+        const data = response.data?.data || response.data;
+        const { users = [], pagination = {} } = data;
 
-      if (response.status === 200 && response.data) {
-        const { users = [], pagination = {} } = response.data;
-
-        // Extract users array and set table data
+        // Extract users array and set table data (only current page data from server)
         setTableData(Array.isArray(users) ? users : []);
 
-        // Set pagination info
+        // Set pagination info from server response
         setTotalCount(pagination.total || 0);
         setTotalPages(pagination.totalPages || 1);
 
-        setError(null);
+        // Optional: Sync page state with server's currentPage if needed
+        // Note: Server uses 1-based, our state uses 0-based
+        if (pagination.currentPage && pagination.currentPage !== page + 1) {
+          // Only adjust if there's a mismatch (shouldn't happen normally)
+          console.warn('Page mismatch detected');
+        }
       }
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || 'Failed to fetch users';
       setError(errorMessage);
+      setTableData([]);
+      setTotalCount(0);
+      setTotalPages(0);
       console.error('Error fetching users:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [page, rowsPerPage]);
+  }, [page, rowsPerPage, filterName]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
+  // Server-side pagination: changing page triggers new API call
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
+    // fetchUsers will be called automatically via useEffect dependency
   };
 
+  // Server-side pagination: changing rows per page resets to first page and triggers new API call
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page when changing rows per page
+    // fetchUsers will be called automatically via useEffect dependency
   };
 
   const handleAddUser = () => {
@@ -124,7 +148,17 @@ export function UsersView() {
       await usersService.deleteById(deleteConfirm.id);
       toast.success('User deleted successfully!');
       setDeleteConfirm({ open: false, id: null });
-      fetchUsers();
+      
+      // After deletion, handle server-side pagination:
+      // If we're on a page that will become empty (last item), go back one page
+      // Otherwise, refetch current page
+      if (tableData.length === 1 && page > 0) {
+        // Go back one page - fetchUsers will be called automatically via useEffect
+        setPage(page - 1);
+      } else {
+        // Refetch current page from server
+        fetchUsers();
+      }
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || 'Failed to delete user';
       toast.error(errorMessage);
@@ -135,6 +169,13 @@ export function UsersView() {
 
   const handleCancelDelete = () => {
     setDeleteConfirm({ open: false, id: null });
+  };
+
+  // Server-side search: changing filter resets to first page and triggers new API call
+  const handleFilterByName = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterName(event.target.value);
+    setPage(0); // Reset to first page when searching
+    // fetchUsers will be called automatically via useEffect dependency
   };
 
   return (
@@ -148,8 +189,8 @@ export function UsersView() {
         }}
       >
         <Box>
-          <h2>Users Management</h2>
-          <p style={{ color: '#999', marginTop: 4 }}>Manage general users in the system</p>
+          <h2>Customers Management</h2>
+          <p style={{ color: '#999', marginTop: 4 }}>Manage general customers in the system</p>
         </Box>
         <Button
           variant="contained"
@@ -168,7 +209,7 @@ export function UsersView() {
       )}
 
       <Card>
-        <UsersTableToolbar />
+        <UsersTableToolbar filterName={filterName} onFilterName={handleFilterByName} />
 
         {isLoading ? (
           <Box
@@ -198,7 +239,6 @@ export function UsersView() {
                           email={row.email}
                           phone={row.phone || 'N/A'}
                           role={row.role || 'user'}
-                         
                           onViewRow={handleViewRow}
                           onEditRow={handleEditRow}
                           onDeleteRow={handleDeleteRow}
@@ -216,14 +256,15 @@ export function UsersView() {
               </TableContainer>
             </Scrollbar>
 
+            {/* Server-side pagination: count is total from server, not current page items */}
             <TablePagination
               page={page}
               component="div"
-              count={totalCount}
+              count={totalCount} // Total count from server (all pages)
               rowsPerPage={rowsPerPage}
-              onPageChange={handleChangePage}
+              onPageChange={handleChangePage} // Triggers server request for new page
               rowsPerPageOptions={[5, 10, 25]}
-              onRowsPerPageChange={handleChangeRowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage} // Triggers server request with new limit
             />
           </>
         )}

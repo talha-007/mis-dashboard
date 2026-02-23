@@ -64,6 +64,11 @@ export function BorrowerTableRow({
     navigate(`/borrower-management/edit/${row.id}`);
   }, [row.id, navigate]);
 
+  const handleView = useCallback(() => {
+    handleClosePopover();
+    navigate(`/borrower-management/view/${row.id}`);
+  }, [row.id, navigate]);
+
   const handleDelete = useCallback(() => {
     handleClosePopover();
     if (onDelete) {
@@ -85,20 +90,21 @@ export function BorrowerTableRow({
         return 'default';
     }
   };
-
+  console.log(row);
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell component="th" scope="row">
           <Stack spacing={0.5}>
             <Typography variant="subtitle2">{row.name}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {row.id} • {row.cnic}
+              {row.cnic} 
             </Typography>
+            <Typography variant="caption" color="text.secondary">{row.email}</Typography>
           </Stack>
         </TableCell>
 
@@ -147,6 +153,10 @@ export function BorrowerTableRow({
             },
           }}
         >
+          <MenuItem onClick={handleView}>
+            <Iconify icon="solar:eye-bold" />
+            View
+          </MenuItem>
           <MenuItem onClick={handleEdit}>
             <Iconify icon="solar:pen-bold" />
             Edit

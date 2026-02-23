@@ -7,6 +7,7 @@ import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 
 import { fCurrency } from 'src/utils/format-number';
+import { fDate } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
 
@@ -47,7 +48,7 @@ export function InstallmentTableRow({ row, selected, onSelectRow }: InstallmentT
 
       <TableCell align="right">
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {row.dueDate}
+          {row.dueDate ? fDate(row.dueDate) : 'N/A'}
         </Typography>
       </TableCell>
     </TableRow>

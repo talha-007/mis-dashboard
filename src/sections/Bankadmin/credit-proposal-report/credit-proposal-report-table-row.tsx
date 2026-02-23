@@ -17,7 +17,7 @@ import { Label } from 'src/components/label';
 type CreditProposalReportTableRowProps = {
   row: CreditProposalReport;
   selected: boolean;
-  onSelectRow: () => void;
+  // onSelectRow: () => void;
   onView: (id: string) => void;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
@@ -26,7 +26,7 @@ type CreditProposalReportTableRowProps = {
 export function CreditProposalReportTableRow({
   row,
   selected,
-  onSelectRow,
+  
   onView,
   onApprove,
   onReject,
@@ -59,9 +59,9 @@ export function CreditProposalReportTableRow({
 
   return (
     <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-      <TableCell padding="checkbox">
+      {/* <TableCell padding="checkbox">
         <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-      </TableCell>
+      </TableCell> */}
       <TableCell component="th" scope="row">
         <Stack spacing={0.5}>
           <Typography variant="subtitle2">{row.customer?.name ?? '-'}</Typography>
@@ -86,15 +86,15 @@ export function CreditProposalReportTableRow({
       <TableCell>
         <Typography variant="body2">{fDate(row.submittedAt)}</Typography>
       </TableCell>
-      <TableCell>
+      {/* <TableCell>
         <Label color={getStatusColor(row.status)}>{row.status}</Label>
-      </TableCell>
+      </TableCell> */}
       <TableCell align="right">
         <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap">
-          <Button size="small" variant="outlined" onClick={() => onView(row._id)}>
+          {/* <Button size="small" variant="outlined" onClick={() => onView(row._id)}>
             View
-          </Button>
-          {isPending && (
+          </Button> */}
+          {/* {isPending && (
             <>
               <Button
                 size="small"
@@ -115,7 +115,7 @@ export function CreditProposalReportTableRow({
                 Reject
               </Button>
             </>
-          )}
+          )} */}
         </Stack>
       </TableCell>
     </TableRow>

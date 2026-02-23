@@ -138,8 +138,6 @@ export function BankPaymentsView() {
         return 'warning';
       case 'cancelled':
         return 'default';
-      case 'suspended':
-        return 'error';
       default:
         return 'default';
     }
@@ -307,7 +305,7 @@ export function BankPaymentsView() {
               <MenuItem value="expired">Expired</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="cancelled">Cancelled</MenuItem>
-              <MenuItem value="suspended">Suspended</MenuItem>
+             
             </TextField>
           </Box>
         </Box>

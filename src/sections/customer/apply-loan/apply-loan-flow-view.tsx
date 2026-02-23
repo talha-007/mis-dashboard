@@ -3,8 +3,9 @@
  * Edit mode (apply-loan/:id) skips assessment and shows only the form.
  */
 
-import type { BankAssessment, AssessmentAnswer } from 'src/types/assessment.types';
+import type { BankAssessment } from 'src/types/assessment.types';
 
+import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -24,8 +25,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useParams, useRouter } from 'src/routes/hooks';
 
+import { useAppSelector } from 'src/store';
 import { DashboardContent } from 'src/layouts/dashboard';
-import assessmentService from 'src/redux/services/assessment.services';
+import customerService from 'src/redux/services/customer.services';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -40,8 +42,9 @@ type AnswerState = Record<string, string>;
 function AssessmentStepContent({
   onComplete,
 }: {
-  onComplete: (result: { score: number; totalScore: number; submissionId?: string }) => void;
+  onComplete: (result: { submissionId?: string }) => void;
 }) {
+  const { user } = useAppSelector((state) => state.auth);
   const [assessment, setAssessment] = useState<BankAssessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -52,15 +55,72 @@ function AssessmentStepContent({
     try {
       setLoading(true);
       setError(null);
-      const res = await assessmentService.getAssessmentForCustomer();
-      setAssessment(res.data ?? null);
+
+      // Get bankSlug from user data (mapped from API slug in authSlice)
+
+      const bankSlug = (user as any)?.bankSlug;
+      if (!bankSlug) {
+        setError('Bank slug not found. Unable to load assessment.');
+        setAssessment(null);
+        setLoading(false);
+        return;
+      }
+
+      // Use new API: /api/v1/bank-questions/customer/:bankSlug
+      const res = await customerService.getBankQuestionsForCustomer(bankSlug);
+      console.log('[fetchAssessment] API Response:', res.data);
+      // API response has structure: { bankQuestions: { questions: [...], ... }, message: "..." }
+      const data = res.data?.bankQuestions ?? res.data?.data ?? res.data;
+      console.log('[fetchAssessment] Extracted data:', data);
+      console.log('[fetchAssessment] Questions array:', data?.questions);
+
+      // Map the response to BankAssessment format
+      const questions: BankAssessment['questions'] = (data?.questions ?? []).map(
+        (q: any, index: number) => {
+          if (q.type === 'multiple_choice') {
+            return {
+              _id: String(q._id ?? q.id ?? index),
+              type: 'multiple_choice' as const,
+              text: q.text,
+              order: q.order ?? index + 1,
+              options: (q.options ?? []).map((o: any, i: number) => ({
+                _id: String(o._id ?? o.id ?? i), // Use index as fallback for _id
+                text: o.text ?? o.label ?? '',
+                points: Number(o.points ?? o.value ?? o.score ?? 0),
+              })),
+            };
+          }
+          return {
+            _id: String(q._id ?? q.id ?? index),
+            type: 'custom_field' as const,
+            fieldKey: q.fieldKey ?? q.label ?? `field_${index + 1}`,
+            label: q.label ?? q.fieldKey ?? `Field ${index + 1}`,
+            inputType: q.inputType === 'text' ? 'text' : 'number',
+            order: q.order ?? index + 1,
+            unit: q.unit,
+          };
+        }
+      );
+
+      const totalMaxScore = questions.reduce((sum, q) => {
+        if (q.type === 'multiple_choice' && q.options?.length) {
+          return sum + Math.max(...q.options.map((o) => o.points));
+        }
+        return sum;
+      }, 0);
+
+      setAssessment({
+        slug: bankSlug,
+        questions,
+        totalMaxScore,
+      });
     } catch (err: unknown) {
       setError((err as Error)?.message || 'Failed to load assessment');
       setAssessment(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchAssessment();
@@ -69,30 +129,32 @@ function AssessmentStepContent({
   const mcQuestions = assessment?.questions?.filter(isMultipleChoice) ?? [];
   const allAnswered = mcQuestions.length === 0 || mcQuestions.every((q) => answers[q._id]);
 
-  const buildAnswerPayload = (): AssessmentAnswer[] =>
-    mcQuestions
-      .filter((q) => answers[q._id])
-      .map((q) => {
-        const optionId = answers[q._id];
-        const option = q.options.find((o) => o._id === optionId);
-        return { questionId: q._id, optionId, points: option?.points ?? 0 };
-      });
-
   const handleSubmit = async () => {
     if (!allAnswered || !assessment) return;
     try {
       setSubmitting(true);
       setError(null);
-      const res = await assessmentService.submitAssessment(
-        buildAnswerPayload(),
-        [],
-        assessment.totalMaxScore ?? 100
-      );
-      onComplete({
-        score: res.data.score,
-        totalScore: res.data.totalScore,
-        submissionId: res.data._id,
-      });
+
+      const answerPayload = mcQuestions
+        .filter((q) => answers[q._id])
+        .map((q) => {
+          const optionId = answers[q._id];
+          const option = q.options.find((o) => o._id === optionId);
+          return { questionId: q._id, optionId };
+        });
+
+      const submitPayload = {
+        bankSlug: user?.bankSlug ?? '',
+        answers: answerPayload,
+      };
+
+      // Use new API: /api/v1/assessments/submit
+      const res = await customerService.submitAssessmentAnswers(submitPayload);
+      if (res.status === 201) {
+        const result = res.data;
+        toast.success(result.message);
+        onComplete({ submissionId: result?.assessment_id });
+      }
     } catch (err: unknown) {
       setError((err as Error)?.message || 'Failed to submit assessment');
     } finally {
@@ -115,7 +177,7 @@ function AssessmentStepContent({
         <Button
           sx={{ mt: 2 }}
           variant="contained"
-          onClick={() => onComplete({ score: 0, totalScore: 100, submissionId: undefined })}
+          onClick={() => onComplete({ submissionId: undefined })}
         >
           Continue to loan details
         </Button>
@@ -180,8 +242,6 @@ export function ApplyLoanFlowView() {
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [assessmentResult, setAssessmentResult] = useState<{
-    score: number;
-    totalScore: number;
     submissionId?: string;
   } | null>(null);
 
@@ -219,7 +279,7 @@ export function ApplyLoanFlowView() {
           {activeStep === 0 && (
             <AssessmentStepContent
               onComplete={(result) => {
-                setAssessmentResult(result);
+                setAssessmentResult({ submissionId: result?.submissionId });
                 setActiveStep(1);
               }}
             />
@@ -240,7 +300,7 @@ export function ApplyLoanFlowView() {
                   Back to assessment
                 </Button>
               </Stack>
-              <ApplyLoanFormView embedded assessmentSubmissionId={assessmentResult?.submissionId} />
+              <ApplyLoanFormView embedded assessment_id={assessmentResult?.submissionId} />
             </Stack>
           )}
         </Stack>

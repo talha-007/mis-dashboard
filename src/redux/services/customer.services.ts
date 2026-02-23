@@ -22,6 +22,11 @@ const googleLogin = (data: any) => callAPi.post('/api/customers/google-login', d
 
 const updateProfile = (id: string, data: any) => callAPi.put(`/api/customers/${id}`, data);
 
+const getBankQuestionsForCustomer = (slug: string) =>
+  callAPi.get(`/api/v1/bank-questions/customer/${slug}`);
+
+const submitAssessmentAnswers = (data: any) => callAPi.post('/api/v1/assessments/submit', data);
+
 const customerService = {
   register,
   login,
@@ -31,6 +36,8 @@ const customerService = {
   resetPassword,
   googleLogin,
   updateProfile,
+  getBankQuestionsForCustomer,
+  submitAssessmentAnswers,
 };
 
 export default customerService;

@@ -98,6 +98,7 @@ function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
     firstName: meData.firstName ?? loginUser.firstName ?? firstName,
     lastName: meData.lastName ?? loginUser.lastName ?? lastName,
     role: normalizedRole,
+    bankSlug: meData.bankSlug ?? meData.slug ?? loginUser.bankSlug ?? undefined,
     subscriptionStatus,
     permissions: loginUser.permissions ?? [],
     isActive: loginUser.isActive ?? true,
@@ -329,7 +330,7 @@ export const getCurrentUser = createAsyncThunk(
   'auth/getCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await authService.getCurrentUser({});
+      const response = await authService.getCurrentUser();
       const data = response.data?.data || response.data;
       setUserData(data);
       return data;

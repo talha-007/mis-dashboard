@@ -103,6 +103,8 @@ export const useNotifications = () => {
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
           type: 'success',
+          title: data.title || 'Loan Application Approved',
+          message: data.message || 'Congratulations! Your loan application has been approved',
           timestamp: data.timestamp?.toString() || new Date().toISOString(),
         });
       }
@@ -116,6 +118,39 @@ export const useNotifications = () => {
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
           type: 'warning',
+          title: data.title || 'Loan Application Rejected',
+          message: data.message || 'Your loan application has been rejected',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    // Assessment events
+    const unsubAssessmentScoreGenerated = on<SocketNotification>(
+      'assessment_score_generated',
+      (data: SocketNotification) => {
+        console.log('📢 Assessment score generated:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'info',
+          title: data.title || 'Assessment Score Generated',
+          message: data.message || 'Your assessment has been scored. Check your credit score!',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubAssessmentSubmitted = on<SocketNotification>(
+      'assessment_submitted',
+      (data: SocketNotification) => {
+        console.log('📢 Assessment submitted:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'info',
+          title: data.title || 'New Assessment Submitted',
+          message: data.message || 'A customer has submitted a new assessment',
           timestamp: data.timestamp?.toString() || new Date().toISOString(),
         });
       }
@@ -180,6 +215,8 @@ export const useNotifications = () => {
       unsubBank();
       unsubLoanApproved();
       unsubLoanRejected();
+      unsubAssessmentScoreGenerated();
+      unsubAssessmentSubmitted();
       unsubPaymentSuccess();
       unsubPaymentFailed();
       unsubPaymentOverdue();

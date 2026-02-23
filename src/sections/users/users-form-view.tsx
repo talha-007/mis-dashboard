@@ -142,11 +142,7 @@ export function UsersFormView({ isEdit = false, initialData }: UsersFormViewProp
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
             {error && (
-              <Alert
-                severity="error"
-                onClose={() => setError(null)}
-                sx={{ mb: 2 }}
-              >
+              <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
                 {error}
               </Alert>
             )}

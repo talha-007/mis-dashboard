@@ -3,8 +3,6 @@ import type { CreditProposalReport, CreditProposalReportStatus } from 'src/types
 import { useState, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
@@ -12,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
 
-import { Label } from 'src/components/label';
 
 type CreditProposalReportTableRowProps = {
   row: CreditProposalReport;

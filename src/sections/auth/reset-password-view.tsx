@@ -1,5 +1,7 @@
 /**
- * New Password Admin View - Formik + Yup validation
+ * Reset Password View - Formik + Yup validation
+ * Unified view for both customer and bank admin password reset
+ * Uses unified /api/auth/reset-password endpoint
  */
 
 import { useState } from 'react';
@@ -28,23 +30,37 @@ import { newPasswordAdminSchema } from './validations';
 
 const textFieldSx = { '& .MuiOutlinedInput-root': { borderRadius: 2 } };
 
-export function NewPasswordAdminView() {
+export function ResetPasswordView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAppSelector((state) => state.auth);
   const emailFromParams = searchParams.get('email') || '';
+  const otpFromParams = searchParams.get('otp') || '';
   const emailToUse = emailFromParams || user?.email || '';
+  
+  // Detect if this is admin route (check current pathname)
+  const isAdmin = window.location.pathname.includes('/admin/');
+  const signInPath = isAdmin ? '/sign-in/admin' : '/sign-in';
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (values: { newPassword: string; confirmPassword: string }) => {
     try {
-      await authService.newPasswordAdmin({
+      // Validate OTP is present
+      if (!otpFromParams) {
+        toast.error('OTP is required. Please go back and verify your OTP again.');
+        return;
+      }
+
+      // Unified API requires email, otp, and newPassword (works for both customers and admins)
+      await authService.resetPassword({
         email: emailToUse,
+        otp: otpFromParams,
         newPassword: values.newPassword,
       });
       toast.success('Password reset successfully! Redirecting to login...');
-      setTimeout(() => router.push('/sign-in/admin'), 2000);
+      setTimeout(() => router.push(signInPath), 2000);
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to reset password';
       toast.error(msg);
@@ -63,7 +79,7 @@ export function NewPasswordAdminView() {
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: 2,
-            bgcolor: '#4D0CE7',
+            bgcolor: isAdmin ? '#4D0CE7' : 'primary.main',
             color: '#ffffff',
           }}
         >
@@ -74,11 +90,13 @@ export function NewPasswordAdminView() {
             <Typography variant="h4" fontWeight={700}>
               Reset Password
             </Typography>
-            <Chip
-              label="Operations"
-              size="small"
-              sx={{ bgcolor: '#4D0CE7', color: 'white', fontWeight: 600 }}
-            />
+            {isAdmin && (
+              <Chip
+                label="Operations"
+                size="small"
+                sx={{ bgcolor: '#4D0CE7', color: 'white', fontWeight: 600 }}
+              />
+            )}
           </Stack>
           <Typography variant="body2" color="text.secondary">
             Enter your new password to regain access
@@ -229,7 +247,7 @@ export function NewPasswordAdminView() {
                 <Link
                   variant="body2"
                   fontWeight={600}
-                  onClick={() => router.push('/sign-in/admin')}
+                  onClick={() => router.push(signInPath)}
                   sx={{ cursor: 'pointer' }}
                 >
                   Back to Sign In

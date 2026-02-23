@@ -58,7 +58,6 @@ export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 export const RegisterPage = lazy(() => import('src/pages/auth/register'));
 export const ForgotPasswordPage = lazy(() => import('src/pages/auth/forgot-password'));
 export const ForgotPasswordAdminPage = lazy(() => import('src/pages/auth/forgot-password-admin'));
-export const NewPasswordAdminPage = lazy(() => import('src/pages/auth/new-password-admin'));
 export const VerifyOtpPage = lazy(() => import('src/pages/auth/verify-otp'));
 export const VerifyOtpAdminPage = lazy(() => import('src/pages/auth/verify-otp-admin'));
 

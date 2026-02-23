@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import MenuList from '@mui/material/MenuList';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
@@ -29,10 +28,10 @@ export type PaymentProps = {
 type PaymentTableRowProps = {
   row: PaymentProps;
   selected: boolean;
-  onSelectRow: () => void;
+  // onSelectRow: () => void;
 };
 
-export function PaymentTableRow({ row, selected, onSelectRow }: PaymentTableRowProps) {
+export function PaymentTableRow({ row, selected,  }: PaymentTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: MouseEvent<HTMLButtonElement>) => {
@@ -46,9 +45,9 @@ export function PaymentTableRow({ row, selected, onSelectRow }: PaymentTableRowP
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell>{fDate(row.date)}</TableCell>
 

@@ -8,6 +8,8 @@ import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -20,7 +22,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { DashboardContent } from 'src/layouts/dashboard';
 import borrowerService from 'src/redux/services/borrowServices';
 
-import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { TableNoData } from '../table-no-data';
@@ -226,20 +227,32 @@ export function BorrowerView() {
                     ]}
                   />
                   <TableBody>
-                    {dataFiltered.map((row) => (
-                      <BorrowerTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onDelete={handleDeleteClick}
-                      />
-                    ))}
+                    {dataFiltered.length > 0 ? (
+                      dataFiltered.map((row) => (
+                        <BorrowerTableRow
+                          key={row.id}
+                          row={row}
+                          selected={table.selected.includes(row.id)}
+                          onSelectRow={() => table.onSelectRow(row.id)}
+                          onDelete={handleDeleteClick}
+                        />
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {notFound ? `No borrowers found for "${filterName}"` : 'No borrowers found'}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
 
-                    <TableEmptyRows
-                      height={68}
-                      emptyRows={emptyRows(table.page, table.rowsPerPage, borrowers.length)}
-                    />
+                    {dataFiltered.length > 0 && (
+                      <TableEmptyRows
+                        height={68}
+                        emptyRows={emptyRows(table.page, table.rowsPerPage, borrowers.length)}
+                      />
+                    )}
 
                     {notFound && <TableNoData searchQuery={filterName} />}
                   </TableBody>

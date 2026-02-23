@@ -1,3 +1,4 @@
+import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -8,12 +9,11 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { fCurrency } from 'src/utils/format-number';
 import { fDate } from 'src/utils/format-time';
+import { fCurrency } from 'src/utils/format-number';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import loanApplicationService from 'src/redux/services/loan-applications';
-import { toast } from 'react-toastify';
 
 // ----------------------------------------------------------------------
 

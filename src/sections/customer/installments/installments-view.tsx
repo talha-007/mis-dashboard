@@ -5,10 +5,10 @@ import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import TableRow from '@mui/material/TableRow';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
@@ -42,15 +42,13 @@ export function InstallmentsView() {
   const [totalPages, setTotalPages] = useState(0);
 
   // Map API response to Installment type
-  const mapApiToInstallment = useCallback((item: any): import('src/_mock/_installment').Installment => {
-    return {
+  const mapApiToInstallment = useCallback((item: any): import('src/_mock/_installment').Installment => ({
       id: String(item.id || item._id || ''),
       month: item.month || item.monthName || new Date(item.dueDate || item.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }),
       amount: Number(item.amount || 0),
       status: item.status || 'pending',
       dueDate: item.dueDate || item.createdAt || '',
-    };
-  }, []);
+    }), []);
 
   // Fetch installment history from API
   const fetchInstallments = useCallback(async () => {

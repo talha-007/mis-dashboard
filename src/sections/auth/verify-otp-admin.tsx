@@ -47,11 +47,13 @@ export function VerifyOtpAdminView() {
     { setStatus }: { setStatus: (s: any) => void }
   ) => {
     try {
+      // Unified API expects { otp, email }
       const response = await authService.verifyEmailAdmin({ otp: values.otp, email });
       if (response.status === 200) {
         setSuccess(true);
+        // Pass OTP to reset password page
         setTimeout(
-          () => router.push(`/admin/new-password?email=${encodeURIComponent(email)}`),
+          () => router.push(`/admin/new-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(values.otp)}`),
           2000
         );
       } else {

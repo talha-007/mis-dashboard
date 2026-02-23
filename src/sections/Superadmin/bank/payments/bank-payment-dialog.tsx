@@ -174,10 +174,9 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
       const response = await paymentService.generateInvoice(invoiceId);
 
       // Create blob and download
-      const blob =
-        response.data instanceof Blob
-          ? response.data
-          : new Blob([response.data], { type: 'application/pdf' });
+      const blob = response.data instanceof Blob
+        ? response.data
+        : new Blob([response.data], { type: 'application/pdf' });
 
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');

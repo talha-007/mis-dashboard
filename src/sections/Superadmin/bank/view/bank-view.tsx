@@ -5,6 +5,8 @@ import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
@@ -228,23 +230,35 @@ export function BankView() {
                     ]}
                   />
                   <TableBody>
-                    {banks.map((row) => (
-                      <BankTableRow
-                        key={row._id}
-                        row={row}
-                        selected={table.selected.includes(row._id)}
-                        // onSelectRow={() => table.onSelectRow(row._id)}  
-                        onView={() => handleOpenView(row)}
-                        onEdit={() => handleOpenFormPage(row)}
-                        onUpdateStatus={() => handleOpenStatusDialog(row)}
-                        onDelete={() => handleOpenDeleteDialog(row)}
-                      />
-                    ))}
+                    {banks.length > 0 ? (
+                      banks.map((row) => (
+                        <BankTableRow
+                          key={row._id}
+                          row={row}
+                          selected={table.selected.includes(row._id)}
+                          // onSelectRow={() => table.onSelectRow(row._id)}  
+                          onView={() => handleOpenView(row)}
+                          onEdit={() => handleOpenFormPage(row)}
+                          onUpdateStatus={() => handleOpenStatusDialog(row)}
+                          onDelete={() => handleOpenDeleteDialog(row)}
+                        />
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {notFound ? `No banks found for "${filterName}"` : 'No banks found'}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
 
-                    <TableEmptyRows
-                      height={68}
-                      emptyRows={emptyRows(table.page, table.rowsPerPage, banks.length)}
-                    />
+                    {banks.length > 0 && (
+                      <TableEmptyRows
+                        height={68}
+                        emptyRows={emptyRows(table.page, table.rowsPerPage, banks.length)}
+                      />
+                    )}
 
                     {notFound && <TableNoData searchQuery={filterName} />}
                   </TableBody>

@@ -21,7 +21,8 @@ const verifyEmailAdmin = (data: any) => bankAdminService.verifyOtp(data);
 
 const resendOTPAdmin = (data: any) => bankAdminService.resendOtp(data);
 
-const newPasswordAdmin = (data: any) => bankAdminService.resetPassword(data);
+// Use unified resetPassword for both customers and admins (same API endpoint)
+const newPasswordAdmin = (data: any) => customerService.resetPassword(data);
 
 const register = (data: any) => customerService.register(data);
 

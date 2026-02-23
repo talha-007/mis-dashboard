@@ -19,9 +19,9 @@ const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 const RegisterPage = lazy(() => import('src/pages/auth/register'));
 const ForgotPasswordPage = lazy(() => import('src/pages/auth/forgot-password'));
 const ForgotPasswordAdminPage = lazy(() => import('src/pages/auth/forgot-password-admin'));
-const NewPasswordAdminPage = lazy(() => import('src/pages/auth/new-password-admin'));
 const VerifyOtpPage = lazy(() => import('src/pages/auth/verify-otp'));
 const VerifyOtpAdminPage = lazy(() => import('src/pages/auth/verify-otp-admin'));
+const ResetPasswordPage = lazy(() => import('src/pages/auth/reset-password'));
 
 export const authRoutes: RouteObject[] = [
   // SUPER ADMIN AUTH
@@ -72,7 +72,7 @@ export const authRoutes: RouteObject[] = [
     element: (
       <AuthRouteGuard>
         <AuthLayout>
-          <NewPasswordAdminPage />
+          <ResetPasswordPage />
         </AuthLayout>
       </AuthRouteGuard>
     ),
@@ -105,6 +105,16 @@ export const authRoutes: RouteObject[] = [
       <AuthRouteGuard>
         <AuthLayout>
           <VerifyOtpPage />
+        </AuthLayout>
+      </AuthRouteGuard>
+    ),
+  },
+  {
+    path: 'reset-password',
+    element: (
+      <AuthRouteGuard>
+        <AuthLayout>
+          <ResetPasswordPage />
         </AuthLayout>
       </AuthRouteGuard>
     ),

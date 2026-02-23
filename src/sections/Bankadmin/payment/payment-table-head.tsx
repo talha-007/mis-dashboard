@@ -2,7 +2,6 @@ import type { Theme, SxProps } from '@mui/material/styles';
 
 import Box from '@mui/material/Box';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableSortLabel from '@mui/material/TableSortLabel';
@@ -17,7 +16,7 @@ type PaymentTableHeadProps = {
   numSelected: number;
   order: 'asc' | 'desc';
   onSort: (id: string) => void;
-  onSelectAllRows: (checked: boolean) => void;
+  // onSelectAllRows: (checked: boolean) => void;
   headLabel: {
     id: string;
     label: string;
@@ -33,13 +32,13 @@ export function PaymentTableHead({
   headLabel,
   numSelected,
   onSort,
-  onSelectAllRows,
+ 
   sx,
 }: PaymentTableHeadProps) {
   return (
     <TableHead sx={sx}>
       <TableRow>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
@@ -47,7 +46,7 @@ export function PaymentTableHead({
               onSelectAllRows(event.target.checked)
             }
           />
-        </TableCell>
+        </TableCell> */}
 
         {headLabel.map((headCell) => (
           <TableCell

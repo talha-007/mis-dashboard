@@ -1,18 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
+import Tabs from '@mui/material/Tabs';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
+import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+
+import { fCurrency } from 'src/utils/format-number';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import bankAdminService from 'src/redux/services/bank-admin.services';
@@ -37,46 +39,39 @@ export function RecoveryView() {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [typeFilter, setTypeFilter] = useState<'all' | 'overdues' | 'dues'>('all');
+  const [summary, setSummary] = useState<any>(null);
 
   // Map API response to RecoveryProps type
+  // API structure: { id, amount, customerCnic, customerEmail, customerName, daysLate, dueDate, isOverdue, loanAmount, loanType, status, urgencyLevel }
   const mapApiToRecovery = useCallback((item: any): RecoveryProps => {
-    // Calculate days late from dueDate
-    const calculateDaysLate = (dueDateStr: string): number => {
-      if (!dueDateStr) return 0;
-      const dueDate = new Date(dueDateStr);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      dueDate.setHours(0, 0, 0, 0);
-      const diffTime = today.getTime() - dueDate.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      return Math.max(0, diffDays);
-    };
-
-    const dueDate = item.dueDate || item.installment?.dueDate || '';
-    const daysLate = item.daysLate || item.daysOverdue || calculateDaysLate(dueDate);
+    const daysLate = Number(item.daysLate || 0);
+    const isOverdue = item.isOverdue || daysLate > 0;
     
-    // Determine status based on daysLate
+    // Determine status based on API status and isOverdue flag
     let status: 'overdue' | 'recovered' | 'defaulted' = 'overdue';
     if (item.status === 'recovered' || item.status === 'paid') {
       status = 'recovered';
-    } else if (item.status === 'defaulted' || item.isDefaulter || daysLate >= 90) {
+    } else if (item.status === 'defaulted' || daysLate >= 90) {
       status = 'defaulted';
-    } else if (daysLate > 0) {
+    } else if (isOverdue || daysLate > 0) {
+      status = 'overdue';
+    } else if (item.status === 'due') {
+      // If status is 'due' and not overdue, it's still considered 'overdue' for display purposes
       status = 'overdue';
     }
 
     return {
-      id: item.id || item._id || item.installmentId || '',
-      borrowerId: item.borrowerId || item.borrower?.id || item.customerId || '',
-      borrowerName: item.borrowerName || item.borrower?.name || item.customer?.name || 'N/A',
-      cnic: item.cnic || item.borrower?.cnic || item.customer?.cnic || 'N/A',
-      phone: item.phone || item.borrower?.phone || item.customer?.phone || 'N/A',
-      email: item.email || item.borrower?.email || item.customer?.email || 'N/A',
-      loanId: item.loanId || item.loanApplicationId || item.loan?.id || '',
-      loanAmount: Number(item.loanAmount || item.loan?.amount || 0),
-      dueAmount: Number(item.dueAmount || item.amount || item.installment?.amount || 0),
+      id: item.id || item._id || '',
+      borrowerId: item.borrowerId || item.customerId || '',
+      borrowerName: item.customerName || 'N/A',
+      cnic: item.customerCnic || 'N/A',
+      phone: item.customerPhone || item.phone || 'N/A',
+      email: item.customerEmail || 'N/A',
+      loanId: item.loanId || item.loanApplicationId || '',
+      loanAmount: Number(item.loanAmount || 0),
+      dueAmount: Number(item.amount || 0),
       daysLate,
-      dueDate,
+      dueDate: item.dueDate || '',
       lastPaymentDate: item.lastPaymentDate || item.lastPayment || '',
       status,
       isDefaulter: item.isDefaulter || status === 'defaulted' || false,
@@ -103,23 +98,22 @@ export function RecoveryView() {
       if (filterName.trim()) {
         params.search = filterName.trim();
       }
-      
-      const response = await bankAdminService.getRecoveryOverview(params);
-      
+      const response = await bankAdminService.getRecoveryOverview(params);      
       if (response.status === 200) {
         const data = response.data?.data || response.data;
-        const recoveriesList = data?.recoveries || data?.overdues || data?.dues || data || [];
-        
+        const installmentsList = data?.installments || [];
         // Map API response to RecoveryProps type
-        const mapped = Array.isArray(recoveriesList)
-          ? recoveriesList.map(mapApiToRecovery).filter((item) => item.id)
+        const mapped = Array.isArray(installmentsList)
+          ? installmentsList.map(mapApiToRecovery).filter((item) => item.id)
           : [];
-        
         setRecoveries(mapped);
-        
         // Set pagination info from server response
         const pagination = data?.pagination || {};
         setTotalCount(pagination.total || mapped.length);
+        // Set summary if available
+        if (data?.summary) {
+          setSummary(data.summary);
+        }
       }
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load recoveries';
@@ -196,6 +190,31 @@ export function RecoveryView() {
           </Tabs>
         </Box>
 
+        {/* Summary Display */}
+        {summary && (
+          <Box sx={{ p: 2, bgcolor: 'background.neutral', borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Summary
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+              <Typography variant="body2" color="text.secondary">
+                Total Dues: <strong>{summary.totalDues || summary.duesCount || 0}</strong>
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Overdues: <strong style={{ color: 'error.main' }}>{summary.overduesCount || 0}</strong>
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Total Due Amount: <strong>{fCurrency(summary.totalDueAmount || 0)}</strong>
+              </Typography>
+              {summary.urgentOverdues > 0 && (
+                <Typography variant="body2" color="error.main">
+                  Urgent Overdues: <strong>{summary.urgentOverdues}</strong>
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        )}
+
         {error && (
           <Alert severity="error" onClose={() => setError(null)} sx={{ m: 2 }}>
             {error}
@@ -217,15 +236,16 @@ export function RecoveryView() {
                     rowCount={recoveries.length}
                     numSelected={table.selected.length}
                     onSort={table.onSort}
-                    onSelectAllRows={(checked) =>
-                      table.onSelectAllRows(
-                        checked,
-                        recoveries.map((recovery) => recovery.id)
-                      )
-                    }
+                    // onSelectAllRows={(checked) =>
+                    //   table.onSelectAllRows(
+                    //     checked,
+                    //     recoveries.map((recovery) => recovery.id)
+                    //   )
+                    // }
                     headLabel={[
                       { id: 'borrowerName', label: 'Borrower' },
                       { id: 'dueAmount', label: 'Due' },
+                      { id: 'dueDate', label: 'Due Date' },
                       { id: 'daysLate', label: 'Days Late', align: 'center' },
                       { id: 'action', label: 'Action', align: 'right' },
                     ]}
@@ -237,7 +257,7 @@ export function RecoveryView() {
                           key={row.id}
                           row={row}
                           selected={table.selected.includes(row.id)}
-                          onSelectRow={() => table.onSelectRow(row.id)}
+                          // onSelectRow={() => table.onSelectRow(row.id)}
                           onMarkDefaulter={handleMarkDefaulter}
                         />
                       ))

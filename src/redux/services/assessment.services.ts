@@ -3,11 +3,9 @@ import type {
   AssessmentAnswer,
   CustomFieldValue,
   AssessmentSubmission,
-  CreditProposalReport,
 } from 'src/types/assessment.types';
 
 import { callAPi } from './http-common';
-
 import customerService from './customer.services';
 import bankAdminService from './bank-admin.services';
 import systemUserService from './system-user.services';
@@ -139,21 +137,13 @@ const getMyLatestSubmission = () =>
   });
 
 // Credit proposal reports
-const getCreditProposalReports = (params?: any) => {
-  return callAPi.get('/api/v1/bankAdmin/credit-proposal-reports', { params });
-};
+const getCreditProposalReports = (params?: any) => callAPi.get('/api/v1/bankAdmin/credit-proposal-reports', { params });
 
-const getCreditProposalReportById = (id: string) => {
-  return callAPi.get(`/api/v1/bankAdmin/credit-proposal-reports/${id}`);
-};
+const getCreditProposalReportById = (id: string) => callAPi.get(`/api/v1/bankAdmin/credit-proposal-reports/${id}`);
 
-const approveLoanApplication = (reportId: string) => {
-  return callAPi.post(`/api/v1/bankAdmin/credit-proposal-reports/${reportId}/approve`);
-};
+const approveLoanApplication = (reportId: string) => callAPi.post(`/api/v1/bankAdmin/credit-proposal-reports/${reportId}/approve`);
 
-const rejectLoanApplication = (reportId: string) => {
-  return callAPi.post(`/api/v1/bankAdmin/credit-proposal-reports/${reportId}/reject`);
-};
+const rejectLoanApplication = (reportId: string) => callAPi.post(`/api/v1/bankAdmin/credit-proposal-reports/${reportId}/reject`);
 
 const assessmentService = {
   getBankAssessment,

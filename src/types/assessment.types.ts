@@ -39,7 +39,8 @@ export function isCustomField(item: AssessmentItem): item is AssessmentCustomFie
 }
 
 export type BankAssessment = {
-  slug: string;
+  slug?: string;
+  bankId?: string; // Optional: used in some contexts
   questions: AssessmentItem[]; // MC questions + custom fields
   totalMaxScore: number; // Sum of max points from multiple_choice items (bank decides points per option)
 };

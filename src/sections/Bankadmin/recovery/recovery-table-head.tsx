@@ -1,5 +1,4 @@
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
@@ -16,7 +15,7 @@ type RecoveryTableHeadProps = {
   order: 'asc' | 'desc';
   onSort: (id: string) => void;
   headLabel: Record<string, any>[];
-  onSelectAllRows: (checked: boolean) => void;
+  // onSelectAllRows: (checked: boolean) => void;
 };
 
 export function RecoveryTableHead({
@@ -26,12 +25,12 @@ export function RecoveryTableHead({
   rowCount,
   headLabel,
   numSelected,
-  onSelectAllRows,
+
 }: RecoveryTableHeadProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
@@ -39,7 +38,7 @@ export function RecoveryTableHead({
               onSelectAllRows(event.target.checked)
             }
           />
-        </TableCell>
+        </TableCell> */}
 
         {headLabel.map((headCell) => (
           <TableCell

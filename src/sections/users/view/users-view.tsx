@@ -246,8 +246,10 @@ export function UsersView() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={TABLE_HEAD.length} sx={{ textAlign: 'center', py: 3 }}>
-                          No users found
+                        <TableCell colSpan={TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {filterName ? `No users found for "${filterName}"` : 'No users found'}
+                          </Typography>
                         </TableCell>
                       </TableRow>
                     )}

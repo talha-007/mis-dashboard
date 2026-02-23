@@ -24,8 +24,8 @@ import { getBankRegisterUrl } from 'src/utils/bank-routes';
 import { fNumber, fCurrency } from 'src/utils/format-number';
 
 import { useAppSelector } from 'src/store';
-import bankService from 'src/redux/services/bank.services';
-import paymentService from 'src/redux/services/payment.services';
+import bankAdminService from 'src/redux/services/bank-admin.services';
+import superadminService from 'src/redux/services/superadmin.services';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -39,7 +39,15 @@ export type SuperAdminStats = {
   totalBanks: number;
   activeSubscriptions: number;
   expiredSubscriptions: number;
-  revenue: number;
+  totalRevenue: number;
+};
+
+export type BankAdminStats = {
+  activeBorrowers: number;
+  outstandingPortfolio: number;
+  parCount: number;
+  recoveryRate: number;
+  auditReadiness: number;
 };
 
 // ----------------------------------------------------------------------
@@ -50,60 +58,69 @@ export function PortfolioOverviewView() {
   const { bank } = useAppSelector((state) => state.auth);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
-  const [superAdminStatsLoading, setSuperAdminStatsLoading] = useState(false);
+  const [bankAdminStats, setBankAdminStats] = useState<BankAdminStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
   const isAdmin = user?.role === UserRole.ADMIN;
 
   const fetchSuperAdminStats = useCallback(async () => {
     if (!isSuperAdmin) return;
-    setSuperAdminStatsLoading(true);
+    setStatsLoading(true);
     try {
-      const [banksRes, subsRes] = await Promise.all([
-        bankService.getBanks({ page: 1, limit: 1 }),
-        paymentService.getBankSubscriptions({ page: 1, limit: 500 }),
-      ]);
-      const pagination = banksRes.data?.pagination ?? banksRes.data;
-      const totalBanks =
-        (typeof pagination?.total === 'number' && pagination.total) ??
-        banksRes.data?.total ??
-        (Array.isArray(banksRes.data?.data) ? banksRes.data.data.length : 0) ??
-        (Array.isArray(banksRes.data?.banks) ? banksRes.data.banks.length : 0) ??
-        0;
-      const subsData =
-        subsRes.data?.data ??
-        subsRes.data?.subscriptions ??
-        (Array.isArray(subsRes.data) ? subsRes.data : []);
-      const subscriptions = Array.isArray(subsData) ? subsData : [];
-      const activeSubscriptions = subscriptions.filter(
-        (s: any) => (s.status || '').toLowerCase() === 'active'
-      ).length;
-      const expiredSubscriptions = subscriptions.filter(
-        (s: any) => (s.status || '').toLowerCase() === 'expired'
-      ).length;
-      const revenue = subscriptions.reduce(
-        (sum: number, s: any) => sum + (Number(s.amount) || 0),
-        0
-      );
-      setSuperAdminStats({
-        totalBanks,
-        activeSubscriptions,
-        expiredSubscriptions,
-        revenue,
-      });
+      const response = await superadminService.getStats();
+      if (response.status === 200) {
+        const data = response.data?.data || response.data;
+        const stats = data?.stats || {};
+        setSuperAdminStats({
+          totalBanks: stats.totalBanks || 0,
+          activeSubscriptions: stats.activeSubscriptions || 0,
+          expiredSubscriptions: stats.expiredSubscriptions || 0,
+          totalRevenue: stats.totalRevenue || 0,
+        });
+      }
     } catch {
       setSuperAdminStats(null);
     } finally {
-      setSuperAdminStatsLoading(false);
+      setStatsLoading(false);
     }
   }, [isSuperAdmin]);
 
+  const fetchBankAdminStats = useCallback(async () => {
+    if (!isAdmin) return;
+    setStatsLoading(true);
+    try {
+      const response = await bankAdminService.getStats();
+      if (response.status === 200) {
+        const data = response.data?.data || response.data;
+        const stats = data?.stats || {};
+        setBankAdminStats({
+          activeBorrowers: stats.activeBorrowers || 0,
+          outstandingPortfolio: stats.outstandingPortfolio || 0,
+          parCount: stats.parCount || 0,
+          recoveryRate: stats.recoveryRate || 0,
+          auditReadiness: stats.auditReadiness || 0,
+        });
+      }
+    } catch {
+      setBankAdminStats(null);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [isAdmin]);
+
   useEffect(() => {
-    fetchSuperAdminStats();
-  }, [fetchSuperAdminStats]);
+    if (isSuperAdmin) {
+      fetchSuperAdminStats();
+    } else if (isAdmin) {
+      fetchBankAdminStats();
+    }
+  }, [isSuperAdmin, isAdmin, fetchSuperAdminStats, fetchBankAdminStats]);
 
   const handlePaymentSuccess = () => {
     setOpenPaymentDialog(false);
-    fetchSuperAdminStats();
+    if (isSuperAdmin) {
+      fetchSuperAdminStats();
+    }
   };
 
   const customerRegisterUrl =
@@ -143,7 +160,7 @@ export function PortfolioOverviewView() {
       {/* Super Admin: Platform stats (banks, subscriptions, revenue, expired) */}
       {isSuperAdmin && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {superAdminStatsLoading ? (
+          {statsLoading ? (
             [1, 2, 3, 4].map((i) => (
               <Grid key={i} size={{ xs: 12, sm: 6, md: 3 }}>
                 <Skeleton variant="rounded" height={140} sx={{ borderRadius: 2 }} />
@@ -178,9 +195,65 @@ export function PortfolioOverviewView() {
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <StatCard
                   title="Revenue"
-                  value={fCurrency(superAdminStats.revenue)}
+                  value={fCurrency(superAdminStats.totalRevenue)}
                   icon="solar:wallet-money-bold-duotone"
                   color="info"
+                />
+              </Grid>
+            </>
+          ) : null}
+        </Grid>
+      )}
+
+      {/* Bank Admin: Portfolio stats */}
+      {isAdmin && (
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {statsLoading ? (
+            [1, 2, 3, 4, 5].map((i) => (
+              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Skeleton variant="rounded" height={140} sx={{ borderRadius: 2 }} />
+              </Grid>
+            ))
+          ) : bankAdminStats ? (
+            <>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <StatCard
+                  title="Active Borrowers"
+                  value={fNumber(bankAdminStats.activeBorrowers)}
+                  icon="solar:users-group-two-rounded-bold-duotone"
+                  color="primary"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <StatCard
+                  title="Outstanding Portfolio"
+                  value={fCurrency(bankAdminStats.outstandingPortfolio)}
+                  icon="solar:wallet-money-bold-duotone"
+                  color="info"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <StatCard
+                  title="PAR Count"
+                  value={fNumber(bankAdminStats.parCount)}
+                  icon="solar:chart-2-bold-duotone"
+                  color="warning"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <StatCard
+                  title="Recovery Rate"
+                  value={`${fNumber(bankAdminStats.recoveryRate)}%`}
+                  icon="solar:graph-up-bold-duotone"
+                  color="success"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <StatCard
+                  title="Audit Readiness"
+                  value={`${fNumber(bankAdminStats.auditReadiness)}%`}
+                  icon="solar:check-circle-bold-duotone"
+                  color="success"
                 />
               </Grid>
             </>

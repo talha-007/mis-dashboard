@@ -2,11 +2,11 @@ import { useState, useCallback } from 'react';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 
+import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
 
 import { Label } from 'src/components/label';
@@ -33,14 +33,14 @@ export type RecoveryProps = {
 type RecoveryTableRowProps = {
   row: RecoveryProps;
   selected: boolean;
-  onSelectRow: () => void;
+  // onSelectRow: () => void;
   onMarkDefaulter: (id: string) => void;
 };
 
 export function RecoveryTableRow({
   row,
   selected,
-  onSelectRow,
+
   onMarkDefaulter,
 }: RecoveryTableRowProps) {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -60,9 +60,9 @@ export function RecoveryTableRow({
 
   return (
     <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-      <TableCell padding="checkbox">
+      {/* <TableCell padding="checkbox">
         <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-      </TableCell>
+      </TableCell> */}
 
       <TableCell component="th" scope="row">
         <Stack spacing={0.5}>
@@ -83,7 +83,9 @@ export function RecoveryTableRow({
           </Typography>
         </Stack>
       </TableCell>
-
+      <TableCell>
+        <Typography variant="body2">{fDate(row.dueDate)}</Typography>
+      </TableCell>
       <TableCell align="center">
         <Typography
           variant="subtitle2"

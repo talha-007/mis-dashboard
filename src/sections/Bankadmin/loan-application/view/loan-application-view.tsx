@@ -5,6 +5,8 @@ import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
@@ -232,23 +234,35 @@ export function LoanApplicationView() {
                   ]}
                 />
                 <TableBody>
-                  {applications.map((row) => (
-                    <LoanApplicationTableRow
-                      key={row.id}
-                      row={row}
-                      selected={table.selected.includes(row.id)}
-                      // onSelectRow={() => table.onSelectRow(row.id)}
-                      onApprove={handleApprove}
-                      onReject={handleReject}
+                  {applications.length > 0 ? (
+                    applications.map((row) => (
+                      <LoanApplicationTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id)}
+                        // onSelectRow={() => table.onSelectRow(row.id)}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                      />
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {filterName ? `No loan applications found for "${filterName}"` : 'No loan applications found'}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+
+                  {applications.length > 0 && (
+                    <TableEmptyRows
+                      height={68}
+                      emptyRows={emptyRows(table.page, table.rowsPerPage, applications.length)}
                     />
-                  ))}
+                  )}
 
-                  <TableEmptyRows
-                    height={68}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, applications.length)}
-                  />
-
-                  {!applications.length && !loading && <TableNoData searchQuery={filterName} />}
+                  {filterName && !applications.length && !loading && <TableNoData searchQuery={filterName} />}
                 </TableBody>
               </Table>
             </TableContainer>

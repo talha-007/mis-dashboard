@@ -28,7 +28,7 @@ const processPayment = (subscriptionId: string, paymentData: any) =>
 const cancelSubscription = (id: string) => deleteSubscription(id);
 const renewSubscription = (_id: string) => Promise.resolve({ data: {} });
 const recordPayment = (data: any) => createSubscription(data);
-const generateInvoice = (_paymentId: string) =>
+const generateInvoice = (_paymentId: string): Promise<{ data: Blob }> =>
   Promise.reject(new Error('Generate invoice endpoint not in README'));
 
 const paymentService = {

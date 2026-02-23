@@ -36,6 +36,9 @@ const updateSubscription = (id: string, data: any) =>
 
 const deleteSubscription = (id: string) => callAPi.delete(`/api/v1/superAdmin/subscriptions/${id}`);
 
+// --- Stats ---
+const getStats = () => callAPi.get('/api/v1/stats/super-admin');
+
 const superadminService = {
   login,
   getSystemUsers,
@@ -48,6 +51,7 @@ const superadminService = {
   getSubscriptionById,
   updateSubscription,
   deleteSubscription,
+  getStats,
 };
 
 export default superadminService;

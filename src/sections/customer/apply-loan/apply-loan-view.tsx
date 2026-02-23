@@ -13,7 +13,6 @@ import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -207,7 +206,7 @@ export function ApplyLoanView() {
                         <TableRow>
                           <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                             <Typography variant="body2" color="text.secondary">
-                              No loan applications found. Click "New Application" to create one.
+                              No loan applications found. Click &quot;New Application&quot; to create one.
                             </Typography>
                           </TableCell>
                         </TableRow>

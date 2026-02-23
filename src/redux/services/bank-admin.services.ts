@@ -9,10 +9,11 @@ import { callAPi } from './http-common';
 
 // --- Bank Auth (public) ---
 const login = (data: any) => callAPi.post('/api/v1/bankAdmin/banks/login', data);
-const forgotPassword = (data: any) => callAPi.post('/api/v1/bankAdmin/banks/forgot-password', data);
+// Unified auth endpoints (work for both customers and bank admins)
+const forgotPassword = (data: any) => callAPi.post('/api/auth/forgot-password', data);
 const resendOtp = (data: any) => callAPi.post('/api/v1/bankAdmin/banks/resend-otp', data);
-const verifyOtp = (data: any) => callAPi.post('/api/v1/bankAdmin/banks/verify-otp', data);
-const resetPassword = (data: any) => callAPi.post('/api/v1/bankAdmin/banks/reset-password', data);
+const verifyOtp = (data: any) => callAPi.post('/api/auth/verify-otp', data);
+const resetPassword = (data: any) => callAPi.post('/api/auth/reset-password', data);
 const googleLogin = (data: any) => callAPi.post('/api/v1/bankAdmin/banks/google-login', data);
 
 // --- Bank (update) ---
@@ -66,6 +67,10 @@ const updatePaymentLedger = (id: string, data: any) =>
 const deletePaymentLedger = (id: string) =>
   callAPi.delete(`/api/v1/bankAdmin/payment-ledgers/${id}`);
 
+// Get all payments (recovery, penalty, fee)
+const getAllPayments = (params?: any) =>
+  callAPi.get('/api/v1/bankAdmin/payment-ledgers/all-payments', { params });
+
 // --- Recovery Overdues ---
 const createRecoveryOverdue = (data: any) =>
   callAPi.post('/api/v1/bankAdmin/recovery-overdues', data);
@@ -108,6 +113,9 @@ const payInstallment = ( installmentId: string ) => callAPi.post(`/api/installme
 // get installment history
 const getInstallmentHistory = (params?: any) => callAPi.get('/api/installments/history', { params });
 
+// --- Stats ---
+const getStats = () => callAPi.get('/api/v1/stats/bank-admin');
+
 const bankAdminService = {
   login,
   forgotPassword,
@@ -139,6 +147,7 @@ const bankAdminService = {
   getPaymentLedgerById,
   updatePaymentLedger,
   deletePaymentLedger,
+  getAllPayments,
   createRecoveryOverdue,
   getRecoveryOverdues,
   getRecoveryOverdueById,
@@ -156,6 +165,7 @@ const bankAdminService = {
   payInstallment,
   getInstallmentHistory,
   getRecoveryOverview,
+  getStats,
 };
 
 export default bankAdminService;

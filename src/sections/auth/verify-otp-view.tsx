@@ -48,14 +48,17 @@ export function VerifyOtpView() {
   ) => {
     try {
       const otpCode = values.otp;
+      // Unified API expects { otp, email }
+      const verifyData = { otp: otpCode, email };
       if (verificationType === 'registration') {
-        await authService.verifyEmail(otpCode);
+        await authService.verifyEmail(verifyData);
         setSuccess(true);
         setTimeout(() => router.push('/sign-in'), 2000);
       } else {
-        await authService.verifyEmail(otpCode);
+        // For password reset, verify OTP then redirect to reset password with OTP
+        await authService.verifyEmail(verifyData);
         setSuccess(true);
-        setTimeout(() => router.push(`/reset-password?token=${otpCode}`), 1000);
+        setTimeout(() => router.push(`/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otpCode)}`), 1000);
       }
     } catch (err: any) {
       setStatus({ submitError: err?.message || 'Invalid or expired OTP. Please try again.' });

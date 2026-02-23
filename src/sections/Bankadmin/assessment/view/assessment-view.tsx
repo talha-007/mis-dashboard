@@ -74,7 +74,9 @@ export function AssessmentView() {
     try {
       setSaving(true);
       setError(null);
-      await assessmentService.updateBankAssessment(assessment.bankId, {
+      // Use bankId if available, otherwise use slug or empty string
+      const bankId = assessment.bankId || assessment.slug || '';
+      await assessmentService.updateBankAssessment(bankId, {
         questions: assessment.questions,
       });
       setSuccessMessage('Assessment saved successfully.');

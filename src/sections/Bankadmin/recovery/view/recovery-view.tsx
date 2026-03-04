@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import { useDebounce } from 'src/hooks';
-
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
@@ -18,6 +16,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { fCurrency } from 'src/utils/format-number';
 
+import { useDebounce } from 'src/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 import bankAdminService from 'src/redux/services/bank-admin.services';
 

@@ -1,6 +1,6 @@
 import type { CreditRating } from 'src/_mock/_credit-rating';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -8,9 +8,9 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Alert from '@mui/material/Alert';
+import TableRow from '@mui/material/TableRow';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
-import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
@@ -18,12 +18,10 @@ import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import bankAdminService from 'src/redux/services/bank-admin.services';
 
 import { Scrollbar } from 'src/components/scrollbar';
 
-import bankAdminService from 'src/redux/services/bank-admin.services';
-
-import { TableNoData } from '../table-no-data';
 import { TableEmptyRows } from '../table-empty-rows';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 import { CreditRatingTableRow } from '../credit-rating-table-row';

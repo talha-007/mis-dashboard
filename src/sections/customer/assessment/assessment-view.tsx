@@ -66,14 +66,12 @@ export function CustomerAssessmentView() {
     return !Number.isNaN(num) && num >= 0;
   });
 
-  const buildAnswersPayload = (): { fieldKey: string; amount: number }[] => {
-    return customFields
+  const buildAnswersPayload = (): { fieldKey: string; amount: number }[] => customFields
       .filter((f) => fieldValues[f._id]?.trim())
       .map((f) => ({
         fieldKey: f.fieldKey,
         amount: Number(fieldValues[f._id]) || 0,
       }));
-  };
 
   const handleSubmit = async () => {
     if (!allFilled) return;

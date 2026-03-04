@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import { useDebounce } from 'src/hooks';
-
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
@@ -19,6 +17,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { fCurrency } from 'src/utils/format-number';
 
+import { useDebounce } from 'src/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 import bankAdminService from 'src/redux/services/bank-admin.services';
 
@@ -48,15 +47,24 @@ export function PaymentView() {
 
   // Map API response to PaymentProps type
   // API structure: { id, amount, customerName, date, description, paymentType, status, subType, type }
+  const validPaymentTypes = [
+    'loan_disbursement', 'loan_repayment', 'loan_refund', 'borrower_recovery',
+    'borrower_fee', 'borrower_penalty', 'borrower_commission', 'fee', 'penalty',
+    'commission', 'refund', 'other',
+  ] as const;
   const mapApiToPayment = useCallback(
-    (item: any) => ({
-      id: item.id || item._id || '',
-      date: item.date || item.paymentDate || item.createdAt || new Date().toISOString(),
-      borrower: item.customerName || item.borrowerName || item.borrower || 'N/A',
-      amount: Number(item.amount || 0), // Can be negative for refunds
-      status: item.status || 'pending',
-      paymentType: item.paymentType || 'other',
-    }),
+    (item: any): import('../payment-table-row').PaymentProps => {
+      const rawType = item.paymentType || item.subType || item.type || 'other';
+      const paymentType = validPaymentTypes.includes(rawType) ? rawType : 'other';
+      return {
+        id: item.id || item._id || '',
+        date: item.date || item.paymentDate || item.createdAt || new Date().toISOString(),
+        borrower: item.customerName || item.borrowerName || item.borrower || 'N/A',
+        amount: Number(item.amount || 0),
+        status: item.status || 'pending',
+        paymentType,
+      };
+    },
     []
   );
 

@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import { useDebounce } from 'src/hooks';
-
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -17,6 +15,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { useDebounce } from 'src/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 import bankService from 'src/redux/services/bank.services';
 

@@ -50,6 +50,7 @@ interface BankSubscription {
 
 export function BankPaymentsView() {
   const [filterName, setFilterName] = useState('');
+  const debouncedFilterName = useDebounce(filterName, 400);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [subscriptions, setSubscriptions] = useState<BankSubscription[]>([]);
   const [loading, setLoading] = useState(true);

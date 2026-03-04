@@ -2,8 +2,6 @@ import type { CreditProposalReport } from 'src/types/assessment.types';
 
 import { useState, useEffect, useCallback } from 'react';
 
-import { useDebounce } from 'src/hooks';
-
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -18,6 +16,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useNavigate } from 'src/routes/hooks';
 
+import { useDebounce } from 'src/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 import assessmentService from 'src/redux/services/assessment.services';
 

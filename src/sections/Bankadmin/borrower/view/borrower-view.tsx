@@ -2,8 +2,6 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 
-import { useDebounce } from 'src/hooks';
-
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -21,6 +19,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { useDebounce } from 'src/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 import borrowerService from 'src/redux/services/borrowServices';
 

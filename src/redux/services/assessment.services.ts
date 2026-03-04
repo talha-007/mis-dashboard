@@ -1,9 +1,4 @@
-import type {
-  BankAssessment,
-  AssessmentAnswer,
-  CustomFieldValue,
-  AssessmentSubmission,
-} from 'src/types/assessment.types';
+import type { BankAssessment, AssessmentSubmission } from 'src/types/assessment.types';
 
 import { callAPi } from './http-common';
 import customerService from './customer.services';
@@ -25,6 +20,7 @@ function mapToBankAssessment(raw: any): BankAssessment {
           type: 'multiple_choice' as const,
           text: q.text,
           order: q.order ?? index + 1,
+          questionType: q.questionType === 'expense' ? 'expense' : 'income',
           options: (q.options ?? []).map((o: any, i: number) => ({
             _id: String(o._id ?? o.id ?? i),
             text: o.text ?? o.label ?? '',
@@ -37,9 +33,10 @@ function mapToBankAssessment(raw: any): BankAssessment {
         type: 'custom_field' as const,
         fieldKey: q.fieldKey ?? q.label ?? `field_${index + 1}`,
         label: q.label ?? q.fieldKey ?? `Field ${index + 1}`,
-        inputType: q.inputType === 'text' ? 'text' : 'number',
+        inputType: 'number' as const,
         order: q.order ?? index + 1,
         unit: q.unit,
+        questionType: q.questionType === 'expense' ? 'expense' : 'income',
       };
     }
   );
@@ -71,13 +68,16 @@ const updateBankAssessment = (
   _bankId: string,
   payload: { questions: BankAssessment['questions'] }
 ) => {
+  
   const body = {
     questions: payload.questions.map((q, index) => {
       if (q.type === 'multiple_choice') {
         return {
           type: 'multiple_choice' as const,
           text: q.text,
+          
           order: q.order ?? index + 1,
+          questionType: q.questionType ?? 'income',
           options: q.options.map((o) => ({ text: o.text, points: o.points })),
         };
       }
@@ -85,12 +85,14 @@ const updateBankAssessment = (
         type: 'custom_field' as const,
         fieldKey: q.fieldKey,
         label: q.label,
-        inputType: q.inputType,
+        inputType: 'number' as const,
         order: q.order ?? index + 1,
         unit: q.unit,
+        questionType: q.questionType ?? 'income',
       };
     }),
   };
+
   return bankAdminService.createOrUpdateBankQuestions(body).then((res) => ({
     data: mapToBankAssessment(res.data?.data ?? res.data),
   }));
@@ -109,18 +111,12 @@ const getAssessmentForCustomer = (bankId?: string) => {
   }));
 };
 
-const submitAssessment = (
-  answers: AssessmentAnswer[],
-  customFieldValues?: CustomFieldValue[],
-  totalMaxScore?: number
-) => {
-  const totalScore = totalMaxScore ?? 100;
-  const score = answers.reduce((sum, a) => sum + a.points, 0);
+export type AssessmentAnswerPayload = { fieldKey: string; amount: number };
+
+const submitAssessment = (bankSlug: string, answers: AssessmentAnswerPayload[]) => {
   const payload = {
-    score,
-    totalScore,
+    bankSlug,
     answers,
-    customFieldValues: customFieldValues ?? [],
   };
   // Use new customer-side API: /api/v1/assessments/submit
   return customerService.submitAssessmentAnswers(payload).then((res) => ({

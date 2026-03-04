@@ -31,6 +31,11 @@ const submitAssessmentAnswers = (data: any) => callAPi.post('/api/v1/assessments
 // --- Stats ---
 const getStats = () => callAPi.get('/api/v1/stats/customer');
 
+// --- Credit Rating ---
+// Customer-facing endpoint to get the latest credit rating for the authenticated user
+// Expected endpoint: /api/v1/assessments/my-rating
+const getMyCreditRating = () => callAPi.get('/api/v1/assessments/my-rating');
+
 const customerService = {
   register,
   login,
@@ -43,6 +48,7 @@ const customerService = {
   getBankQuestionsForCustomer,
   submitAssessmentAnswers,
   getStats,
+  getMyCreditRating,
 };
 
 export default customerService;

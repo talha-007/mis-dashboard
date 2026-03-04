@@ -9,23 +9,27 @@ export type AssessmentOption = {
   points: number; // Bank admin assigns any points per option (no fixed total)
 };
 
+export type QuestionCategory = 'income' | 'expense';
+
 export type AssessmentQuestion = {
   _id: string;
   type: 'multiple_choice';
   text: string;
   order: number;
   options: AssessmentOption[];
+  questionType?: QuestionCategory; // income or expense
 };
 
-/** Custom field: customer enters value (number or text). No score. */
+/** Custom field: customer enters numeric value. Income or expense category. */
 export type AssessmentCustomField = {
   _id: string;
   type: 'custom_field';
   fieldKey: string;
   label: string;
-  inputType: 'number' | 'text';
+  inputType: 'number'; // Only numbers allowed
   order: number;
   unit?: string; // e.g. "PKR/month"
+  questionType?: QuestionCategory; // income or expense
 };
 
 export type AssessmentItem = AssessmentQuestion | AssessmentCustomField;

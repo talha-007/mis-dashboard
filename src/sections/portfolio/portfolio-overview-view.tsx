@@ -7,27 +7,36 @@
 import type { CardProps } from '@mui/material/Card';
 
 import { toast } from 'react-toastify';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
+import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import TableContainer from '@mui/material/TableContainer';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { useAuth } from 'src/hooks/use-auth';
 
+import dayjs from 'dayjs';
+
 import { getBankRegisterUrl } from 'src/utils/bank-routes';
 import { fNumber, fCurrency } from 'src/utils/format-number';
+import { fDate } from 'src/utils/format-time';
 
 import { useAppSelector } from 'src/store';
 import bankAdminService from 'src/redux/services/bank-admin.services';
 import superadminService from 'src/redux/services/superadmin.services';
 
 import { Iconify } from 'src/components/iconify';
+import { Chart, useChart } from 'src/components/chart';
 
 import { BankPaymentDialog } from 'src/sections/Superadmin/bank/payments/bank-payment-dialog';
 
@@ -50,6 +59,44 @@ export type BankAdminStats = {
   auditReadiness: number;
 };
 
+type RecentApplication = {
+  id: string;
+  customerName: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+  cnic: string;
+  city: string;
+  region: string;
+  durationMonths: number;
+  installmentAmount: number;
+  fatherName: string;
+  customer?: {
+    id: string;
+    name: string;
+    lastname: string;
+    email: string;
+    phone: string;
+  };
+};
+
+export type BankAdminAdditionalStats = {
+  recentApplications: RecentApplication[];
+  highRiskBorrowers: number;
+  loansNearDefault: number;
+};
+
+export type GraphDataPoint = { date: string; amount: number };
+export type DPDBucketItem = { bucket: string; count: number };
+export type BranchExposureItem = { branchName: string; exposure: number };
+
+export type BankAdminGraphsData = {
+  disbursementTrend?: GraphDataPoint[];
+  collectionTrend?: GraphDataPoint[];
+  dpdBuckets?: DPDBucketItem[];
+  branchExposure?: BranchExposureItem[];
+};
+
 // ----------------------------------------------------------------------
 
 export function PortfolioOverviewView() {
@@ -59,7 +106,11 @@ export function PortfolioOverviewView() {
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
   const [bankAdminStats, setBankAdminStats] = useState<BankAdminStats | null>(null);
+  const [bankAdminAdditionalStats, setBankAdminAdditionalStats] = useState<BankAdminAdditionalStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [additionalStatsLoading, setAdditionalStatsLoading] = useState(false);
+  const [graphsData, setGraphsData] = useState<BankAdminGraphsData | null>(null);
+  const [graphsLoading, setGraphsLoading] = useState(false);
   const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
   const isAdmin = user?.role === UserRole.ADMIN;
 
@@ -108,13 +159,87 @@ export function PortfolioOverviewView() {
     }
   }, [isAdmin]);
 
+  const fetchBankAdminAdditionalStats = useCallback(async () => {
+    if (!isAdmin) return;
+    setAdditionalStatsLoading(true);
+    try {
+      const response = await bankAdminService.getAdditionalStats();
+      if (response.status === 200) {
+        const data = response.data?.data || response.data;
+        const stats = data?.stats || data || {};
+        setBankAdminAdditionalStats({
+          recentApplications: Array.isArray(stats.recentApplications) ? stats.recentApplications : [],
+          highRiskBorrowers: stats.highRiskBorrowers || 0,
+          loansNearDefault: stats.loansNearDefault || 0,
+        });
+      }
+    } catch {
+      setBankAdminAdditionalStats(null);
+    } finally {
+      setAdditionalStatsLoading(false);
+    }
+  }, [isAdmin]);
+
+  const fetchGraphsData = useCallback(async () => {
+    if (!isAdmin) return;
+    setGraphsLoading(true);
+    try {
+      const response = await bankAdminService.getGraphsData({ days: 90 });
+      if (response.status === 200) {
+        const raw = response.data?.data ?? response.data;
+        const data = raw?.graphs ?? raw;
+        const mapBranchExposure = (arr: any[]) =>
+          (arr ?? []).map((x: any) => ({
+            branchName: x.branchName ?? x.branch_name ?? x.branch ?? '',
+            exposure: Number(x.exposure ?? x.amount ?? 0),
+          }));
+        const mapDPDBuckets = (arr: any[]) =>
+          (arr ?? []).map((x: any) => ({
+            bucket: x.bucket ?? x.label ?? '',
+            count: Number(x.count ?? x.value ?? 0),
+          }));
+        const mapTrendData = (arr: any[]) =>
+          (arr ?? []).map((x: any) => ({
+            date: x.date ?? x.day ?? '',
+            amount: Number(x.amount ?? x.value ?? 0),
+          }));
+
+        setGraphsData({
+          disbursementTrend: mapTrendData(
+            data?.disbursementTrend ?? data?.disbursement_trend ?? []
+          ),
+          collectionTrend: mapTrendData(
+            data?.collectionTrend ?? data?.collection_trend ?? []
+          ),
+          dpdBuckets: mapDPDBuckets(data?.dpdBuckets ?? data?.dpd_buckets ?? []),
+          branchExposure: mapBranchExposure(
+            data?.branchExposure ?? data?.branch_exposure ?? []
+          ),
+        });
+      }
+    } catch {
+      setGraphsData(null);
+    } finally {
+      setGraphsLoading(false);
+    }
+  }, [isAdmin]);
+
   useEffect(() => {
     if (isSuperAdmin) {
       fetchSuperAdminStats();
     } else if (isAdmin) {
       fetchBankAdminStats();
+      fetchBankAdminAdditionalStats();
+      fetchGraphsData();
     }
-  }, [isSuperAdmin, isAdmin, fetchSuperAdminStats, fetchBankAdminStats]);
+  }, [
+    isSuperAdmin,
+    isAdmin,
+    fetchSuperAdminStats,
+    fetchBankAdminStats,
+    fetchBankAdminAdditionalStats,
+    fetchGraphsData,
+  ]);
 
   const handlePaymentSuccess = () => {
     setOpenPaymentDialog(false);
@@ -139,13 +264,22 @@ export function PortfolioOverviewView() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1600, mx: 'auto' }}>
       {/* Header */}
-      <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+          mb: 3,
+        }}
+      >
         <Typography variant="h4">
           {isSuperAdmin ? 'Platform Overview' : 'Portfolio Overview'}
         </Typography>
-        {isSuperAdmin && (
+        {/* {isSuperAdmin && (
           <Button
             variant="contained"
             startIcon={<Iconify icon="solar:wallet-money-bold" />}
@@ -154,29 +288,29 @@ export function PortfolioOverviewView() {
           >
             Record Bank Payment
           </Button>
-        )}
+        )} */}
       </Box>
 
-      {/* Super Admin: Platform stats (banks, subscriptions, revenue, expired) */}
+      {/* Super Admin: Platform stats */}
       {isSuperAdmin && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
           {statsLoading ? (
             [1, 2, 3, 4].map((i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6, md: 3 }}>
-                <Skeleton variant="rounded" height={140} sx={{ borderRadius: 2 }} />
+              <Grid key={i} size={{ xs: 12, sm: 6, lg: 3 }}>
+                <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
               </Grid>
             ))
           ) : superAdminStats ? (
             <>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                 <StatCard
                   title="Total Banks"
                   value={fNumber(superAdminStats.totalBanks)}
-                  icon="solar:building-2-bold-duotone"
+                  icon="duo-icons:bank"
                   color="primary"
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                 <StatCard
                   title="Active Subscriptions"
                   value={fNumber(superAdminStats.activeSubscriptions)}
@@ -184,7 +318,7 @@ export function PortfolioOverviewView() {
                   color="success"
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                 <StatCard
                   title="Expired Subscriptions"
                   value={fNumber(superAdminStats.expiredSubscriptions)}
@@ -192,7 +326,7 @@ export function PortfolioOverviewView() {
                   color="error"
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                 <StatCard
                   title="Revenue"
                   value={fCurrency(superAdminStats.totalRevenue)}
@@ -205,66 +339,228 @@ export function PortfolioOverviewView() {
         </Grid>
       )}
 
-      {/* Bank Admin: Portfolio stats */}
+      {/* Bank Admin: Key metrics (compact cards) */}
       {isAdmin && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
           {statsLoading ? (
-            [1, 2, 3, 4, 5].map((i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Skeleton variant="rounded" height={140} sx={{ borderRadius: 2 }} />
+            [1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <Grid key={i} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
               </Grid>
             ))
-          ) : bankAdminStats ? (
+          ) : (
             <>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <StatCard
-                  title="Active Borrowers"
-                  value={fNumber(bankAdminStats.activeBorrowers)}
-                  icon="solar:users-group-two-rounded-bold-duotone"
-                  color="primary"
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <StatCard
-                  title="Outstanding Portfolio"
-                  value={fCurrency(bankAdminStats.outstandingPortfolio)}
-                  icon="solar:wallet-money-bold-duotone"
-                  color="info"
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <StatCard
-                  title="PAR Count"
-                  value={fNumber(bankAdminStats.parCount)}
-                  icon="solar:chart-2-bold-duotone"
-                  color="warning"
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <StatCard
-                  title="Recovery Rate"
-                  value={`${fNumber(bankAdminStats.recoveryRate)}%`}
-                  icon="solar:graph-up-bold-duotone"
-                  color="success"
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <StatCard
-                  title="Audit Readiness"
-                  value={`${fNumber(bankAdminStats.auditReadiness)}%`}
-                  icon="solar:check-circle-bold-duotone"
-                  color="success"
-                />
-              </Grid>
+              {bankAdminStats && (
+                <>
+                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <StatCard
+                      title="Active Borrowers"
+                      value={fNumber(bankAdminStats.activeBorrowers)}
+                      icon="solar:users-group-two-rounded-bold-duotone"
+                      color="primary"
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <StatCard
+                      title="Outstanding Portfolio"
+                      value={fCurrency(bankAdminStats.outstandingPortfolio)}
+                      icon="solar:wallet-money-bold-duotone"
+                      color="info"
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <StatCard
+                      title="PAR Count"
+                      value={fNumber(bankAdminStats.parCount)}
+                      icon="solar:chart-2-bold-duotone"
+                      color="warning"
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <StatCard
+                      title="Recovery Rate"
+                      value={`${fNumber(bankAdminStats.recoveryRate)}%`}
+                      icon="solar:graph-up-bold-duotone"
+                      color="success"
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <StatCard
+                      title="Audit Readiness"
+                      value={`${fNumber(bankAdminStats.auditReadiness)}%`}
+                      icon="solar:check-circle-bold-duotone"
+                      color="success"
+                    />
+                  </Grid>
+                </>
+              )}
+              {bankAdminAdditionalStats && (
+                <>
+                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <StatCard
+                      title="High Risk Borrowers"
+                      value={fNumber(bankAdminAdditionalStats.highRiskBorrowers)}
+                      icon="solar:danger-triangle-bold-duotone"
+                      color="error"
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                    <StatCard
+                      title="Loans Near Default"
+                      value={fNumber(bankAdminAdditionalStats.loansNearDefault)}
+                      icon="solar:bell-bing-bold-duotone"
+                      color="warning"
+                    />
+                  </Grid>
+                </>
+              )}
             </>
-          ) : null}
+          )}
         </Grid>
+      )}
+
+      {/* Bank Admin: Analytics Charts */}
+      {isAdmin && (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <Card sx={{ p: { xs: 2, sm: 2.5 }, height: '100%' }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                Disbursement Trend
+              </Typography>
+              {graphsLoading ? (
+                <Skeleton variant="rounded" height={260} sx={{ borderRadius: 1 }} />
+              ) : (
+                <DisbursementTrendChart data={graphsData?.disbursementTrend} />
+              )}
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <Card sx={{ p: { xs: 2, sm: 2.5 }, height: '100%' }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                Loan Collection Trend
+              </Typography>
+              {graphsLoading ? (
+                <Skeleton variant="rounded" height={260} sx={{ borderRadius: 1 }} />
+              ) : (
+                <CollectionTrendChart data={graphsData?.collectionTrend} />
+              )}
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <Card sx={{ p: { xs: 2, sm: 2.5 }, height: '100%' }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                DPD Buckets
+              </Typography>
+              {graphsLoading ? (
+                <Skeleton variant="rounded" height={260} sx={{ borderRadius: 1 }} />
+              ) : (
+                <DPDBucketsChart data={graphsData?.dpdBuckets} />
+              )}
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, lg: 6 }}>
+            <Card sx={{ p: { xs: 2, sm: 2.5 }, height: '100%' }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                Branch-wise Exposure
+              </Typography>
+              {graphsLoading ? (
+                <Skeleton variant="rounded" height={260} sx={{ borderRadius: 1 }} />
+              ) : (
+                <BranchExposureChart data={graphsData?.branchExposure} />
+              )}
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* Bank Admin: Recent Applications & Registration Link */}
+      {isAdmin && (
+        <>
+          {/* Recent Applications Table */}
+          <Card sx={{ mb: 3, overflow: 'hidden' }}>
+            <Box sx={{ p: { xs: 2, sm: 2.5 }, pb: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                Recent Applications
+              </Typography>
+              {additionalStatsLoading ? (
+                <Box sx={{ py: 2 }}>
+                  <Skeleton variant="rounded" height={180} />
+                </Box>
+              ) : bankAdminAdditionalStats?.recentApplications &&
+                bankAdminAdditionalStats.recentApplications.length > 0 ? (
+                <TableContainer sx={{ overflowX: 'auto' }}>
+                  <Table sx={{ minWidth: 560 }}>
+                    <TableBody>
+                      {bankAdminAdditionalStats.recentApplications.map((app) => (
+                        <TableRow key={app.id} hover>
+                          <TableCell>
+                            <Stack spacing={0.5}>
+                              <Typography variant="subtitle2">{app.customerName}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {app.cnic}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{fCurrency(app.amount)}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {app.durationMonths} months
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{app.city}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {app.region}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color:
+                                  app.status === 'approved'
+                                    ? 'success.main'
+                                    : app.status === 'rejected'
+                                      ? 'error.main'
+                                      : 'warning.main',
+                                fontWeight: 500,
+                                textTransform: 'capitalize',
+                              }}
+                            >
+                              {app.status.replace('_', ' ')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {fDate(app.createdAt)}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Box sx={{ py: 2, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No recent applications found
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Card>
+        </>
       )}
 
       {/* Customer registration link (admin only) */}
       {isAdmin && bank?.slug && (
         <Card sx={{ mb: 3, p: 2 }}>
-          <Stack direction="row" alignItems="center" spacing={2} flexWrap="wrap">
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            spacing={2}
+            sx={{ gap: 2 }}
+          >
             <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 0.5 }}>
                 Customer registration link
@@ -332,35 +628,35 @@ function StatCard({
   return (
     <Card
       sx={{
-        p: { xs: 2, sm: 2.5, md: 3 },
-        boxShadow: theme.customShadows.card,
+        p: { xs: 2, sm: 2.5 },
+        boxShadow: theme.customShadows?.card || 'none',
         height: '100%',
-        minHeight: { xs: 100, sm: 120 },
+        minHeight: { xs: 90, sm: 100 },
         display: 'flex',
         ...sx,
       }}
       {...other}
     >
       <Stack
-        direction={{ xs: 'row', sm: 'row' }}
+        direction="row"
         justifyContent="space-between"
-        alignItems={{ xs: 'center', sm: 'flex-start' }}
-        spacing={{ xs: 1.5, sm: 2 }}
+        alignItems="flex-start"
+        spacing={2}
         sx={{ flex: 1, minWidth: 0 }}
       >
-        <Stack spacing={0.5} sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Stack spacing={0.5} sx={{ flexGrow: 1, minWidth: 0, overflow: 'hidden' }}>
           <Typography
-            variant="subtitle2"
-            sx={{ color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.8125rem' } }}
+            variant="caption"
+            sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
           >
             {title}
           </Typography>
           <Typography
-            variant="h3"
+            variant="h6"
             sx={{
-              fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
+              fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' },
               fontWeight: 700,
-              lineHeight: 1.2,
+              lineHeight: 1.3,
               wordBreak: 'break-word',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -394,8 +690,8 @@ function StatCard({
 
         <Box
           sx={{
-            width: { xs: 48, sm: 56, md: 64 },
-            height: { xs: 48, sm: 56, md: 64 },
+            width: { xs: 40, sm: 44 },
+            height: { xs: 40, sm: 44 },
             flexShrink: 0,
             borderRadius: '50%',
             display: 'flex',
@@ -404,9 +700,370 @@ function StatCard({
             bgcolor: alpha(theme.palette[color].main, 0.16),
           }}
         >
-          <Iconify icon={icon} width={28} sx={{ color: `${color}.main` }} />
+          <Iconify icon={icon} width={22} sx={{ color: `${color}.main` }} />
         </Box>
       </Stack>
     </Card>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+// Disbursement Trend Chart Component
+function DisbursementTrendChart({ data }: { data?: GraphDataPoint[] }) {
+  const theme = useTheme();
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const chartData =
+    data?.length ? data.map((d) => [dayjs(d.date).valueOf(), Number(d.amount)]) : [];
+
+  const chartOptions = useChart({
+    colors: [theme.palette.primary.main],
+    stroke: { width: 2 },
+    markers: {
+      size: 4,
+      strokeWidth: 0,
+      hover: { size: 6 },
+    },
+    chart: {
+      zoom: {
+        enabled: chartData.length > 1,
+        type: 'x',
+        allowMouseWheelZoom: chartData.length > 1,
+      },
+      toolbar: {
+        show: false,
+      },
+    },
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        format: 'dd MMM',
+        datetimeUTC: false,
+      },
+      min: chartData.length === 1 ? chartData[0][0] - 86400000 : undefined,
+      max: chartData.length === 1 ? chartData[0][0] + 86400000 : undefined,
+    },
+    tooltip: {
+      x: {
+        formatter: (value: number) => dayjs(value).format('DD MMM YYYY'),
+      },
+      y: {
+        formatter: (value: number) => fCurrency(value),
+      },
+    },
+    legend: { show: false },
+    grid: {
+      show: true,
+      borderColor: theme.palette.divider,
+    },
+  });
+
+  const chartSeries = [
+    {
+      name: 'Disbursement',
+      data: chartData,
+    },
+  ];
+
+  // Handle mouse wheel zoom
+  useEffect(() => {
+    const chartElement = chartRef.current;
+    if (!chartElement) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const chartContainer = chartElement.querySelector('[id^="apexcharts"]') as HTMLElement;
+      if (!chartContainer) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const chartId = chartContainer.getAttribute('id');
+      if (chartId && (window as any).ApexCharts) {
+        const apexChart = (window as any).ApexCharts.exec(chartId);
+        if (apexChart) {
+          if (e.deltaY < 0) {
+            apexChart.zoomIn();
+          } else {
+            apexChart.zoomOut();
+          }
+        }
+      }
+    };
+
+    chartElement.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      chartElement.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
+  if (!chartData.length) {
+    return (
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          No disbursement data available
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box ref={chartRef} sx={{ position: 'relative' }}>
+      <Chart
+        type="line"
+        series={chartSeries}
+        options={chartOptions}
+        sx={{
+          height: { xs: 220, sm: 260 },
+          mt: 1,
+        }}
+      />
+    </Box>
+  );
+}
+
+// Loan Collection Trend Chart Component
+function CollectionTrendChart({ data }: { data?: GraphDataPoint[] }) {
+  const theme = useTheme();
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const chartData =
+    data?.length ? data.map((d) => [dayjs(d.date).valueOf(), Number(d.amount)]) : [];
+
+  const chartOptions = useChart({
+    colors: [theme.palette.success.main],
+    stroke: { width: 2 },
+    markers: {
+      size: 4,
+      strokeWidth: 0,
+      hover: { size: 6 },
+    },
+    chart: {
+      zoom: {
+        enabled: chartData.length > 1,
+        type: 'x',
+        allowMouseWheelZoom: chartData.length > 1,
+      },
+      toolbar: {
+        show: false,
+      },
+    },
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        format: 'dd MMM',
+        datetimeUTC: false,
+      },
+      min: chartData.length === 1 ? chartData[0][0] - 86400000 : undefined,
+      max: chartData.length === 1 ? chartData[0][0] + 86400000 : undefined,
+    },
+    tooltip: {
+      x: {
+        formatter: (value: number) => dayjs(value).format('DD MMM YYYY'),
+      },
+      y: {
+        formatter: (value: number) => fCurrency(value),
+      },
+    },
+    legend: { show: false },
+    grid: {
+      show: true,
+      borderColor: theme.palette.divider,
+    },
+  });
+
+  const chartSeries = [
+    {
+      name: 'Collection',
+      data: chartData,
+    },
+  ];
+
+  // Handle mouse wheel zoom
+  useEffect(() => {
+    const chartElement = chartRef.current;
+    if (!chartElement) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const chartContainer = chartElement.querySelector('[id^="apexcharts"]') as HTMLElement;
+      if (!chartContainer) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const chartId = chartContainer.getAttribute('id');
+      if (chartId && (window as any).ApexCharts) {
+        const apexChart = (window as any).ApexCharts.exec(chartId);
+        if (apexChart) {
+          if (e.deltaY < 0) {
+            apexChart.zoomIn();
+          } else {
+            apexChart.zoomOut();
+          }
+        }
+      }
+    };
+
+    chartElement.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      chartElement.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
+  if (!chartData.length) {
+    return (
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          No collection data available
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box ref={chartRef} sx={{ position: 'relative' }}>
+      <Chart
+        type="line"
+        series={chartSeries}
+        options={chartOptions}
+        sx={{
+          height: { xs: 220, sm: 260 },
+          mt: 1,
+        }}
+      />
+    </Box>
+  );
+}
+
+// DPD Buckets Bar Chart Component
+function DPDBucketsChart({ data }: { data?: DPDBucketItem[] }) {
+  const theme = useTheme();
+
+  const categories = data?.map((d) => d.bucket) ?? [
+    '0 DPD',
+    '1-30 DPD',
+    '31-60 DPD',
+    '61-90 DPD',
+    '90+ DPD',
+  ];
+  const seriesData = data?.map((d) => d.count) ?? [];
+
+  const chartOptions = useChart({
+    colors: [
+      theme.palette.success.main,
+      theme.palette.info.main,
+      theme.palette.warning.main,
+      theme.palette.error.main,
+      theme.palette.error.dark,
+    ],
+    stroke: { width: 0 },
+    xaxis: {
+      categories,
+    },
+    tooltip: {
+      y: {
+        formatter: (value: number) => fNumber(value),
+      },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 4,
+        columnWidth: '60%',
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => fNumber(val),
+    },
+  });
+
+  const chartSeries = [
+    {
+      name: 'Number of Loans',
+      data: seriesData,
+    },
+  ];
+
+  if (!seriesData.length) {
+    return (
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          No DPD bucket data available
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Chart
+      type="bar"
+      series={chartSeries}
+      options={chartOptions}
+      sx={{
+        height: { xs: 220, sm: 260 },
+        mt: 1,
+      }}
+    />
+  );
+}
+
+// Branch-wise Exposure Chart Component
+function BranchExposureChart({ data }: { data?: BranchExposureItem[] }) {
+  const theme = useTheme();
+
+  const categories = data?.map((d) => d.branchName) ?? [];
+  const seriesData = data?.map((d) => d.exposure) ?? [];
+
+  const chartOptions = useChart({
+    colors: [theme.palette.primary.main],
+    stroke: { width: 0 },
+    xaxis: {
+      categories,
+    },
+    tooltip: {
+      y: {
+        formatter: (value: number) => fCurrency(value),
+      },
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 4,
+        columnWidth: '60%',
+        horizontal: false,
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => fCurrency(val),
+    },
+  });
+
+  const chartSeries = [
+    {
+      name: 'Exposure',
+      data: seriesData,
+    },
+  ];
+
+  if (!seriesData.length) {
+    return (
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          No branch exposure data available
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Chart
+      type="bar"
+      series={chartSeries}
+      options={chartOptions}
+      sx={{
+        height: { xs: 220, sm: 260 },
+        mt: 1,
+      }}
+    />
   );
 }

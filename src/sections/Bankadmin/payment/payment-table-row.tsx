@@ -23,6 +23,7 @@ export type PaymentProps = {
   borrower: string;
   amount: number;
   status: string;
+  paymentType: 'loan_disbursement' | 'loan_repayment' | 'loan_refund' | 'borrower_recovery' | 'borrower_fee' | 'borrower_penalty' | 'borrower_commission' | 'fee' | 'penalty' | 'commission' | 'refund' | 'other';
 };
 
 type PaymentTableRowProps = {
@@ -67,6 +68,8 @@ export function PaymentTableRow({ row, selected }: PaymentTableRowProps) {
             {row.status}
           </Label>
         </TableCell>
+
+        <TableCell>{row.paymentType}</TableCell>
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>

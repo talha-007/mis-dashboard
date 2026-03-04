@@ -40,6 +40,13 @@ interface LoanApplication {
   status: string;
 }
 
+interface AppliedRates {
+  insuranceRate?: number;
+  interestRate?: number;
+  totalInsurance?: number;
+  totalInterest?: number;
+}
+
 interface NextInstallment {
   id: string;
   amount: number;
@@ -77,6 +84,7 @@ interface BorrowerDetail {
   loanApplicationId: LoanApplication | string;
   installmentStats?: InstallmentStats;
   recoveryOverdues?: any[];
+  appliedRates?: AppliedRates;
 }
 
 export function BorrowerDetailView() {
@@ -97,7 +105,7 @@ export function BorrowerDetailView() {
           return;
         }
         const response = await borrowerService.get(id as string);
-        console.log(response);
+       
         if (response.status === 200) {
           const data =
             response.data?.data?.borrower ||
@@ -165,6 +173,8 @@ export function BorrowerDetailView() {
   // Extract loan application info (could be object or string)
   const loanApp: LoanApplication | null =
     typeof borrower.loanApplicationId === 'object' ? borrower.loanApplicationId : null;
+
+  const appliedRates = borrower.appliedRates;
 
   return (
     <DashboardContent>
@@ -341,6 +351,48 @@ export function BorrowerDetailView() {
                 </>
               )}
             </Stack>
+            {appliedRates && (
+              <>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
+                  Applied Rates
+                </Typography>
+                <Stack direction="row" spacing={3} flexWrap="wrap" gap={2}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Insurance Rate
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {appliedRates.insuranceRate ?? 0}%
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Interest Rate
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {appliedRates.interestRate ?? 0}%
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Total Insurance
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {fCurrency(appliedRates.totalInsurance ?? 0)}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Total Interest
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {fCurrency(appliedRates.totalInterest ?? 0)}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </>
+            )}
           </Stack>
         </Card>
 

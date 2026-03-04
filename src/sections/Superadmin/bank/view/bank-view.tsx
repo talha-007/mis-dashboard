@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
+import { useDebounce } from 'src/hooks';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -39,6 +41,7 @@ export function BankView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
+  const debouncedFilterName = useDebounce(filterName, 400);
   const [banks, setBanks] = useState<BankProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +57,7 @@ export function BankView() {
       setLoading(true);
       setError(null);
       const response = await bankService.getBanks({
-        search: filterName || undefined,
+        search: debouncedFilterName || undefined,
         page: table.page + 1, // API uses 1-based pagination
         limit: table.rowsPerPage,
         sortBy: table.orderBy,
@@ -78,7 +81,7 @@ export function BankView() {
     } finally {
       setLoading(false);
     }
-  }, [filterName, table.page, table.rowsPerPage, table.orderBy, table.order]);
+  }, [debouncedFilterName, table.page, table.rowsPerPage, table.orderBy, table.order]);
 
   // Fetch banks on mount and when filters change
   useEffect(() => {
@@ -95,7 +98,7 @@ export function BankView() {
   }, [successMessage]);
 
   // API handles search, pagination, and sorting, so use banks directly
-  const notFound = !banks.length && !!filterName && !loading;
+  const notFound = !banks.length && !!debouncedFilterName && !loading;
 
   const handleOpenFormPage = (bank?: BankProps) => {
     if (bank) {
@@ -247,7 +250,7 @@ export function BankView() {
                       <TableRow>
                         <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {notFound ? `No banks found for "${filterName}"` : 'No banks found'}
+                            {notFound ? `No banks found for "${debouncedFilterName}"` : 'No banks found'}
                           </Typography>
                         </TableCell>
                       </TableRow>
@@ -260,7 +263,7 @@ export function BankView() {
                       />
                     )}
 
-                    {notFound && <TableNoData searchQuery={filterName} />}
+                    {notFound && <TableNoData searchQuery={debouncedFilterName} />}
                   </TableBody>
                 </Table>
               </TableContainer>

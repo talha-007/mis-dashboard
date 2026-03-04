@@ -1,16 +1,25 @@
-import type { AssessmentOption, AssessmentQuestion } from 'src/types/assessment.types';
+import type {
+  AssessmentOption,
+  AssessmentQuestion,
+  QuestionCategory,
+} from 'src/types/assessment.types';
 
 import { useState, useEffect } from 'react';
 
 import Card from '@mui/material/Card';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import Radio from '@mui/material/Radio';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import FormLabel from '@mui/material/FormLabel';
+import RadioGroup from '@mui/material/RadioGroup';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -34,10 +43,12 @@ export function AssessmentQuestionDialog({
   const isEdit = !!question;
   const [text, setText] = useState('');
   const [options, setOptions] = useState<AssessmentOption[]>([]);
+  const [questionType, setQuestionType] = useState<QuestionCategory>('income');
 
   useEffect(() => {
     if (open) {
       setText(question?.text ?? '');
+      setQuestionType(question?.questionType ?? 'income');
       setOptions(
         question?.options?.length
           ? question.options.map((o) => ({ ...o }))
@@ -77,6 +88,7 @@ export function AssessmentQuestionDialog({
       text: text.trim(),
       order: question?.order ?? 0,
       options: validOptions,
+      questionType,
     });
     onClose();
   };
@@ -94,8 +106,19 @@ export function AssessmentQuestionDialog({
           label="Question text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          sx={{ mb: 3 }}
+          sx={{ mb: 2 }}
         />
+        <FormControl component="fieldset" sx={{ mb: 3 }}>
+          <FormLabel component="legend">Question category</FormLabel>
+          <RadioGroup
+            row
+            value={questionType}
+            onChange={(e) => setQuestionType(e.target.value as QuestionCategory)}
+          >
+            <FormControlLabel value="income" control={<Radio />} label="Income" />
+            <FormControlLabel value="expense" control={<Radio />} label="Expense" />
+          </RadioGroup>
+        </FormControl>
         <Typography variant="subtitle2" sx={{ mb: 1 }}>
           Options (customer picks one) — set points per option
         </Typography>

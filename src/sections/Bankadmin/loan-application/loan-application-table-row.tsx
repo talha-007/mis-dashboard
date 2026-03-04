@@ -54,10 +54,8 @@ export function LoanApplicationTableRow({
     setIsProcessing(false);
   }, [row.id, onApprove]);
 
-  const handleReject = useCallback(async () => {
-    setIsProcessing(true);
-    await onReject(row.id);
-    setIsProcessing(false);
+  const handleReject = useCallback(() => {
+    onReject(row.id);
   }, [row.id, onReject]);
 
   const handleViewDetails = useCallback(() => {

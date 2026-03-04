@@ -1,21 +1,27 @@
 import type { CreditRating } from 'src/_mock/_credit-rating';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
+
+import bankAdminService from 'src/redux/services/bank-admin.services';
 
 import { TableNoData } from '../table-no-data';
 import { TableEmptyRows } from '../table-empty-rows';
@@ -26,6 +32,63 @@ import { CreditRatingTableToolbar } from '../credit-rating-table-toolbar';
 
 // ----------------------------------------------------------------------
 
+// API Response Types
+type CreditRatingApiResponse = {
+  borrowerName: string;
+  borrowerId: string;
+  loanAmount: number;
+  creditScore: number;
+  riskCategory: string;
+  status: string;
+  customerCnic?: string;
+  customerEmail?: string;
+  loanApplicationStatus?: string;
+};
+
+type CreditRatingOverviewResponse = {
+  message: string;
+  summary: {
+    totalBorrowers: number;
+    riskDistribution: {
+      highRisk: number;
+      moderateRisk: number;
+      lowRisk: number;
+    };
+  };
+  tableData: CreditRatingApiResponse[];
+};
+
+// Map API response to CreditRating type
+const mapApiToCreditRating = (apiData: CreditRatingApiResponse, index: number): CreditRating => {
+  // Map risk category to match type
+  let riskCategory: 'High Risk' | 'Moderate Risk' | 'Low Risk' = 'Moderate Risk';
+  if (apiData.riskCategory?.toLowerCase().includes('high')) {
+    riskCategory = 'High Risk';
+  } else if (apiData.riskCategory?.toLowerCase().includes('low')) {
+    riskCategory = 'Low Risk';
+  }
+
+  // Map status to match type
+  let status: 'active' | 'inactive' | 'under_review' = 'active';
+  const statusLower = (apiData.status || apiData.loanApplicationStatus || '').toLowerCase();
+  if (statusLower === 'inactive' || statusLower === 'rejected') {
+    status = 'inactive';
+  } else if (statusLower === 'under_review' || statusLower === 'pending' || statusLower === 'submitted') {
+    status = 'under_review';
+  }
+
+  return {
+    id: apiData.borrowerId || `credit-rating-${index}`,
+    borrowerName: apiData.borrowerName || 'N/A',
+    borrowerId: apiData.borrowerId || 'N/A',
+    loanAmount: apiData.loanAmount || 0,
+    creditScore: apiData.creditScore || 0,
+    riskCategory,
+    lastAssessment: 'N/A', // API doesn't provide this field
+    status,
+  };
+};
+
 export function CreditRatingView() {
   const [filterName, setFilterName] = useState('');
   const [page, setPage] = useState(0);
@@ -34,7 +97,14 @@ export function CreditRatingView() {
   const [selected, setSelected] = useState<string[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [creditRatings, setCreditRatings] = useState<CreditRating[]>([]);
-  const creditRatingSummary = { highRisk: 0, moderateRisk: 0, lowRisk: 0, total: 0 };
+  const [creditRatingSummary, setCreditRatingSummary] = useState({
+    highRisk: 0,
+    moderateRisk: 0,
+    lowRisk: 0,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const HEAD_CELLS = [
     { id: 'borrowerName', label: 'Borrower Name' },
@@ -55,14 +125,17 @@ export function CreditRatingView() {
     [order, orderBy]
   );
 
-  const handleSelectAllRows = useCallback((checked: boolean) => {
-    if (checked) {
-      const newSelecteds = creditRatings.map((n) => n.id);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  }, []);
+  const handleSelectAllRows = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        const newSelecteds = creditRatings.map((n) => n.id);
+        setSelected(newSelecteds);
+        return;
+      }
+      setSelected([]);
+    },
+    [creditRatings]
+  );
 
   const handleSelectRow = useCallback(
     (id: string) => {
@@ -100,6 +173,48 @@ export function CreditRatingView() {
     setPage(0);
     setFilterName(event.target.value);
   }, []);
+
+  // Fetch credit rating overview data
+  const fetchCreditRatingOverview = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await bankAdminService.getCreditRatingOverview();
+      if (response.status === 200) {
+        const data: CreditRatingOverviewResponse =
+          response.data?.data || response.data;
+
+        // Update summary
+        if (data.summary?.riskDistribution) {
+          setCreditRatingSummary({
+            highRisk: data.summary.riskDistribution.highRisk || 0,
+            moderateRisk: data.summary.riskDistribution.moderateRisk || 0,
+            lowRisk: data.summary.riskDistribution.lowRisk || 0,
+            total: data.summary.totalBorrowers || 0,
+          });
+        }
+
+        // Map and update table data
+        if (data.tableData && Array.isArray(data.tableData)) {
+          const mappedData = data.tableData.map((item, index) =>
+            mapApiToCreditRating(item, index)
+          );
+          setCreditRatings(mappedData);
+        } else {
+          setCreditRatings([]);
+        }
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Failed to fetch credit rating overview');
+      setCreditRatings([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCreditRatingOverview();
+  }, [fetchCreditRatingOverview]);
 
   const dataFiltered: CreditRating[] = applyFilter({
     inputData: creditRatings,
@@ -230,23 +345,47 @@ export function CreditRatingView() {
                   headCells={HEAD_CELLS}
                 />
                 <TableBody>
-                  {dataFiltered
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => (
-                      <CreditRatingTableRow
-                        key={row.id}
-                        row={row}
-                        selected={selected.includes(row.id)}
-                        onSelectRow={() => handleSelectRow(row.id)}
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={9} align="center" sx={{ py: 5 }}>
+                        <CircularProgress />
+                      </TableCell>
+                    </TableRow>
+                  ) : error ? (
+                    <TableRow>
+                      <TableCell colSpan={9} align="center" sx={{ py: 5 }}>
+                        <Alert severity="error">{error}</Alert>
+                      </TableCell>
+                    </TableRow>
+                  ) : dataFiltered.length > 0 ? (
+                    <>
+                      {dataFiltered
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((row) => (
+                          <CreditRatingTableRow
+                            key={row.id}
+                            row={row}
+                            selected={selected.includes(row.id)}
+                            onSelectRow={() => handleSelectRow(row.id)}
+                          />
+                        ))}
+
+                      <TableEmptyRows
+                        height={68}
+                        emptyRows={emptyRows(page, rowsPerPage, creditRatings.length)}
                       />
-                    ))}
-
-                  <TableEmptyRows
-                    height={68}
-                    emptyRows={emptyRows(page, rowsPerPage, creditRatings.length)}
-                  />
-
-                  {notFound && <TableNoData searchQuery={filterName} />}
+                    </>
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {notFound
+                            ? `No credit ratings found for "${filterName}"`
+                            : 'No credit ratings found'}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

@@ -13,14 +13,12 @@ import Card from '@mui/material/Card';
 import Step from '@mui/material/Step';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
-import Radio from '@mui/material/Radio';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import Stepper from '@mui/material/Stepper';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useParams, useRouter } from 'src/routes/hooks';
@@ -31,13 +29,13 @@ import customerService from 'src/redux/services/customer.services';
 
 import { Iconify } from 'src/components/iconify';
 
-import { isMultipleChoice } from 'src/types/assessment.types';
+import { isCustomField } from 'src/types/assessment.types';
 
 import { ApplyLoanFormView } from './apply-loan-form-view';
 
 // ----------------------------------------------------------------------
 
-type AnswerState = Record<string, string>;
+type FieldValuesState = Record<string, string>;
 
 function AssessmentStepContent({
   onComplete,
@@ -49,14 +47,12 @@ function AssessmentStepContent({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<AnswerState>({});
+  const [fieldValues, setFieldValues] = useState<FieldValuesState>({});
 
   const fetchAssessment = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Get bankSlug from user data (mapped from API slug in authSlice)
 
       const bankSlug = (user as any)?.bankSlug;
       if (!bankSlug) {
@@ -66,53 +62,26 @@ function AssessmentStepContent({
         return;
       }
 
-      // Use new API: /api/v1/bank-questions/customer/:bankSlug
       const res = await customerService.getBankQuestionsForCustomer(bankSlug);
-      console.log('[fetchAssessment] API Response:', res.data);
-      // API response has structure: { bankQuestions: { questions: [...], ... }, message: "..." }
       const data = res.data?.bankQuestions ?? res.data?.data ?? res.data;
-      console.log('[fetchAssessment] Extracted data:', data);
-      console.log('[fetchAssessment] Questions array:', data?.questions);
 
-      // Map the response to BankAssessment format
-      const questions: BankAssessment['questions'] = (data?.questions ?? []).map(
-        (q: any, index: number) => {
-          if (q.type === 'multiple_choice') {
-            return {
-              _id: String(q._id ?? q.id ?? index),
-              type: 'multiple_choice' as const,
-              text: q.text,
-              order: q.order ?? index + 1,
-              options: (q.options ?? []).map((o: any, i: number) => ({
-                _id: String(o._id ?? o.id ?? i), // Use index as fallback for _id
-                text: o.text ?? o.label ?? '',
-                points: Number(o.points ?? o.value ?? o.score ?? 0),
-              })),
-            };
-          }
-          return {
-            _id: String(q._id ?? q.id ?? index),
-            type: 'custom_field' as const,
-            fieldKey: q.fieldKey ?? q.label ?? `field_${index + 1}`,
-            label: q.label ?? q.fieldKey ?? `Field ${index + 1}`,
-            inputType: q.inputType === 'text' ? 'text' : 'number',
-            order: q.order ?? index + 1,
-            unit: q.unit,
-          };
-        }
-      );
-
-      const totalMaxScore = questions.reduce((sum, q) => {
-        if (q.type === 'multiple_choice' && q.options?.length) {
-          return sum + Math.max(...q.options.map((o) => o.points));
-        }
-        return sum;
-      }, 0);
+      const questions: BankAssessment['questions'] = (data?.questions ?? [])
+        .filter((q: any) => q.type === 'custom_field' || !q.options?.length)
+        .map((q: any, index: number) => ({
+          _id: String(q._id ?? q.id ?? index),
+          type: 'custom_field' as const,
+          fieldKey: q.fieldKey ?? q.label ?? `field_${index + 1}`,
+          label: q.label ?? q.fieldKey ?? q.text ?? `Field ${index + 1}`,
+          inputType: 'number' as const,
+          order: q.order ?? index + 1,
+          unit: q.unit,
+          questionType: q.questionType === 'expense' ? 'expense' : 'income',
+        }));
 
       setAssessment({
         slug: bankSlug,
         questions,
-        totalMaxScore,
+        totalMaxScore: 0,
       });
     } catch (err: unknown) {
       setError((err as Error)?.message || 'Failed to load assessment');
@@ -126,29 +95,35 @@ function AssessmentStepContent({
     fetchAssessment();
   }, [fetchAssessment]);
 
-  const mcQuestions = assessment?.questions?.filter(isMultipleChoice) ?? [];
-  const allAnswered = mcQuestions.length === 0 || mcQuestions.every((q) => answers[q._id]);
+  const customFields = assessment?.questions?.filter(isCustomField) ?? [];
+
+  const allFilled =
+    customFields.length > 0 &&
+    customFields.every((f) => {
+      const v = fieldValues[f._id]?.trim();
+      if (!v) return false;
+      const num = Number(v);
+      return !Number.isNaN(num) && num >= 0;
+    });
 
   const handleSubmit = async () => {
-    if (!allAnswered || !assessment) return;
+    if (!allFilled || !assessment) return;
     try {
       setSubmitting(true);
       setError(null);
 
-      const answerPayload = mcQuestions
-        .filter((q) => answers[q._id])
-        .map((q) => {
-          const optionId = answers[q._id];
-          const option = q.options.find((o) => o._id === optionId);
-          return { questionId: q._id, optionId };
-        });
+      const answers = customFields
+        .filter((f) => fieldValues[f._id]?.trim())
+        .map((f) => ({
+          fieldKey: f.fieldKey,
+          amount: Number(fieldValues[f._id]) || 0,
+        }));
 
       const submitPayload = {
         bankSlug: user?.bankSlug ?? '',
-        answers: answerPayload,
+        answers,
       };
 
-      // Use new API: /api/v1/assessments/submit
       const res = await customerService.submitAssessmentAnswers(submitPayload);
       if (res.status === 201) {
         const result = res.data;
@@ -156,7 +131,13 @@ function AssessmentStepContent({
         onComplete({ submissionId: result?.assessment_id });
       }
     } catch (err: unknown) {
-      setError((err as Error)?.message || 'Failed to submit assessment');
+      const errAny = err as any;
+      const serverMessage =
+        errAny?.response?.data?.message ??
+        errAny?.response?.data?.error ??
+        errAny?.response?.data?.msg ??
+        errAny?.message;
+      setError(serverMessage || 'Failed to submit assessment');
     } finally {
       setSubmitting(false);
     }
@@ -170,7 +151,7 @@ function AssessmentStepContent({
     );
   }
 
-  if (!mcQuestions.length) {
+  if (!customFields.length) {
     return (
       <Alert severity="info">
         No assessment is available at the moment. You can still continue to the loan form.
@@ -188,7 +169,7 @@ function AssessmentStepContent({
   return (
     <Stack spacing={3}>
       <Typography variant="body2" color="text.secondary">
-        Complete the credit assessment first. Your responses will be reviewed with your loan
+        Enter your income and expense amounts below. Your responses will be reviewed with your loan
         application.
       </Typography>
       {error && (
@@ -196,26 +177,29 @@ function AssessmentStepContent({
           {error}
         </Alert>
       )}
-      {mcQuestions.map((q, index) => (
-        <Card key={q._id} sx={{ p: 3 }}>
+      {customFields.map((field, index) => (
+        <Card key={field._id} sx={{ p: 3 }}>
           <Typography variant="subtitle1" sx={{ mb: 2 }}>
-            {index + 1}. {q.text}
+            {index + 1}. {field.label}
+            {field.questionType && (
+              <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                ({field.questionType})
+              </Typography>
+            )}
           </Typography>
-          <FormControl component="fieldset">
-            <RadioGroup
-              value={answers[q._id] ?? ''}
-              onChange={(e) => setAnswers((prev) => ({ ...prev, [q._id]: e.target.value }))}
-            >
-              {q.options.map((opt) => (
-                <FormControlLabel
-                  key={opt._id}
-                  value={opt._id}
-                  control={<Radio />}
-                  label={opt.text}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
+          <TextField
+            fullWidth
+            type="number"
+            value={fieldValues[field._id] ?? ''}
+            onChange={(e) => setFieldValues((prev) => ({ ...prev, [field._id]: e.target.value }))}
+            placeholder={`Enter amount${field.unit ? ` in ${field.unit}` : ''}`}
+            inputProps={{ min: 0, step: 1 }}
+            InputProps={{
+              endAdornment: field.unit ? (
+                <InputAdornment position="end">{field.unit}</InputAdornment>
+              ) : undefined,
+            }}
+          />
         </Card>
       ))}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -223,7 +207,7 @@ function AssessmentStepContent({
           variant="contained"
           size="large"
           onClick={handleSubmit}
-          disabled={!allAnswered || submitting}
+          disabled={!allFilled || submitting}
           startIcon={
             submitting ? <CircularProgress size={20} /> : <Iconify icon="solar:check-circle-bold" />
           }

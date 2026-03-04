@@ -2,6 +2,8 @@ import type { CreditProposalReport } from 'src/types/assessment.types';
 
 import { useState, useEffect, useCallback } from 'react';
 
+import { useDebounce } from 'src/hooks';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -42,6 +44,7 @@ export function CreditProposalReportListView() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [filterName, setFilterName] = useState('');
+  const debouncedFilterName = useDebounce(filterName, 400);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState('submittedAt');
@@ -100,9 +103,9 @@ export function CreditProposalReportListView() {
         limit: rowsPerPage,
       };
 
-      // Add search parameter if filterName is provided
-      if (filterName.trim()) {
-        params.search = filterName.trim();
+      // Add search parameter if debounced filter is provided
+      if (debouncedFilterName.trim()) {
+        params.search = debouncedFilterName.trim();
       }
 
       // Add sorting parameters
@@ -148,7 +151,7 @@ export function CreditProposalReportListView() {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, filterName, orderBy, order, mapApiToReport]);
+  }, [page, rowsPerPage, debouncedFilterName, orderBy, order, mapApiToReport]);
 
   useEffect(() => {
     fetchReports();
@@ -230,7 +233,7 @@ export function CreditProposalReportListView() {
 
   // Client-side filtering removed since we're using server-side search
   const dataFiltered = reports;
-  const notFound = !dataFiltered.length && !!filterName && !loading;
+  const notFound = !dataFiltered.length && !!debouncedFilterName && !loading;
 
   if (loading) {
     return (
@@ -312,12 +315,12 @@ export function CreditProposalReportListView() {
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
                       <Typography variant="body2" color="text.secondary">
-                        {notFound ? `No reports found for "${filterName}"` : 'No reports found'}
+                        {notFound ? `No reports found for "${debouncedFilterName}"` : 'No reports found'}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 )}
-                {notFound && <TableNoData searchQuery={filterName} />}
+                {notFound && <TableNoData searchQuery={debouncedFilterName} />}
               </TableBody>
             </Table>
           </TableContainer>

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
+import { useDebounce } from 'src/hooks';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -32,6 +34,7 @@ export function InstallmentsView() {
   const [selected, setSelected] = useState<string[]>([]);
   const [orderBy, setOrderBy] = useState('month');
   const [filterName, setFilterName] = useState('');
+  const debouncedFilterName = useDebounce(filterName, 400);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [installments, setInstallments] = useState<import('src/_mock/_installment').Installment[]>(
     []
@@ -70,9 +73,9 @@ export function InstallmentsView() {
         limit: rowsPerPage,
       };
 
-      // Add search parameter if filterName is provided
-      if (filterName.trim()) {
-        params.search = filterName.trim();
+      // Add search parameter if debounced filter is provided
+      if (debouncedFilterName.trim()) {
+        params.search = debouncedFilterName.trim();
       }
 
       const response = await loanApplicationService.getInstallmentHistory(params);
@@ -103,7 +106,7 @@ export function InstallmentsView() {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, filterName, mapApiToInstallment]);
+  }, [page, rowsPerPage, debouncedFilterName, mapApiToInstallment]);
 
   useEffect(() => {
     fetchInstallments();
@@ -112,7 +115,7 @@ export function InstallmentsView() {
   // Client-side filtering is removed since we're using server-side search
   const dataFiltered = installments;
 
-  const notFound = !dataFiltered.length && !!filterName && !loading;
+  const notFound = !dataFiltered.length && !!debouncedFilterName && !loading;
 
   const handleSort = useCallback(
     (id: string) => {
@@ -243,7 +246,7 @@ export function InstallmentsView() {
                           <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
                             <Typography variant="body2" color="text.secondary">
                               {notFound
-                                ? `No installments found for "${filterName}"`
+                                ? `No installments found for "${debouncedFilterName}"`
                                 : 'No installments found'}
                             </Typography>
                           </TableCell>

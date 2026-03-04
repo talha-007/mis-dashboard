@@ -99,7 +99,7 @@ export function LoanApplicationDetailView() {
           return;
         }
         const response = await loanApplicationService.get(id as string);
-
+          console.log('response', response);
         if (response.status === 200) {
           // The API returns: { data: { loanApplication: {...}, assessment: {...} } }
           const responseData = response.data?.data || response.data;
@@ -136,15 +136,21 @@ export function LoanApplicationDetailView() {
   };
 
   const handleConfirmAction = async () => {
-    if (!application || !id) return;
+    if (!application || !id || !dialogAction) return;
+
+    // Frontend validation to match backend requirement
+    if (dialogAction === 'reject' && !rejectReason.trim()) {
+      setError('Rejection reason is required when rejecting a loan application');
+      return;
+    }
 
     try {
       setActionInProgress(true);
       const payload: Record<string, unknown> = {
         status: dialogAction === 'approve' ? 'approved' : 'rejected',
       };
-      if (dialogAction === 'reject' && rejectReason) {
-        payload.rejectionReason = rejectReason;
+      if (dialogAction === 'reject') {
+        payload.rejectionReason = rejectReason.trim();
       }
 
       await loanApplicationService.updateStatus(application._id, payload);
@@ -428,28 +434,14 @@ export function LoanApplicationDetailView() {
                   {application.assessment.creditScore || application.assessment.rating}
                 </Typography>
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Points Earned
-                </Typography>
-                <Typography variant="h6">
-                  {application.assessment.earnedPoints} / {application.assessment.totalPoints}
-                </Typography>
-              </Box>
+              
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Rating
                 </Typography>
                 <Typography variant="h6">{application.assessment.rating}</Typography>
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Correct Answers
-                </Typography>
-                <Typography variant="h6">
-                  {application.assessment.correctAnswers} / {application.assessment.totalQuestions}
-                </Typography>
-              </Box>
+              
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Assessment Date
@@ -477,29 +469,6 @@ export function LoanApplicationDetailView() {
                           {answer.question}
                         </TableCell>
                         <TableCell>{answer.selectedAnswer}</TableCell>
-                        <TableCell align="right">
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            justifyContent="flex-end"
-                            alignItems="center"
-                          >
-                            <Typography variant="body2">{answer.pointsEarned} pts</Typography>
-                            {answer.isCorrect ? (
-                              <Iconify
-                                icon="eva:checkmark-circle-2-fill"
-                                width={20}
-                                sx={{ color: 'success.main' }}
-                              />
-                            ) : (
-                              <Iconify
-                                icon="eva:close-circle-2-fill"
-                                width={20}
-                                sx={{ color: 'error.main' }}
-                              />
-                            )}
-                          </Stack>
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -512,7 +481,7 @@ export function LoanApplicationDetailView() {
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {dialogAction === 'approve' ? 'Approve Application' : 'Reject Application'}
+            {dialogAction === 'approve' ? 'Approve Application' : 'Reject Application'}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <Stack spacing={2}>
@@ -524,9 +493,10 @@ export function LoanApplicationDetailView() {
             {dialogAction === 'reject' && (
               <TextField
                 fullWidth
+                required
                 multiline
                 rows={3}
-                label="Rejection Reason (Optional)"
+                label="Rejection Reason"
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="Provide a reason for rejection..."

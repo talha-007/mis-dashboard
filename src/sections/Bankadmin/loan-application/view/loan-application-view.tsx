@@ -12,6 +12,12 @@ import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import loanApplicationService from 'src/redux/services/loan-applications';
@@ -37,6 +43,10 @@ export function LoanApplicationView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedRejectId, setSelectedRejectId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectInProgress, setRejectInProgress] = useState(false);
 
   // Fetch loan applications on component mount and when pagination/filter changes
   useEffect(() => {
@@ -128,45 +138,73 @@ export function LoanApplicationView() {
     [table.page, table.rowsPerPage]
   );
 
-  const handleReject = useCallback(
-    async (id: string) => {
-      try {
-        await loanApplicationService.updateStatus(id, { status: 'rejected' });
-        // Refresh the list by refetching
-        const response = await loanApplicationService.list({
-          page: table.page + 1,
-          limit: table.rowsPerPage,
-        });
-        if (response.status === 200) {
-          const loanApplications = response.data?.loanApplications || [];
-          const pagination = response.data?.pagination;
-          const transformedApps: LoanApplicationProps[] = loanApplications.map((app: any) => ({
-            id: app._id || app.id || '',
-            applicantName:
-              app.customerName || `${app.name || ''} ${app.lastname || ''}`.trim() || 'N/A',
-            applicantId: app.customerId || '',
-            cnic: app.cnic || 'N/A',
-            phone: app.phone || 'N/A',
-            email: app.email || 'N/A',
-            amount: app.amount || 0,
-            loanType: '',
-            score: app.assessment?.score || 0,
-            status: (app.status === 'submitted'
-              ? 'submitted'
-              : app.status) as LoanApplicationProps['status'],
-            appliedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A',
-            reviewedBy: app.reviewedBy || null,
-            reviewedDate: app.reviewedDate || null,
-          }));
-          setApplications(transformedApps);
-          setTotalCount(pagination?.total || transformedApps.length);
-        }
-      } catch (err: any) {
-        setError(err?.response?.data?.message || 'Failed to reject application');
+  const handleReject = useCallback((id: string) => {
+    setSelectedRejectId(id);
+    setRejectReason('');
+    setRejectDialogOpen(true);
+  }, []);
+
+  const handleCloseRejectDialog = () => {
+    if (rejectInProgress) return;
+    setRejectDialogOpen(false);
+    setSelectedRejectId(null);
+    setRejectReason('');
+  };
+
+  const handleConfirmReject = useCallback(async () => {
+    if (!selectedRejectId) return;
+
+    if (!rejectReason.trim()) {
+      setError('Rejection reason is required when rejecting a loan application');
+      return;
+    }
+
+    try {
+      setRejectInProgress(true);
+      await loanApplicationService.updateStatus(selectedRejectId, {
+        status: 'rejected',
+        rejectionReason: rejectReason.trim(),
+      });
+
+      // Refresh the list by refetching
+      const response = await loanApplicationService.list({
+        page: table.page + 1,
+        limit: table.rowsPerPage,
+      });
+      if (response.status === 200) {
+        const loanApplications = response.data?.loanApplications || [];
+        const pagination = response.data?.pagination;
+        const transformedApps: LoanApplicationProps[] = loanApplications.map((app: any) => ({
+          id: app._id || app.id || '',
+          applicantName:
+            app.customerName || `${app.name || ''} ${app.lastname || ''}`.trim() || 'N/A',
+          applicantId: app.customerId || '',
+          cnic: app.cnic || 'N/A',
+          phone: app.phone || 'N/A',
+          email: app.email || 'N/A',
+          amount: app.amount || 0,
+          loanType: '',
+          score: app.assessment?.score || 0,
+          status: (app.status === 'submitted'
+            ? 'submitted'
+            : app.status) as LoanApplicationProps['status'],
+          appliedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A',
+          reviewedBy: app.reviewedBy || null,
+          reviewedDate: app.reviewedDate || null,
+        }));
+        setApplications(transformedApps);
+        setTotalCount(pagination?.total || transformedApps.length);
       }
-    },
-    [table.page, table.rowsPerPage]
-  );
+
+      setRejectDialogOpen(false);
+      setSelectedRejectId(null);
+      setRejectReason('');
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Failed to reject application');
+    } finally {
+      setRejectInProgress(false);
+    }
+  }, [selectedRejectId, rejectReason, table.page, table.rowsPerPage]);
 
   return (
     <DashboardContent>
@@ -283,6 +321,42 @@ export function LoanApplicationView() {
           />
         </Card>
       )}
+
+      {/* Reject Confirmation Dialog (List View) */}
+      <Dialog open={rejectDialogOpen} onClose={handleCloseRejectDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Reject Application</DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Stack spacing={2}>
+            <Typography variant="body2">
+              Are you sure you want to reject this loan application?
+            </Typography>
+            <TextField
+              fullWidth
+              required
+              multiline
+              rows={3}
+              label="Rejection Reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Provide a reason for rejection..."
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseRejectDialog} disabled={rejectInProgress}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmReject}
+            disabled={rejectInProgress}
+            variant="contained"
+            color="error"
+            startIcon={rejectInProgress ? <CircularProgress size={20} /> : undefined}
+          >
+            {rejectInProgress ? 'Processing...' : 'Reject'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 }

@@ -53,11 +53,11 @@ export const adminNavData: NavItem[] = [
     path: '/borrower-management',
     icon: icon('borrowers'),
   },
-  {
-    title: 'Customer Management',
-    path: '/users-management',
-    icon: icon('customers'),
-  },
+  // {
+  //   title: 'Customer Management',
+  //   path: '/users-management',
+  //   icon: icon('customers'),
+  // },
   {
     title: 'Loan Applications',
     path: '/loan-applications',
@@ -92,6 +92,11 @@ export const adminNavData: NavItem[] = [
     title: 'MIS & Reports',
     path: '/mis-reports',
     icon: icon('reports'),
+  },
+  {
+    title: 'Settings',
+    path: '/bank-settings',
+    icon: icon('ic-settings'),
   },
 ];
 

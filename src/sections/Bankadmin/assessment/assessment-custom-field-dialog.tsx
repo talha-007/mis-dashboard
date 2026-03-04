@@ -1,15 +1,23 @@
-import type { AssessmentCustomField } from 'src/types/assessment.types';
+import type {
+  AssessmentCustomField,
+  QuestionCategory,
+} from 'src/types/assessment.types';
 
 import { useState, useEffect } from 'react';
 
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import Radio from '@mui/material/Radio';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import FormLabel from '@mui/material/FormLabel';
+import RadioGroup from '@mui/material/RadioGroup';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { ASSESSMENT_CUSTOM_FIELD_OPTIONS } from 'src/types/assessment.types';
 
@@ -31,21 +39,21 @@ export function AssessmentCustomFieldDialog({
   const isEdit = !!field;
   const [fieldKey, setFieldKey] = useState('');
   const [label, setLabel] = useState('');
-  const [inputType, setInputType] = useState<'number' | 'text'>('number');
   const [unit, setUnit] = useState('');
+  const [questionType, setQuestionType] = useState<QuestionCategory>('income');
 
   useEffect(() => {
     if (open) {
       if (field) {
         setFieldKey(field.fieldKey);
         setLabel(field.label);
-        setInputType(field.inputType);
         setUnit(field.unit ?? '');
+        setQuestionType(field.questionType ?? 'income');
       } else {
         setFieldKey('');
         setLabel('');
-        setInputType('number');
         setUnit('');
+        setQuestionType('income');
       }
     }
   }, [open, field]);
@@ -67,9 +75,10 @@ export function AssessmentCustomFieldDialog({
       type: 'custom_field',
       fieldKey: (fieldKey || label.replace(/\s+/g, '_').toLowerCase()).trim(),
       label: label.trim(),
-      inputType,
+      inputType: 'number',
       order: field?.order ?? 0,
       unit: unit.trim() || undefined,
+      questionType,
     });
     onClose();
   };
@@ -79,8 +88,8 @@ export function AssessmentCustomFieldDialog({
       <DialogTitle>{isEdit ? 'Edit custom field' : 'Add custom field'}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Customer will enter a value for this field. It does not affect the credit score (score
-          comes only from multiple-choice questions).
+          Customer will enter a numeric value for this field. Specify whether it is income or
+          expense.
         </Typography>
         <TextField
           select
@@ -105,17 +114,17 @@ export function AssessmentCustomFieldDialog({
           placeholder="e.g. Salary Income (PKR/month)"
           sx={{ mb: 2 }}
         />
-        <TextField
-          select
-          fullWidth
-          label="Input type"
-          value={inputType}
-          onChange={(e) => setInputType(e.target.value as 'number' | 'text')}
-          sx={{ mb: 2 }}
-        >
-          <MenuItem value="number">Number</MenuItem>
-          <MenuItem value="text">Text</MenuItem>
-        </TextField>
+        <FormControl component="fieldset" sx={{ mb: 2 }}>
+          <FormLabel component="legend">Category</FormLabel>
+          <RadioGroup
+            row
+            value={questionType}
+            onChange={(e) => setQuestionType(e.target.value as QuestionCategory)}
+          >
+            <FormControlLabel value="income" control={<Radio />} label="Income" />
+            <FormControlLabel value="expense" control={<Radio />} label="Expense" />
+          </RadioGroup>
+        </FormControl>
         <TextField
           fullWidth
           label="Unit (optional)"

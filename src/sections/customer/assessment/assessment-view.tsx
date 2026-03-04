@@ -1,4 +1,4 @@
-import type { BankAssessment, AssessmentAnswer } from 'src/types/assessment.types';
+import type { BankAssessment } from 'src/types/assessment.types';
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -6,87 +6,94 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
-import Radio from '@mui/material/Radio';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useNavigate } from 'src/routes/hooks';
 
+import { useAppSelector } from 'src/store';
 import { DashboardContent } from 'src/layouts/dashboard';
 import assessmentService from 'src/redux/services/assessment.services';
 
 import { Iconify } from 'src/components/iconify';
 
-import { isMultipleChoice } from 'src/types/assessment.types';
+import { isCustomField } from 'src/types/assessment.types';
 
-type AnswerState = Record<string, string>;
+type FieldValuesState = Record<string, string>;
 
 export function CustomerAssessmentView() {
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
   const [assessment, setAssessment] = useState<BankAssessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<AnswerState>({});
+  const [fieldValues, setFieldValues] = useState<FieldValuesState>({});
   const [submittedResult, setSubmittedResult] = useState<boolean>(false);
 
   const fetchAssessment = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await assessmentService.getAssessmentForCustomer();
+      const bankSlug = (user as any)?.bankSlug;
+      const res = await assessmentService.getAssessmentForCustomer(bankSlug);
       setAssessment(res.data ?? null);
     } catch (err: any) {
-      setError(err.message || 'Failed to load assessment');
+      setError(err?.response?.data?.message || err?.message || 'Failed to load assessment');
       setAssessment(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchAssessment();
   }, [fetchAssessment]);
 
-  const handleOptionChange = (questionId: string, optionId: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+  const customFields = assessment?.questions?.filter(isCustomField) ?? [];
+
+  const handleFieldChange = (fieldId: string, value: string) => {
+    setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
   };
 
-  const mcQuestions = assessment?.questions?.filter(isMultipleChoice) ?? [];
-  const allAnswered = mcQuestions.length === 0 || mcQuestions.every((q) => answers[q._id]);
+  const allFilled = customFields.length > 0 && customFields.every((f) => {
+    const v = fieldValues[f._id]?.trim();
+    if (!v) return false;
+    const num = Number(v);
+    return !Number.isNaN(num) && num >= 0;
+  });
 
-  const buildAnswerPayload = (): AssessmentAnswer[] => {
-    if (!assessment) return [];
-    return mcQuestions
-      .filter((q) => answers[q._id])
-      .map((q) => {
-        const optionId = answers[q._id];
-        const option = q.options.find((o) => o._id === optionId);
-        return {
-          questionId: q._id,
-          optionId,
-          points: option?.points ?? 0,
-        };
-      });
+  const buildAnswersPayload = (): { fieldKey: string; amount: number }[] => {
+    return customFields
+      .filter((f) => fieldValues[f._id]?.trim())
+      .map((f) => ({
+        fieldKey: f.fieldKey,
+        amount: Number(fieldValues[f._id]) || 0,
+      }));
   };
 
   const handleSubmit = async () => {
-    if (!allAnswered) return;
+    if (!allFilled) return;
+    const bankSlug = (user as any)?.bankSlug;
+    if (!bankSlug) {
+      setError('Bank not found. Unable to submit assessment.');
+      return;
+    }
     try {
       setSubmitting(true);
       setError(null);
-      await assessmentService.submitAssessment(
-        buildAnswerPayload(),
-        [],
-        assessment?.totalMaxScore ?? 100
-      );
+      await assessmentService.submitAssessment(bankSlug, buildAnswersPayload());
       setSubmittedResult(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to submit assessment');
+      const serverMessage =
+        err?.response?.data?.message ??
+        err?.response?.data?.error ??
+        err?.response?.data?.msg ??
+        err?.message;
+      setError(serverMessage || 'Failed to submit assessment');
     } finally {
       setSubmitting(false);
     }
@@ -117,7 +124,7 @@ export function CustomerAssessmentView() {
               variant="outlined"
               onClick={() => {
                 setSubmittedResult(false);
-                setAnswers({});
+                setFieldValues({});
               }}
             >
               Retake assessment
@@ -138,7 +145,7 @@ export function CustomerAssessmentView() {
     );
   }
 
-  if (!mcQuestions.length) {
+  if (!customFields.length) {
     return (
       <DashboardContent>
         <Typography variant="h4" sx={{ mb: 2 }}>
@@ -157,7 +164,8 @@ export function CustomerAssessmentView() {
         Credit assessment
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Answer the questions below. Your responses will be reviewed with your loan application.
+        Enter your income and expense amounts below. Your responses will be reviewed with your loan
+        application.
       </Typography>
 
       {error && (
@@ -167,26 +175,29 @@ export function CustomerAssessmentView() {
       )}
 
       <Stack spacing={3}>
-        {mcQuestions.map((q, index) => (
-          <Card key={q._id} sx={{ p: 3 }}>
+        {customFields.map((field, index) => (
+          <Card key={field._id} sx={{ p: 3 }}>
             <Typography variant="subtitle1" sx={{ mb: 2 }}>
-              {index + 1}. {q.text}
+              {index + 1}. {field.label}
+              {field.questionType && (
+                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                  ({field.questionType})
+                </Typography>
+              )}
             </Typography>
-            <FormControl component="fieldset">
-              <RadioGroup
-                value={answers[q._id] ?? ''}
-                onChange={(e) => handleOptionChange(q._id, e.target.value)}
-              >
-                {q.options.map((opt) => (
-                  <FormControlLabel
-                    key={opt._id}
-                    value={opt._id}
-                    control={<Radio />}
-                    label={opt.text}
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
+            <TextField
+              fullWidth
+              type="number"
+              value={fieldValues[field._id] ?? ''}
+              onChange={(e) => handleFieldChange(field._id, e.target.value)}
+              placeholder={`Enter amount${field.unit ? ` in ${field.unit}` : ''}`}
+              inputProps={{ min: 0, step: 1 }}
+              InputProps={{
+                endAdornment: field.unit ? (
+                  <InputAdornment position="end">{field.unit}</InputAdornment>
+                ) : undefined,
+              }}
+            />
           </Card>
         ))}
       </Stack>
@@ -196,7 +207,7 @@ export function CustomerAssessmentView() {
           variant="contained"
           size="large"
           onClick={handleSubmit}
-          disabled={!allAnswered || submitting}
+          disabled={!allFilled || submitting}
           startIcon={
             submitting ? <CircularProgress size={20} /> : <Iconify icon="solar:check-circle-bold" />
           }

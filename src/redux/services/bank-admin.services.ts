@@ -116,12 +116,35 @@ const payInstallment = (installmentId: string) =>
 const getInstallmentHistory = (params?: any) =>
   callAPi.get('/api/installments/history', { params });
 
+// --- Bank Settings ---
+const getBankSettings = () =>
+  callAPi.get('/api/v1/bankAdmin/settings').then((res) => {
+    console.log('res', res);
+    const data = res.data?.settings;
+    return {
+      insuranceRate: Number(data?.insuranceRate  ?? 0),
+      interestRate: Number(data?.interestRate  ?? 0),
+    };
+  });
+const updateBankSettings = (data: { insuranceRate: number; interestRate: number }) =>
+  callAPi.put('/api/v1/bankAdmin/settings', {
+    insuranceRate: data.insuranceRate,
+    interestRate: data.interestRate,
+  });
+
 // --- Stats ---
 const getStats = () => callAPi.get('/api/v1/stats/bank-admin');
+const getAdditionalStats = () => callAPi.get('/api/v1/stats/bank-admin/additional');
+const getGraphsData = (params?: { days?: number }) =>
+  callAPi.get('/api/v1/stats/bank-admin/graphs', { params });
+const getCreditRatingOverview = (params?: any) =>
+  callAPi.get('/api/v1/bankAdmin/credit-ratings/overview', { params });
 
 const bankAdminService = {
   login,
   forgotPassword,
+  getBankSettings,
+  updateBankSettings,
   resendOtp,
   verifyOtp,
   resetPassword,
@@ -169,6 +192,9 @@ const bankAdminService = {
   getInstallmentHistory,
   getRecoveryOverview,
   getStats,
+  getAdditionalStats,
+  getGraphsData,
+  getCreditRatingOverview,
 };
 
 export default bankAdminService;

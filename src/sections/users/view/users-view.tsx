@@ -1,6 +1,8 @@
 import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
 
+import { useDebounce } from 'src/hooks';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -70,9 +72,9 @@ export function UsersView() {
         limit: rowsPerPage,
       };
 
-      // Add search parameter if filterName is provided
-      if (filterName.trim()) {
-        params.search = filterName.trim();
+      // Add search parameter if debounced filter is provided
+      if (debouncedFilterName.trim()) {
+        params.search = debouncedFilterName.trim();
       }
 
       const response = await usersService.list(params);
@@ -105,7 +107,7 @@ export function UsersView() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, rowsPerPage, filterName]);
+  }, [page, rowsPerPage, debouncedFilterName]);
 
   useEffect(() => {
     fetchUsers();
@@ -249,7 +251,7 @@ export function UsersView() {
                       <TableRow>
                         <TableCell colSpan={TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {filterName ? `No users found for "${filterName}"` : 'No users found'}
+                            {debouncedFilterName ? `No users found for "${debouncedFilterName}"` : 'No users found'}
                           </Typography>
                         </TableCell>
                       </TableRow>

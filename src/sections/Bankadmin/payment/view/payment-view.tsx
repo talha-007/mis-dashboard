@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
+import { useDebounce } from 'src/hooks';
+
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
@@ -34,8 +36,9 @@ export function PaymentView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
+  const debouncedFilterName = useDebounce(filterName, 400);
   const [payments, setPayments] = useState<
-    { id: string; date: string; borrower: string; amount: number; status: string }[]
+    { id: string; date: string; borrower: string; amount: number; status: string; paymentType: string }[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +55,7 @@ export function PaymentView() {
       borrower: item.customerName || item.borrowerName || item.borrower || 'N/A',
       amount: Number(item.amount || 0), // Can be negative for refunds
       status: item.status || 'pending',
+      paymentType: item.paymentType || 'other',
     }),
     []
   );
@@ -73,9 +77,9 @@ export function PaymentView() {
         params.paymentType = paymentType;
       }
 
-      // Add search parameter if filterName is provided
-      if (filterName.trim()) {
-        params.search = filterName.trim();
+      // Add search parameter if debounced filter is provided
+      if (debouncedFilterName.trim()) {
+        params.search = debouncedFilterName.trim();
       }
 
       const response = await bankAdminService.getAllPayments(params);
@@ -113,15 +117,15 @@ export function PaymentView() {
     } finally {
       setLoading(false);
     }
-  }, [table.page, table.rowsPerPage, paymentType, filterName, mapApiToPayment]);
+  }, [table.page, table.rowsPerPage, paymentType, debouncedFilterName, mapApiToPayment]);
 
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
-
+  console.log('payments', payments);
   // Client-side filtering removed since we're using server-side search
   const dataFiltered = payments;
-  const notFound = !dataFiltered.length && !!filterName && !loading;
+  const notFound = !dataFiltered.length && !!debouncedFilterName && !loading;
 
   const handlePaymentTypeChange = useCallback(
     (_event: React.SyntheticEvent, newValue: 'all' | 'recovery' | 'penalty' | 'fee') => {
@@ -235,6 +239,7 @@ export function PaymentView() {
                       { id: 'borrower', label: 'Borrower' },
                       { id: 'amount', label: 'Amount' },
                       { id: 'status', label: 'Status' },
+                      { id: 'paymentType', label: 'Payment Type' },
                       { id: '', label: '' },
                     ]}
                   />
@@ -252,13 +257,13 @@ export function PaymentView() {
                         <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
                             {notFound
-                              ? `No payments found for "${filterName}"`
+                              ? `No payments found for "${debouncedFilterName}"`
                               : 'No payments found'}
                           </Typography>
                         </TableCell>
                       </TableRow>
                     )}
-                    {notFound && <TableNoData searchQuery={filterName} />}
+                    {notFound && <TableNoData searchQuery={debouncedFilterName} />}
                   </TableBody>
                 </Table>
               </TableContainer>

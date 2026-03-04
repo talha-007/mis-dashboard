@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
+import { useDebounce } from 'src/hooks';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -63,7 +65,7 @@ export function BankPaymentsView() {
       setLoading(true);
       setError(null);
       const response = await paymentService.getBankSubscriptions({
-        search: filterName || undefined,
+        search: debouncedFilterName || undefined,
         page: page + 1,
         limit: rowsPerPage,
         status: filterStatus !== 'all' ? filterStatus : undefined,
@@ -86,7 +88,7 @@ export function BankPaymentsView() {
     } finally {
       setLoading(false);
     }
-  }, [filterName, filterStatus, page, rowsPerPage]);
+  }, [debouncedFilterName, filterStatus, page, rowsPerPage]);
 
   useEffect(() => {
     fetchSubscriptions();

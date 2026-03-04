@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
+import { useDebounce } from 'src/hooks';
+
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
@@ -34,6 +36,7 @@ export function RecoveryView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
+  const debouncedFilterName = useDebounce(filterName, 400);
   const [recoveries, setRecoveries] = useState<RecoveryProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,9 +97,9 @@ export function RecoveryView() {
         params.type = typeFilter;
       }
 
-      // Add search parameter if filterName is provided
-      if (filterName.trim()) {
-        params.search = filterName.trim();
+      // Add search parameter if debounced filter is provided
+      if (debouncedFilterName.trim()) {
+        params.search = debouncedFilterName.trim();
       }
       const response = await bankAdminService.getRecoveryOverview(params);
       if (response.status === 200) {
@@ -125,7 +128,7 @@ export function RecoveryView() {
     } finally {
       setLoading(false);
     }
-  }, [table.page, table.rowsPerPage, typeFilter, filterName, mapApiToRecovery]);
+  }, [table.page, table.rowsPerPage, typeFilter, debouncedFilterName, mapApiToRecovery]);
 
   useEffect(() => {
     fetchRecoveries();
@@ -133,7 +136,7 @@ export function RecoveryView() {
 
   // Client-side filtering removed since we're using server-side search
   const dataFiltered = recoveries;
-  const notFound = !dataFiltered.length && !!filterName && !loading;
+  const notFound = !dataFiltered.length && !!debouncedFilterName && !loading;
 
   const handleMarkDefaulter = useCallback(
     async (id: string) => {
@@ -276,13 +279,13 @@ export function RecoveryView() {
                         <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
                             {notFound
-                              ? `No recoveries found for "${filterName}"`
+                              ? `No recoveries found for "${debouncedFilterName}"`
                               : 'No recoveries found'}
                           </Typography>
                         </TableCell>
                       </TableRow>
                     )}
-                    {notFound && <TableNoData searchQuery={filterName} />}
+                    {notFound && <TableNoData searchQuery={debouncedFilterName} />}
                   </TableBody>
                 </Table>
               </TableContainer>

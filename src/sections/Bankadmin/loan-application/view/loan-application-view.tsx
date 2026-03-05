@@ -34,6 +34,31 @@ import { LoanApplicationTableToolbar } from '../loan-application-table-toolbar';
 import type { LoanApplicationProps } from '../loan-application-table-row';
 
 // ----------------------------------------------------------------------
+// Map API loan application (loanApplications[] item) to table row shape
+function mapApiToRow(app: Record<string, any>): LoanApplicationProps {
+  const customerId = app.customerId && typeof app.customerId === 'object' ? app.customerId : null;
+  const name =
+    app.customerName ||
+    (customerId
+      ? [customerId.name, customerId.lastname].filter(Boolean).join(' ').trim()
+      : '') ||
+    '—';
+  return {
+    id: String(app._id ?? app.id ?? ''),
+    applicantName: name,
+    applicantId: customerId?._id ?? app.customerId ?? '',
+    cnic: app.cnic ?? '—',
+    phone: customerId?.phone ?? app.phone ?? '—',
+    email: customerId?.email ?? app.email ?? '—',
+    amount: Number(app.amount ?? 0),
+    durationMonths: app.durationMonths != null ? Number(app.durationMonths) : undefined,
+    score: Number(app.score ?? app.eligibility?.creditScore ?? 0),
+    status: (app.status === 'submitted' ? 'submitted' : app.status) as LoanApplicationProps['status'],
+    appliedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—',
+    reviewedBy: app.reviewedBy ?? null,
+    reviewedDate: app.reviewedDate ?? null,
+  };
+}
 
 export function LoanApplicationView() {
   const table = useTable();
@@ -48,7 +73,6 @@ export function LoanApplicationView() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectInProgress, setRejectInProgress] = useState(false);
 
-  // Fetch loan applications on component mount and when pagination/filter changes
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -59,33 +83,12 @@ export function LoanApplicationView() {
           limit: table.rowsPerPage,
         });
 
-        if (response.status === 200) {
-          const loanApplications = response.data?.loanApplications || [];
-          const pagination = response.data?.pagination;
+        const data = response.data?.data ?? response.data;
+        const loanApplications = data?.loanApplications ?? [];
+        const pagination = data?.pagination;
 
-          // Transform API response to match LoanApplicationProps
-          const transformedApps: LoanApplicationProps[] = loanApplications.map((app: any) => ({
-            id: app._id,
-            applicantName:
-              app.customerName || `${app.name || ''} ${app.lastname || ''}`.trim() || 'N/A',
-            applicantId: app.customerId || '',
-            cnic: app.cnic || 'N/A',
-            phone: app.phone || 'N/A',
-            email: app.email || 'N/A',
-            amount: app.amount || 0,
-            loanType: '', // Not in API response, can be added later
-            score: app.assessment?.score || 0, // Score might come from assessment if available
-            status: (app.status === 'submitted'
-              ? 'submitted'
-              : app.status) as LoanApplicationProps['status'],
-            appliedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A',
-            reviewedBy: app.reviewedBy || null,
-            reviewedDate: app.reviewedDate || null,
-          }));
-
-          setApplications(transformedApps);
-          setTotalCount(pagination?.total || transformedApps.length);
-        }
+        setApplications(loanApplications.map(mapApiToRow));
+        setTotalCount(pagination?.total ?? loanApplications.length);
       } catch (err: any) {
         setError(err?.response?.data?.message || err.message || 'Failed to load applications');
         setApplications([]);
@@ -102,35 +105,14 @@ export function LoanApplicationView() {
     async (id: string) => {
       try {
         await loanApplicationService.updateStatus(id, { status: 'approved' });
-        // Refresh the list by refetching
         const response = await loanApplicationService.list({
           page: table.page + 1,
           limit: table.rowsPerPage,
         });
-        if (response.status === 200) {
-          const loanApplications = response.data?.loanApplications || [];
-          const pagination = response.data?.pagination;
-          const transformedApps: LoanApplicationProps[] = loanApplications.map((app: any) => ({
-            id: app._id || app.id || '',
-            applicantName:
-              app.customerName || `${app.name || ''} ${app.lastname || ''}`.trim() || 'N/A',
-            applicantId: app.customerId || '',
-            cnic: app.cnic || 'N/A',
-            phone: app.phone || 'N/A',
-            email: app.email || 'N/A',
-            amount: app.amount || 0,
-            loanType: '',
-            score: app.assessment?.score || 0,
-            status: (app.status === 'submitted'
-              ? 'submitted'
-              : app.status) as LoanApplicationProps['status'],
-            appliedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A',
-            reviewedBy: app.reviewedBy || null,
-            reviewedDate: app.reviewedDate || null,
-          }));
-          setApplications(transformedApps);
-          setTotalCount(pagination?.total || transformedApps.length);
-        }
+        const data = response.data?.data ?? response.data;
+        const loanApplications = data?.loanApplications ?? [];
+        setApplications(loanApplications.map(mapApiToRow));
+        setTotalCount(data?.pagination?.total ?? loanApplications.length);
       } catch (err: any) {
         setError(err?.response?.data?.message || 'Failed to approve application');
       }
@@ -171,30 +153,10 @@ export function LoanApplicationView() {
         page: table.page + 1,
         limit: table.rowsPerPage,
       });
-      if (response.status === 200) {
-        const loanApplications = response.data?.loanApplications || [];
-        const pagination = response.data?.pagination;
-        const transformedApps: LoanApplicationProps[] = loanApplications.map((app: any) => ({
-          id: app._id || app.id || '',
-          applicantName:
-            app.customerName || `${app.name || ''} ${app.lastname || ''}`.trim() || 'N/A',
-          applicantId: app.customerId || '',
-          cnic: app.cnic || 'N/A',
-          phone: app.phone || 'N/A',
-          email: app.email || 'N/A',
-          amount: app.amount || 0,
-          loanType: '',
-          score: app.assessment?.score || 0,
-          status: (app.status === 'submitted'
-            ? 'submitted'
-            : app.status) as LoanApplicationProps['status'],
-          appliedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'N/A',
-          reviewedBy: app.reviewedBy || null,
-          reviewedDate: app.reviewedDate || null,
-        }));
-        setApplications(transformedApps);
-        setTotalCount(pagination?.total || transformedApps.length);
-      }
+      const data = response.data?.data ?? response.data;
+      const loanApplications = data?.loanApplications ?? [];
+      setApplications(loanApplications.map(mapApiToRow));
+      setTotalCount(data?.pagination?.total ?? loanApplications.length);
 
       setRejectDialogOpen(false);
       setSelectedRejectId(null);
@@ -266,6 +228,7 @@ export function LoanApplicationView() {
                   headLabel={[
                     { id: 'applicantName', label: 'Applicant' },
                     { id: 'amount', label: 'Amount' },
+                    { id: 'durationMonths', label: 'Duration', align: 'center' },
                     { id: 'score', label: 'Score', align: 'center' },
                     { id: 'status', label: 'Status' },
                     { id: 'decision', label: 'Decision', align: 'right' },
@@ -285,7 +248,7 @@ export function LoanApplicationView() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                        <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
                         <Typography variant="body2" color="text.secondary">
                           {filterName
                             ? `No loan applications found for "${filterName}"`

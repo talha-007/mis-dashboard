@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
@@ -11,6 +12,7 @@ import Divider from '@mui/material/Divider';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -31,57 +33,134 @@ import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
+// API response types (detail GET)
 
 interface AssessmentAnswer {
-  question: string;
-  selectedAnswer: string;
-  pointsEarned: number;
-  isCorrect: boolean;
-  _id: string;
+  question?: string;
+  selectedAnswer?: string;
+  pointsEarned?: number;
+  text?: string;
+  optionText?: string;
+  points?: number;
+  _id?: string;
 }
 
 interface Assessment {
   _id: string;
-  answers: AssessmentAnswer[];
-  correctAnswers: number;
-  creditScore: number;
-  earnedPoints: number;
-  rating: number;
-  totalPoints: number;
-  totalQuestions: number;
-  createdAt: string;
+  answers?: AssessmentAnswer[];
+  assessmentScore?: number;
+  affordabilityScore?: number;
+  creditScore?: number;
+  finalCreditScore?: number;
+  rating?: number;
+  incomeTotal?: number;
+  expenseTotal?: number;
+  loanAmountAtScoring?: number;
+  loanToDisposableIncomeRatio?: number;
+  loanToExpenseRatio?: number;
+  riskCategory?: string;
+  riskGrade?: string;
+  totalQuestions?: number;
+  createdAt?: string;
 }
 
-interface LoanApplicationDetail {
+interface Eligibility {
+  eligible?: boolean;
+  reason?: string;
+  creditScore?: number;
+  disposableIncome?: number;
+  eligibleAmount?: number;
+  recommendedAmount?: number;
+  recommendedEMI?: number | null;
+  eligibleEMI?: number | null;
+  riskGrade?: string;
+  riskCategory?: string;
+  planDurationMonths?: number;
+}
+
+interface LoanApplication {
   _id: string;
   amount: number;
-  assessmentId: string;
-  bankId: string;
-  city: string;
-  cnic: string;
-  createdAt: string;
-  customerId: {
+  assessmentId?: string;
+  bankId?: string;
+  city?: string;
+  cnic?: string;
+  createdAt?: string;
+  customerId?: {
     _id: string;
-    name: string;
-    lastname: string;
-    email: string;
-    phone: string;
+    name?: string;
+    lastname?: string;
+    email?: string;
+    phone?: string;
   };
-  customerName: string;
-  durationMonths: number;
-  fatherName: string;
-  installmentAmount: number;
-  region: string;
-  status: string;
-  updatedAt: string;
+  customerName?: string;
+  durationMonths?: number;
+  fatherName?: string;
+  installmentAmount?: number;
+  region?: string;
+  status?: string;
+  updatedAt?: string;
+}
+
+interface InstallmentItem {
+  installmentNo: number;
+  dueDate: string;
+  amount: number;
+  status?: string;
+}
+
+interface PaymentSchedule {
+  installments?: InstallmentItem[];
+  total?: number;
+  note?: string;
+  source?: string;
+}
+
+interface ProjectedPlan {
+  installmentAmount?: number;
+  interestRate?: number;
+  insuranceRate?: number;
+  totalInterest?: number;
+  totalInsurance?: number;
+  totalRepayment?: number;
+  note?: string;
+}
+
+interface DetailResponse {
+  loanApplication: LoanApplication;
   assessment?: Assessment;
+  eligibility?: Eligibility;
+  paymentSchedule?: PaymentSchedule;
+  projectedPlan?: ProjectedPlan;
+}
+
+// Helper: key-value row for doc sections
+function DocRow({
+  label,
+  value,
+  valueBold,
+}: {
+  label: string;
+  value: React.ReactNode;
+  valueBold?: boolean;
+}) {
+  return (
+    <Stack direction="row" spacing={2} sx={{ py: 0.75 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 160 }}>
+        {label}
+      </Typography>
+      <Typography variant="body2" fontWeight={valueBold ? 600 : 400}>
+        {value}
+      </Typography>
+    </Stack>
+  );
 }
 
 export function LoanApplicationDetailView() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [application, setApplication] = useState<LoanApplicationDetail | null>(null);
+  const [data, setData] = useState<DetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionInProgress, setActionInProgress] = useState(false);
@@ -99,24 +178,29 @@ export function LoanApplicationDetailView() {
           return;
         }
         const response = await loanApplicationService.get(id as string);
-          console.log('response', response);
-        if (response.status === 200) {
-          // The API returns: { data: { loanApplication: {...}, assessment: {...} } }
-          const responseData = response.data?.data || response.data;
-
-          if (responseData) {
-            // Combine loan application and assessment data
-            const loanApp = responseData.loanApplication || responseData;
-            const assessment = responseData.assessment;
-
-            setApplication({
-              ...loanApp,
-              assessment: assessment || undefined,
-            });
-          }
+        const raw = response.data?.data ?? response.data;
+        if (raw?.loanApplication) {
+          setData({
+            loanApplication: raw.loanApplication,
+            assessment: raw.assessment,
+            eligibility: raw.eligibility,
+            paymentSchedule: raw.paymentSchedule,
+            projectedPlan: raw.projectedPlan,
+          });
+        } else if (raw?._id) {
+          setData({
+            loanApplication: raw as LoanApplication,
+            assessment: raw.assessment,
+            eligibility: raw.eligibility,
+            paymentSchedule: raw.paymentSchedule,
+            projectedPlan: raw.projectedPlan,
+          });
+        } else {
+          setData(null);
         }
       } catch (err: any) {
         setError(err?.response?.data?.message || err.message || 'Failed to load application');
+        setData(null);
       } finally {
         setLoading(false);
       }
@@ -124,6 +208,8 @@ export function LoanApplicationDetailView() {
 
     fetchApplication();
   }, [id]);
+
+  const application = data?.loanApplication;
 
   const handleApproveClick = () => {
     setDialogAction('approve');
@@ -155,18 +241,24 @@ export function LoanApplicationDetailView() {
 
       await loanApplicationService.updateStatus(application._id, payload);
 
-      // Refetch the updated application data
       const response = await loanApplicationService.get(id as string);
-      if (response.status === 200) {
-        const responseData = response.data?.data || response.data;
-        if (responseData) {
-          const loanApp = responseData.loanApplication || responseData;
-          const assessment = responseData.assessment;
-          setApplication({
-            ...loanApp,
-            assessment: assessment || undefined,
-          });
-        }
+      const raw = response.data?.data ?? response.data;
+      if (raw?.loanApplication) {
+        setData({
+          loanApplication: raw.loanApplication,
+          assessment: raw.assessment,
+          eligibility: raw.eligibility,
+          paymentSchedule: raw.paymentSchedule,
+          projectedPlan: raw.projectedPlan,
+        });
+      } else if (raw?._id) {
+        setData({
+          loanApplication: raw as LoanApplication,
+          assessment: raw.assessment,
+          eligibility: raw.eligibility,
+          paymentSchedule: raw.paymentSchedule,
+          projectedPlan: raw.projectedPlan,
+        });
       }
 
       setOpenDialog(false);
@@ -237,6 +329,16 @@ export function LoanApplicationDetailView() {
     );
   }
 
+  const assessment = data?.assessment;
+  const eligibility = data?.eligibility;
+  const paymentSchedule = data?.paymentSchedule;
+  const projectedPlan = data?.projectedPlan;
+  const customerName =
+    application.customerName ||
+    (application.customerId
+      ? [application.customerId.name, application.customerId.lastname].filter(Boolean).join(' ').trim()
+      : '—');
+
   return (
     <DashboardContent>
       <Stack
@@ -286,196 +388,225 @@ export function LoanApplicationDetailView() {
       )}
 
       <Stack spacing={3}>
-        {/* Customer & Application Info */}
+        {/* 1. Applicant & Loan Request */}
         <Card sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Customer & Application
-          </Typography>
-          <Stack spacing={1.5}>
-            <Box>
-              <Typography variant="caption" color="text.secondary">
-                Customer
-              </Typography>
-              <Typography variant="body1">
-                {application.customerName ||
-                  (application.customerId
-                    ? `${application.customerId.name || ''} ${application.customerId.lastname || ''}`.trim()
-                    : 'N/A')}
-              </Typography>
-              {application.customerId?.email && (
-                <Typography variant="body2" color="text.secondary">
-                  {application.customerId.email}
-                </Typography>
-              )}
-              {application.customerId?.phone && (
-                <Typography variant="body2" color="text.secondary">
-                  {application.customerId.phone}
-                </Typography>
-              )}
-            </Box>
-            <Divider />
-            <Stack direction="row" spacing={3} flexWrap="wrap">
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Loan Amount
-                </Typography>
-                <Typography variant="h6">{fCurrency(application.amount)}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Duration
-                </Typography>
-                <Typography variant="body1">{application.durationMonths} months</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Monthly Installment
-                </Typography>
-                <Typography variant="body1">{fCurrency(application.installmentAmount)}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Status
-                </Typography>
-                <Box sx={{ mt: 0.5 }}>
-                  <Label color={getStatusColor(application.status)}>
-                    {application.status.toUpperCase().replace('_', ' ')}
-                  </Label>
-                </Box>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Applied Date
-                </Typography>
-                <Typography variant="body2">{fDate(application.createdAt)}</Typography>
-              </Box>
-            </Stack>
-          </Stack>
-        </Card>
-
-        {/* Applicant Information */}
-        <Card sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Applicant Information
+          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+            1. Applicant & Loan Request
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Stack spacing={1.5}>
-            <Stack direction="row" spacing={3} flexWrap="wrap">
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Full Name
-                </Typography>
-                <Typography variant="body1">{application.customerName || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Father Name
-                </Typography>
-                <Typography variant="body1">{application.fatherName || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  CNIC
-                </Typography>
-                <Typography variant="body1">{application.cnic || 'N/A'}</Typography>
-              </Box>
-            </Stack>
-            <Divider />
-            <Stack direction="row" spacing={3} flexWrap="wrap">
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Email
-                </Typography>
-                <Typography variant="body1">{application.customerId?.email || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Phone
-                </Typography>
-                <Typography variant="body1">{application.customerId?.phone || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  City
-                </Typography>
-                <Typography variant="body1">{application.city || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Region
-                </Typography>
-                <Typography variant="body1">{application.region || 'N/A'}</Typography>
-              </Box>
-            </Stack>
-          </Stack>
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="overline" color="text.secondary">
+                Applicant
+              </Typography>
+              <DocRow label="Name" value={customerName} valueBold />
+              <DocRow label="Father name" value={application.fatherName ?? '—'} />
+              <DocRow label="CNIC" value={application.cnic ?? '—'} />
+              <DocRow label="Email" value={application.customerId?.email ?? '—'} />
+              <DocRow label="Phone" value={application.customerId?.phone ?? '—'} />
+              <DocRow label="City" value={application.city ?? '—'} />
+              <DocRow label="Region" value={application.region ?? '—'} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="overline" color="text.secondary">
+                Loan
+              </Typography>
+              <DocRow label="Loan amount" value={fCurrency(application.amount)} valueBold />
+              <DocRow label="Duration" value={`${application.durationMonths ?? '—'} months`} />
+              <DocRow label="Monthly installment" value={fCurrency(application.installmentAmount ?? 0)} />
+              <DocRow
+                label="Status"
+                value={
+                  <Label color={getStatusColor(application.status ?? '')}>
+                    {(application.status ?? '').toUpperCase().replace('_', ' ')}
+                  </Label>
+                }
+              />
+              <DocRow label="Applied" value={application.createdAt ? fDate(application.createdAt) : '—'} />
+            </Grid>
+          </Grid>
         </Card>
 
-        {/* Assessment Score */}
-        {application.assessment && (
+        {/* 2. Credit Assessment */}
+        {assessment && (
           <Card sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Credit Assessment
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+              2. Credit Assessment
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Stack direction="row" spacing={3} flexWrap="wrap" sx={{ mb: 3 }}>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Credit Score
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Typography variant="overline" color="text.secondary">
+                  Scores
                 </Typography>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    color: getScoreColor(
-                      application.assessment.creditScore || application.assessment.rating
-                    ),
-                    fontWeight: 600,
-                  }}
-                >
-                  {application.assessment.creditScore || application.assessment.rating}
+                <DocRow
+                  label="Credit score"
+                  value={
+                    <Typography
+                      component="span"
+                      sx={{
+                        color: getScoreColor(assessment.creditScore ?? assessment.rating ?? 0),
+                        fontWeight: 600,
+                      }}
+                    >
+                      {assessment.creditScore ?? assessment.rating ?? '—'}
+                    </Typography>
+                  }
+                />
+                <DocRow label="Assessment score" value={assessment.assessmentScore ?? '—'} />
+                <DocRow label="Affordability score" value={assessment.affordabilityScore ?? '—'} />
+                <DocRow label="Final credit score" value={assessment.finalCreditScore ?? '—'} />
+                <DocRow label="Risk grade" value={assessment.riskGrade ?? '—'} />
+                <DocRow label="Risk category" value={assessment.riskCategory ?? '—'} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Typography variant="overline" color="text.secondary">
+                  Income & expense
                 </Typography>
+                <DocRow label="Income total" value={assessment.incomeTotal != null ? fCurrency(assessment.incomeTotal) : '—'} />
+                <DocRow label="Expense total" value={assessment.expenseTotal != null ? fCurrency(assessment.expenseTotal) : '—'} />
+                <DocRow label="Loan at scoring" value={assessment.loanAmountAtScoring != null ? fCurrency(assessment.loanAmountAtScoring) : '—'} />
+                <DocRow label="Loan / disposable income" value={assessment.loanToDisposableIncomeRatio != null ? Number(assessment.loanToDisposableIncomeRatio).toFixed(2) : '—'} />
+                <DocRow label="Loan / expense ratio" value={assessment.loanToExpenseRatio != null ? Number(assessment.loanToExpenseRatio).toFixed(2) : '—'} />
+              </Grid>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <DocRow label="Total questions" value={assessment.totalQuestions ?? '—'} />
+                <DocRow label="Assessment date" value={assessment.createdAt ? fDate(assessment.createdAt) : '—'} />
+              </Grid>
+            </Grid>
+            {assessment.answers && assessment.answers.length > 0 && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="overline" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                  Q&A
+                </Typography>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>#</TableCell>
+                        <TableCell>Question</TableCell>
+                        <TableCell>Answer</TableCell>
+                        <TableCell align="right">Points</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {assessment.answers.map((a, i) => (
+                        <TableRow key={a._id ?? i}>
+                          <TableCell>{i + 1}</TableCell>
+                          <TableCell>{(a as any).question ?? a.text ?? '—'}</TableCell>
+                          <TableCell>{(a as any).selectedAnswer ?? a.optionText ?? '—'}</TableCell>
+                          <TableCell align="right">{a.pointsEarned ?? a.points ?? '—'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </Box>
-              
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Rating
-                </Typography>
-                <Typography variant="h6">{application.assessment.rating}</Typography>
-              </Box>
-              
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Assessment Date
-                </Typography>
-                <Typography variant="body2">{fDate(application.assessment.createdAt)}</Typography>
-              </Box>
+            )}
+          </Card>
+        )}
+
+        {/* 3. Eligibility */}
+        {eligibility && (
+          <Card sx={{ p: 3 }}>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+              3. Eligibility
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Stack spacing={1}>
+              <DocRow
+                label="Eligible"
+                value={
+                  <Label color={eligibility.eligible ? 'success' : 'error'}>
+                    {eligibility.eligible ? 'Yes' : 'No'}
+                  </Label>
+                }
+              />
+              {eligibility.reason && (
+                <DocRow label="Reason" value={eligibility.reason} />
+              )}
+              <DocRow label="Credit score" value={eligibility.creditScore ?? '—'} />
+              <DocRow label="Disposable income" value={eligibility.disposableIncome != null ? fCurrency(eligibility.disposableIncome) : '—'} />
+              <DocRow label="Eligible amount" value={eligibility.eligibleAmount != null ? fCurrency(eligibility.eligibleAmount) : '—'} />
+              <DocRow label="Recommended amount" value={eligibility.recommendedAmount != null ? fCurrency(eligibility.recommendedAmount) : '—'} />
+              <DocRow label="Recommended EMI" value={eligibility.recommendedEMI != null ? fCurrency(eligibility.recommendedEMI) : '—'} />
+              <DocRow label="Risk grade" value={eligibility.riskGrade ?? '—'} />
+              <DocRow label="Risk category" value={eligibility.riskCategory ?? '—'} />
+              <DocRow label="Plan duration (months)" value={eligibility.planDurationMonths ?? '—'} />
             </Stack>
           </Card>
         )}
 
-        {/* Assessment Answers */}
-        {application.assessment &&
-          application.assessment.answers &&
-          application.assessment.answers.length > 0 && (
-            <Card sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Assessment Answers
+        {/* 4. Projected Plan */}
+        {projectedPlan && (
+          <Card sx={{ p: 3 }}>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+              4. Projected Plan
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {projectedPlan.note ?? 'Projected at current bank rates. Final values are set upon approval.'}
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <DocRow label="Installment amount" value={projectedPlan.installmentAmount != null ? fCurrency(projectedPlan.installmentAmount) : '—'} valueBold />
+                <DocRow label="Interest rate" value={projectedPlan.interestRate != null ? `${projectedPlan.interestRate}%` : '—'} />
+                <DocRow label="Insurance rate" value={projectedPlan.insuranceRate != null ? `${projectedPlan.insuranceRate}%` : '—'} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <DocRow label="Total interest" value={projectedPlan.totalInterest != null ? fCurrency(projectedPlan.totalInterest) : '—'} />
+                <DocRow label="Total insurance" value={projectedPlan.totalInsurance != null ? fCurrency(projectedPlan.totalInsurance) : '—'} />
+                <DocRow label="Total repayment" value={projectedPlan.totalRepayment != null ? fCurrency(projectedPlan.totalRepayment) : '—'} valueBold />
+              </Grid>
+            </Grid>
+          </Card>
+        )}
+
+        {/* 5. Payment Schedule */}
+        {paymentSchedule?.installments && paymentSchedule.installments.length > 0 && (
+          <Card sx={{ p: 3 }}>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+              5. Payment Schedule
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            {paymentSchedule.note && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {paymentSchedule.note}
               </Typography>
-              <TableContainer>
-                <Table size="small">
-                  <TableBody>
-                    {application.assessment.answers.map((answer, index) => (
-                      <TableRow key={answer._id || index}>
-                        <TableCell sx={{ fontWeight: 500, width: '40%' }}>
-                          {answer.question}
-                        </TableCell>
-                        <TableCell>{answer.selectedAnswer}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Card>
-          )}
+            )}
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell>Due date</TableCell>
+                    <TableCell align="right">Amount</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paymentSchedule.installments.map((inst) => (
+                    <TableRow key={inst.installmentNo}>
+                      <TableCell>{inst.installmentNo}</TableCell>
+                      <TableCell>{fDate(inst.dueDate)}</TableCell>
+                      <TableCell align="right">{fCurrency(inst.amount)}</TableCell>
+                      <TableCell>
+                        <Label color={inst.status === 'paid' ? 'success' : 'default'}>
+                          {inst.status ?? 'projected'}
+                        </Label>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {paymentSchedule.total != null && (
+              <Typography variant="body2" sx={{ mt: 2 }} fontWeight={600}>
+                Total installments: {paymentSchedule.total}
+              </Typography>
+            )}
+          </Card>
+        )}
       </Stack>
 
       {/* Confirmation Dialog */}

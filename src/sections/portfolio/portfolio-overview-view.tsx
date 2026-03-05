@@ -30,6 +30,12 @@ import { fDate } from 'src/utils/format-time';
 import { getBankRegisterUrl } from 'src/utils/bank-routes';
 import { fNumber, fCurrency } from 'src/utils/format-number';
 
+function formatPercent(value: number): string {
+  const n = Number(value);
+  const pct = n > 0 && n <= 1 ? n * 100 : n;
+  return `${Number(pct).toFixed(1)}%`;
+}
+
 import { useAppSelector } from 'src/store';
 import bankAdminService from 'src/redux/services/bank-admin.services';
 import superadminService from 'src/redux/services/superadmin.services';
@@ -52,10 +58,20 @@ export type SuperAdminStats = {
 
 export type BankAdminStats = {
   activeBorrowers: number;
-  outstandingPortfolio: number;
-  parCount: number;
-  recoveryRate: number;
+  bankCapital: number;
+  activeLoans: number;
   auditReadiness: number;
+  outstandingPortfolio: number;
+  par: number;
+  recoveryRate: number;
+  recoveryToday: number;
+  totalDisbursedMTD: number;
+  totalInterestOutstanding: number;
+  totalOverdueAmount: number;
+  totalPortfolioOutstanding: number;
+  totalPrincipalOutstanding: number;
+  // Legacy / optional
+  parCount?: number;
 };
 
 type RecentApplication = {
@@ -140,17 +156,23 @@ export function PortfolioOverviewView() {
     setStatsLoading(true);
     try {
       const response = await bankAdminService.getStats();
-      if (response.status === 200) {
-        const data = response.data?.data || response.data;
-        const stats = data?.stats || {};
-        setBankAdminStats({
-          activeBorrowers: stats.activeBorrowers || 0,
-          outstandingPortfolio: stats.outstandingPortfolio || 0,
-          parCount: stats.parCount || 0,
-          recoveryRate: stats.recoveryRate || 0,
-          auditReadiness: stats.auditReadiness || 0,
-        });
-      }
+      const data = response.data?.data ?? response.data;
+      const stats = data?.stats ?? data ?? {};
+      setBankAdminStats({
+        activeBorrowers: Number(stats.activeBorrowers ?? 0),
+        bankCapital: Number(stats.bankRemainingCapital ?? 0),
+        activeLoans: Number(stats.activeLoans ?? 0),
+        auditReadiness: Number(stats.auditReadiness ?? 0),
+        outstandingPortfolio: Number(stats.outstandingPortfolio ?? 0),
+        par: Number(stats.par ?? stats.parCount ?? 0),
+        recoveryRate: Number(stats.recoveryRate ?? 0),
+        recoveryToday: Number(stats.recoveryToday ?? 0),
+        totalDisbursedMTD: Number(stats.totalDisbursedMTD ?? 0),
+        totalInterestOutstanding: Number(stats.totalInterestOutstanding ?? 0),
+        totalOverdueAmount: Number(stats.totalOverdueAmount ?? 0),
+        totalPortfolioOutstanding: Number(stats.totalPortfolioOutstanding ?? 0),
+        totalPrincipalOutstanding: Number(stats.totalPrincipalOutstanding ?? 0),
+      });
     } catch {
       setBankAdminStats(null);
     } finally {
@@ -338,87 +360,97 @@ export function PortfolioOverviewView() {
         </Grid>
       )}
 
-      {/* Bank Admin: Key metrics (compact cards) */}
+      {/* Bank Admin: Top KPI Cards */}
       {isAdmin && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
           {statsLoading ? (
-            [1, 2, 3, 4, 5, 6, 7].map((i) => (
+            Array.from({ length: 8 }).map((_, i) => (
               <Grid key={i} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                 <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
               </Grid>
             ))
           ) : (
-            <>
-              {bankAdminStats && (
-                <>
-                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <StatCard
-                      title="Active Borrowers"
-                      value={fNumber(bankAdminStats.activeBorrowers)}
-                      icon="solar:users-group-two-rounded-bold-duotone"
-                      color="primary"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <StatCard
-                      title="Outstanding Portfolio"
-                      value={fCurrency(bankAdminStats.outstandingPortfolio)}
-                      icon="solar:wallet-money-bold-duotone"
-                      color="info"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <StatCard
-                      title="PAR Count"
-                      value={fNumber(bankAdminStats.parCount)}
-                      icon="solar:chart-2-bold-duotone"
-                      color="warning"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <StatCard
-                      title="Recovery Rate"
-                      value={`${fNumber(bankAdminStats.recoveryRate)}%`}
-                      icon="solar:graph-up-bold-duotone"
-                      color="success"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <StatCard
-                      title="Audit Readiness"
-                      value={`${fNumber(bankAdminStats.auditReadiness)}%`}
-                      icon="solar:check-circle-bold-duotone"
-                      color="success"
-                    />
-                  </Grid>
-                </>
-              )}
-              {bankAdminAdditionalStats && (
-                <>
-                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <StatCard
-                      title="High Risk Borrowers"
-                      value={fNumber(bankAdminAdditionalStats.highRiskBorrowers)}
-                      icon="solar:danger-triangle-bold-duotone"
-                      color="error"
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                    <StatCard
-                      title="Loans Near Default"
-                      value={fNumber(bankAdminAdditionalStats.loansNearDefault)}
-                      icon="solar:bell-bing-bold-duotone"
-                      color="warning"
-                    />
-                  </Grid>
-                </>
-              )}
-            </>
+            bankAdminStats && (
+              <>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Total Portfolio Outstanding"
+                    value={fCurrency(bankAdminStats.totalPortfolioOutstanding)}
+                    icon="solar:wallet-money-bold-duotone"
+                    color="primary"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Bank Capital"
+                    value={fCurrency(bankAdminStats.bankCapital)}
+                    icon="solar:wallet-money-bold-duotone"
+                    color="primary"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Total Principal Outstanding"
+                    value={fCurrency(bankAdminStats.totalPrincipalOutstanding)}
+                    icon="solar:card-bold-duotone"
+                    color="info"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Total Interest Outstanding"
+                    value={fCurrency(bankAdminStats.totalInterestOutstanding)}
+                    icon="solar:percent-bold-duotone"
+                    color="info"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Active Loans"
+                    value={fNumber(bankAdminStats.activeLoans)}
+                    icon="solar:document-text-bold-duotone"
+                    color="primary"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="PAR %"
+                    value={formatPercent(bankAdminStats.par)}
+                    icon="solar:chart-2-bold-duotone"
+                    color="warning"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Total Overdue Amount"
+                    value={fCurrency(bankAdminStats.totalOverdueAmount)}
+                    icon="solar:clock-circle-bold-duotone"
+                    color="error"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Total Disbursed (MTD)"
+                    value={fCurrency(bankAdminStats.totalDisbursedMTD)}
+                    icon="solar:card-send-bold-duotone"
+                    color="success"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+                  <StatCard
+                    title="Recovery Today"
+                    value={fCurrency(bankAdminStats.recoveryToday)}
+                    icon="solar:graph-up-bold-duotone"
+                    color="success"
+                  />
+                </Grid>
+              </>
+            )
           )}
         </Grid>
       )}
 
-      {/* Bank Admin: Analytics Charts */}
+      {/* Bank Admin: Middle Section — Charts */}
       {isAdmin && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, lg: 6 }}>
@@ -436,7 +468,7 @@ export function PortfolioOverviewView() {
           <Grid size={{ xs: 12, lg: 6 }}>
             <Card sx={{ p: { xs: 2, sm: 2.5 }, height: '100%' }}>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                Loan Collection Trend
+                Collection Trend
               </Typography>
               {graphsLoading ? (
                 <Skeleton variant="rounded" height={260} sx={{ borderRadius: 1 }} />
@@ -548,6 +580,28 @@ export function PortfolioOverviewView() {
               )}
             </Box>
           </Card>
+
+          {/* Bottom: High Risk Borrowers & Loans Near Default */}
+          {bankAdminAdditionalStats && !additionalStatsLoading && (
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <StatCard
+                  title="High Risk Borrowers"
+                  value={fNumber(bankAdminAdditionalStats.highRiskBorrowers)}
+                  icon="solar:danger-triangle-bold-duotone"
+                  color="error"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <StatCard
+                  title="Loans Near Default"
+                  value={fNumber(bankAdminAdditionalStats.loansNearDefault)}
+                  icon="solar:bell-bing-bold-duotone"
+                  color="warning"
+                />
+              </Grid>
+            </Grid>
+          )}
         </>
       )}
 
@@ -602,6 +656,19 @@ export function PortfolioOverviewView() {
 }
 
 // ----------------------------------------------------------------------
+
+function StatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <Stack direction="row" justifyContent="space-between" alignItems="baseline" spacing={2}>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="subtitle2" fontWeight={600}>
+        {value}
+      </Typography>
+    </Stack>
+  );
+}
 
 type StatCardProps = CardProps & {
   title: string;

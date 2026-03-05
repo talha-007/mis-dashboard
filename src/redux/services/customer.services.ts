@@ -26,6 +26,9 @@ const updateProfile = (id: string, data: any) => callAPi.put(`/api/customers/${i
 const getBankQuestionsForCustomer = (slug: string) =>
   callAPi.get(`/api/v1/bank-questions/customer/${slug}`);
 
+/** GET /api/customers/rates/:bankSlug - fetch interest rates for installment calculation */
+const getRates = (bankSlug: string) => callAPi.get(`/api/customers/rates/${bankSlug}`);
+
 const submitAssessmentAnswers = (data: any) => callAPi.post('/api/v1/assessments/submit', data);
 
 // --- Stats ---
@@ -46,6 +49,7 @@ const customerService = {
   googleLogin,
   updateProfile,
   getBankQuestionsForCustomer,
+  getRates,
   submitAssessmentAnswers,
   getStats,
   getMyCreditRating,

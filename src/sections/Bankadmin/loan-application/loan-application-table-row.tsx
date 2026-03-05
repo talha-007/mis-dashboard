@@ -22,6 +22,7 @@ export type LoanApplicationProps = {
   phone: string;
   email: string;
   amount: number;
+  durationMonths?: number;
   loanType?: string;
   score: number;
   status: 'pending' | 'under_review' | 'approved' | 'rejected' | 'submitted';
@@ -98,18 +99,19 @@ export function LoanApplicationTableRow({
         <Stack spacing={0.5}>
           <Typography variant="subtitle2">{row.applicantName}</Typography>
           <Typography variant="caption" color="text.secondary">
-            {row.id} • {row.cnic}
+            {row.cnic}
           </Typography>
         </Stack>
       </TableCell>
 
       <TableCell>
         <Typography variant="body2">{fCurrency(row.amount)}</Typography>
-        {row.loanType && (
-          <Typography variant="caption" color="text.secondary">
-            {row.loanType}
-          </Typography>
-        )}
+      </TableCell>
+
+      <TableCell align="center">
+        <Typography variant="body2">
+          {row.durationMonths != null ? `${row.durationMonths} mo` : '—'}
+        </Typography>
       </TableCell>
 
       <TableCell align="center">

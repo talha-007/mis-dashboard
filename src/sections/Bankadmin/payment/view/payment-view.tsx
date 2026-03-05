@@ -42,7 +42,9 @@ export function PaymentView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [paymentType, setPaymentType] = useState<'all' | 'recovery' | 'penalty' | 'fee'>('all');
+  const [paymentType, setPaymentType] = useState<
+    'all' | 'loan_transactions' | 'recovery' | 'penalty' | 'fee'
+  >('all');
   const [summary, setSummary] = useState<any>(null);
 
   // Map API response to PaymentProps type
@@ -69,23 +71,35 @@ export function PaymentView() {
   );
 
   // Fetch payments from API
+  // type=loan_transactions → loan_disbursement, loan_repayment, loan_refund
+  // type=borrower_ledgers → borrower_recovery, borrower_penalty, borrower_commission
+  // (no type) → all payments
+  // paymentType=<exact> → filter by exact type
   const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const params: any = {
-        type: 'borrower_ledgers',
+      const params: Record<string, any> = {
         page: table.page + 1,
         limit: table.rowsPerPage,
       };
 
-      // Add payment type filter if not 'all'
-      if (paymentType !== 'all') {
-        params.paymentType = paymentType;
+      if (paymentType === 'all') {
+        // No type param = all payments
+      } else if (paymentType === 'loan_transactions') {
+        params.type = 'loan_transactions'; // returns loan_disbursement, loan_repayment, loan_refund
+      } else if (paymentType === 'recovery') {
+        params.type = 'borrower_ledgers';
+        params.paymentType = 'borrower_recovery';
+      } else if (paymentType === 'penalty') {
+        params.type = 'borrower_ledgers';
+        params.paymentType = 'borrower_penalty';
+      } else if (paymentType === 'fee') {
+        params.type = 'borrower_ledgers';
+        params.paymentType = 'borrower_commission';
       }
 
-      // Add search parameter if debounced filter is provided
       if (debouncedFilterName.trim()) {
         params.search = debouncedFilterName.trim();
       }
@@ -136,9 +150,12 @@ export function PaymentView() {
   const notFound = !dataFiltered.length && !!debouncedFilterName && !loading;
 
   const handlePaymentTypeChange = useCallback(
-    (_event: React.SyntheticEvent, newValue: 'all' | 'recovery' | 'penalty' | 'fee') => {
+    (
+      _event: React.SyntheticEvent,
+      newValue: 'all' | 'loan_transactions' | 'recovery' | 'penalty' | 'fee'
+    ) => {
       setPaymentType(newValue);
-      table.onResetPage(); // Reset to first page when changing type
+      table.onResetPage();
     },
     [table]
   );
@@ -173,6 +190,7 @@ export function PaymentView() {
         <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
           <Tabs value={paymentType} onChange={handlePaymentTypeChange}>
             <Tab label="All" value="all" />
+            <Tab label="Loan transactions" value="loan_transactions" />
             <Tab label="Recovery" value="recovery" />
             <Tab label="Penalty" value="penalty" />
             <Tab label="Fee" value="fee" />

@@ -1,10 +1,10 @@
-import { SvgColor } from 'src/components/svg-color';
+import { Iconify } from 'src/components/iconify';
 
 import { UserRole, Permission } from 'src/types/auth.types';
 
 // ----------------------------------------------------------------------
-
-const icon = (name: string) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} />;
+// Single icon set (Solar) for consistent nav appearance
+const navIcon = (icon: string) => <Iconify icon={icon} width={24} height={24} />;
 
 export type NavItem = {
   title: string;
@@ -20,24 +20,24 @@ export const superAdminNavData: NavItem[] = [
   {
     title: 'Dashboard',
     path: '/',
-    icon: icon('ic-analytics'),
+    icon: navIcon('solar:chart-2-bold-duotone'),
   },
   {
     title: 'Bank Management',
     path: '/bank-management',
-    icon: icon('ic-user'),
+    icon: navIcon('solar:buildings-2-bold-duotone'),
     requiredPermission: Permission.VIEW_USERS,
   },
   {
     title: 'Subscriptions',
     path: '/subscriptions',
-    icon: icon('ic-payments'),
+    icon: navIcon('solar:wallet-money-bold-duotone'),
     requiredPermission: Permission.VIEW_USERS,
   },
   {
     title: 'System Settings',
     path: '/settings',
-    icon: icon('ic-settings'),
+    icon: navIcon('solar:settings-bold-duotone'),
   },
 ];
 
@@ -46,57 +46,57 @@ export const adminNavData: NavItem[] = [
   {
     title: 'Portfolio Overview',
     path: '/',
-    icon: icon('ic-analytics'),
+    icon: navIcon('solar:chart-2-bold-duotone'),
   },
   {
     title: 'Borrower Management',
     path: '/borrower-management',
-    icon: icon('borrowers'),
+    icon: navIcon('solar:users-group-two-rounded-bold-duotone'),
   },
-  // {
-  //   title: 'Customer Management',
-  //   path: '/users-management',
-  //   icon: icon('customers'),
-  // },
+  {
+    title: 'Customer Management',
+    path: '/users-management',
+    icon: navIcon('solar:user-id-bold-duotone'),
+  },
   {
     title: 'Loan Applications',
     path: '/loan-applications',
-    icon: icon('applications'),
+    icon: navIcon('solar:document-text-bold-duotone'),
   },
   {
     title: 'Assessment',
     path: '/assessment',
-    icon: icon('ratings'),
+    icon: navIcon('solar:clipboard-check-bold-duotone'),
   },
   {
     title: 'Credit Proposal Reports',
     path: '/credit-proposal-reports',
-    icon: icon('reports'),
+    icon: navIcon('solar:document-bold-duotone'),
   },
   {
     title: 'Recoveries & Overdues',
     path: '/recoveries-overdues',
-    icon: icon('recoveries'),
+    icon: navIcon('solar:calendar-mark-bold-duotone'),
   },
   {
     title: 'Payments & Ledger',
     path: '/payments-ledger',
-    icon: icon('payments'),
+    icon: navIcon('solar:wallet-money-bold-duotone'),
   },
   {
     title: 'Credit Ratings',
     path: '/credit-ratings',
-    icon: icon('ratings'),
+    icon: navIcon('solar:star-bold-duotone'),
   },
   {
     title: 'MIS & Reports',
     path: '/mis-reports',
-    icon: icon('reports'),
+    icon: navIcon('solar:pie-chart-2-bold-duotone'),
   },
   {
     title: 'Settings',
     path: '/bank-settings',
-    icon: icon('ic-settings'),
+    icon: navIcon('solar:settings-bold-duotone'),
   },
 ];
 
@@ -105,47 +105,42 @@ export const customerNavData: NavItem[] = [
   {
     title: 'My Dashboard',
     path: '/',
-    icon: icon('ic-analytics'),
+    icon: navIcon('solar:home-angle-bold-duotone'),
   },
-  // {
-  //   title: 'Assessment',
-  //   path: '/assessment',
-  //   icon: icon('ic-analytics'),
-  // },
   {
     title: 'Apply for Loan',
     path: '/apply-loan',
-    icon: icon('ic-invoice'),
+    icon: navIcon('solar:document-add-bold-duotone'),
   },
   {
     title: 'My Installments',
     path: '/installments',
-    icon: icon('ic-payments'),
+    icon: navIcon('solar:calendar-mark-bold-duotone'),
   },
   {
     title: 'Pay Installment',
     path: '/pay-installment',
-    icon: icon('ic-pay'),
+    icon: navIcon('solar:card-send-bold-duotone'),
   },
   {
     title: 'My Credit Rating',
     path: '/my-credit-rating',
-    icon: icon('ic-analytics'),
+    icon: navIcon('solar:star-bold-duotone'),
   },
   {
     title: 'Payoff Offer',
     path: '/payoff-offer',
-    icon: icon('ic-payoff'),
+    icon: navIcon('solar:hand-money-bold-duotone'),
   },
   {
     title: 'Update Profile',
     path: '/profile',
-    icon: icon('ic-profile'),
+    icon: navIcon('solar:user-bold-duotone'),
   },
   {
     title: 'Upload Documents',
     path: '/documents',
-    icon: icon('ic-file'),
+    icon: navIcon('solar:folder-with-files-bold-duotone'),
   },
 ];
 

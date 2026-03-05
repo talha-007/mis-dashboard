@@ -21,6 +21,7 @@ import { useParams, useRouter } from 'src/routes/hooks';
 import { useAppSelector } from 'src/redux/store';
 import { DashboardContent } from 'src/layouts/dashboard';
 import loanApplicationService from 'src/redux/services/loan-applications';
+import customerService from 'src/redux/services/customer.services';
 
 import { FormField } from 'src/components/form';
 import { Iconify } from 'src/components/iconify';
@@ -49,6 +50,15 @@ const defaultValues: LoanFormValues = {
 
 // CNIC format: XXXXX-XXXXXXX-X (5 digits, dash, 7 digits, dash, 1 digit)
 const cnicPattern = /^\d{5}-\d{7}-\d$/;
+
+/** Monthly EMI with interest: P * r * (1+r)^n / ((1+r)^n - 1); r = monthly rate (annual % / 100 / 12). */
+function calcEMI(principal: number, annualRatePercent: number, months: number): number {
+  if (months <= 0) return principal;
+  const r = (annualRatePercent / 100) / 12;
+  if (r <= 0) return Math.round(principal / months);
+  const factor = (1 + r) ** months;
+  return Math.round((principal * r * factor) / (factor - 1));
+}
 
 /** Format raw input to XXXXX-XXXXXXX-X; only allows digits, auto-inserts hyphens. */
 function formatCnicInput(value: string): string {
@@ -111,6 +121,40 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
   const { user } = useAppSelector((state) => state.auth);
   const [existing, setExisting] = useState<CustomerLoanApplication | null>(null);
   const [loadingEdit, setLoadingEdit] = useState(!!id && id !== 'new');
+  const [rates, setRates] = useState<{
+    interestRate: number | null;
+    insuranceRate: number | null;
+    bankName: string | null;
+  }>({ interestRate: null, insuranceRate: null, bankName: null });
+
+  const bankSlug = (user as { bankSlug?: string })?.bankSlug;
+
+  useEffect(() => {
+    if (!bankSlug) {
+      setRates({ interestRate: null, insuranceRate: null, bankName: null });
+      return undefined;
+    }
+    let cancelled = false;
+    customerService
+      .getRates(bankSlug)
+      .then((res) => {
+        if (cancelled) return;
+        const body = res.data?.data ?? res.data;
+        setRates({
+          interestRate: typeof body?.interestRate === 'number' ? body.interestRate : null,
+          insuranceRate: typeof body?.insuranceRate === 'number' ? body.insuranceRate : null,
+          bankName: typeof body?.bankName === 'string' ? body.bankName : null,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setRates({ interestRate: null, insuranceRate: null, bankName: null });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [bankSlug]);
+
+  const annualRate = rates.interestRate;
 
   useEffect(() => {
     if (!id || id === 'new') {
@@ -194,7 +238,12 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
     onSubmit: async (values) => {
       const amount = Number(values.loanAmount) || 0;
       const duration = Number(values.durationMonths) || 1;
-      const installmentAmount = duration > 0 ? Math.round(amount / duration) : amount;
+      const installmentAmount =
+        annualRate != null && duration > 0
+          ? calcEMI(amount, annualRate, duration)
+          : duration > 0
+            ? Math.round(amount / duration)
+            : amount;
 
       const payload: Record<string, unknown> = {
         customerName: values.customerName.trim(),
@@ -250,9 +299,13 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
     [setFieldValue]
   );
 
+  const principal = Number(values.loanAmount) || 0;
+  const months = Number(values.durationMonths) || 0;
   const installmentAmount =
-    values.loanAmount && values.durationMonths
-      ? Math.round(Number(values.loanAmount) / Number(values.durationMonths))
+    principal > 0 && months > 0
+      ? annualRate != null
+        ? calcEMI(principal, annualRate, months)
+        : Math.round(principal / months)
       : 0;
 
   const title = existing ? 'Edit Loan Application' : 'New Loan Application';
@@ -411,7 +464,17 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
                   InputProps={{
                     startAdornment: <InputAdornment position="start">PKR</InputAdornment>,
                   }}
-                  helperText="Auto-calculated based on amount and duration"
+                  helperText={
+                    annualRate != null
+                      ? [
+                          rates.bankName && `${rates.bankName}. `,
+                          `Interest: ${annualRate}% p.a.`,
+                          rates.insuranceRate != null && ` Insurance: ${rates.insuranceRate}%.`,
+                        ]
+                          .filter(Boolean)
+                          .join('') || `Based on amount, duration and ${annualRate}% p.a. interest`
+                      : 'Auto-calculated based on amount and duration'
+                  }
                   disabled
                 />
               </Grid>

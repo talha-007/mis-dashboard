@@ -19,9 +19,18 @@ interface AuthRouteGuardProps {
 }
 
 export function AuthRouteGuard({ children, redirectTo = '/' }: AuthRouteGuardProps) {
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, isInitialized, isLoading, user } = useAppSelector(
+    (state) => state.auth
+  );
 
-  if (isAuthenticated) {
+  // Wait until auth is fully settled before deciding to redirect.
+  // Redirecting while isLoading=true (e.g. during login) causes the sign-in
+  // page to be torn down mid-flight and creates an infinite redirect loop.
+  if (!isInitialized || isLoading) {
+    return <>{children}</>;
+  }
+
+  if (isAuthenticated && user) {
     const target = redirectTo || getUserHomePath(user);
     return <Navigate to={target} replace />;
   }

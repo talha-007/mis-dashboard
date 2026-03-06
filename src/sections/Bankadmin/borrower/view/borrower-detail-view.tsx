@@ -9,6 +9,8 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 import { useParams, useRouter } from 'src/routes/hooks';
 
@@ -94,6 +96,16 @@ export function BorrowerDetailView() {
   const [borrower, setBorrower] = useState<BorrowerDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    | 'personal'
+    | 'kyc'
+    | 'loanHistory'
+    | 'repayment'
+    | 'risk'
+    | 'collateral'
+    | 'notes'
+    | 'legal'
+  >('personal');
 
   useEffect(() => {
     const fetchBorrower = async () => {
@@ -202,205 +214,243 @@ export function BorrowerDetailView() {
         </Alert>
       )}
 
-      <Stack spacing={3}>
-        {/* Borrower Information */}
-        <Card sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Borrower Information
-          </Typography>
-          <Stack spacing={1.5}>
-            <Stack direction="row" spacing={3} flexWrap="wrap">
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Borrower ID
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {borrower.borrowerId || borrower.id || borrower._id}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Name
-                </Typography>
-                <Typography variant="body1">{borrower.name || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Type
-                </Typography>
-                <Typography variant="body1">{borrower.type || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Status
-                </Typography>
-                <Box sx={{ mt: 0.5 }}>
-                  <Label color={getStatusColor(borrower.status)}>
-                    {borrower?.status?.toUpperCase()}
-                  </Label>
-                </Box>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Rating
-                </Typography>
-                <Typography variant="body1">{borrower.rating || 0}</Typography>
-              </Box>
-            </Stack>
-            <Divider />
-            <Stack direction="row" spacing={3} flexWrap="wrap">
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Created Date
-                </Typography>
-                <Typography variant="body2">{fDate(borrower.createdAt)}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Last Updated
-                </Typography>
-                <Typography variant="body2">{fDate(borrower.updatedAt)}</Typography>
-              </Box>
-            </Stack>
-          </Stack>
-        </Card>
+      {/* Tabs */}
+      <Card sx={{ mb: 3 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(_e, value) => setActiveTab(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="Personal Details" value="personal" />
+          <Tab label="KYC & Documents" value="kyc" />
+          <Tab label="Loan History" value="loanHistory" />
+          <Tab label="Repayment Schedule" value="repayment" />
+          <Tab label="Risk Profile" value="risk" />
+          <Tab label="Collateral / Guarantor" value="collateral" />
+          <Tab label="Field Officer Notes" value="notes" />
+          <Tab label="Legal / Recovery Status" value="legal" />
+        </Tabs>
+      </Card>
 
-        {/* Customer Information */}
-        {customerInfo && (
+      <Stack spacing={3}>
+        {/* Personal Details */}
+        {activeTab === 'personal' && (
+          <>
+            <Card sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Borrower Information
+              </Typography>
+              <Stack spacing={1.5}>
+                <Stack direction="row" spacing={3} flexWrap="wrap">
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Borrower ID
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {borrower.borrowerId || borrower.id || borrower._id}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Name
+                    </Typography>
+                    <Typography variant="body1">{borrower.name || 'N/A'}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Type
+                    </Typography>
+                    <Typography variant="body1">{borrower.type || 'N/A'}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Status
+                    </Typography>
+                    <Box sx={{ mt: 0.5 }}>
+                      <Label color={getStatusColor(borrower.status)}>
+                        {borrower?.status?.toUpperCase()}
+                      </Label>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Rating
+                    </Typography>
+                    <Typography variant="body1">{borrower.rating || 0}</Typography>
+                  </Box>
+                </Stack>
+                <Divider />
+                <Stack direction="row" spacing={3} flexWrap="wrap">
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Created Date
+                    </Typography>
+                    <Typography variant="body2">{fDate(borrower.createdAt)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Last Updated
+                    </Typography>
+                    <Typography variant="body2">{fDate(borrower.updatedAt)}</Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+            </Card>
+
+            {customerInfo && (
+              <Card sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Customer Information
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <Stack spacing={1.5}>
+                  <Stack direction="row" spacing={3} flexWrap="wrap">
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Full Name
+                      </Typography>
+                      <Typography variant="body1">
+                        {customerInfo.name} {customerInfo.lastname}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        CNIC
+                      </Typography>
+                      <Typography variant="body1">{customerInfo.cnic || 'N/A'}</Typography>
+                    </Box>
+                  </Stack>
+                  <Divider />
+                  <Stack direction="row" spacing={3} flexWrap="wrap">
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Email
+                      </Typography>
+                      <Typography variant="body1">{customerInfo.email || 'N/A'}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Phone
+                      </Typography>
+                      <Typography variant="body1">{customerInfo.phone || 'N/A'}</Typography>
+                    </Box>
+                  </Stack>
+                </Stack>
+              </Card>
+            )}
+          </>
+        )}
+
+        {/* KYC & Documents */}
+        {activeTab === 'kyc' && (
           <Card sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Customer Information
+              KYC & Documents
+            </Typography>
+            <Alert severity="info">
+              KYC and document details will appear here once integrated with the document service.
+            </Alert>
+          </Card>
+        )}
+
+        {/* Loan History */}
+        {activeTab === 'loanHistory' && (
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Loan History
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Stack spacing={1.5}>
               <Stack direction="row" spacing={3} flexWrap="wrap">
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Full Name
+                    Current Loan Amount
                   </Typography>
-                  <Typography variant="body1">
-                    {customerInfo.name} {customerInfo.lastname}
+                  <Typography variant="h6">
+                    {fCurrency(borrower.loanAmount || loanApp?.amount || 0)}
                   </Typography>
                 </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary">
-                    CNIC
-                  </Typography>
-                  <Typography variant="body1">{customerInfo.cnic || 'N/A'}</Typography>
-                </Box>
+                {loanApp && (
+                  <>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Duration
+                      </Typography>
+                      <Typography variant="body1">{loanApp.durationMonths} months</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Monthly Installment
+                      </Typography>
+                      <Typography variant="body1">
+                        {fCurrency(loanApp.installmentAmount)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Loan Status
+                      </Typography>
+                      <Box sx={{ mt: 0.5 }}>
+                        <Label color={loanApp.status === 'approved' ? 'success' : 'warning'}>
+                          {loanApp?.status?.toUpperCase()}
+                        </Label>
+                      </Box>
+                    </Box>
+                  </>
+                )}
               </Stack>
-              <Divider />
-              <Stack direction="row" spacing={3} flexWrap="wrap">
-                <Box>
-                  <Typography variant="caption" color="text.secondary">
-                    Email
+              {appliedRates && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
+                    Applied Rates
                   </Typography>
-                  <Typography variant="body1">{customerInfo.email || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary">
-                    Phone
-                  </Typography>
-                  <Typography variant="body1">{customerInfo.phone || 'N/A'}</Typography>
-                </Box>
-              </Stack>
+                  <Stack direction="row" spacing={3} flexWrap="wrap" gap={2}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Insurance Rate
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {appliedRates.insuranceRate ?? 0}%
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Interest Rate
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {appliedRates.interestRate ?? 0}%
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Total Insurance
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {fCurrency(appliedRates.totalInsurance ?? 0)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Total Interest
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {fCurrency(appliedRates.totalInterest ?? 0)}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </>
+              )}
             </Stack>
           </Card>
         )}
 
-        {/* Loan Information */}
-        <Card sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Loan Information
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Stack spacing={1.5}>
-            <Stack direction="row" spacing={3} flexWrap="wrap">
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Loan Amount
-                </Typography>
-                <Typography variant="h6">
-                  {fCurrency(borrower.loanAmount || loanApp?.amount || 0)}
-                </Typography>
-              </Box>
-              {loanApp && (
-                <>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Duration
-                    </Typography>
-                    <Typography variant="body1">{loanApp.durationMonths} months</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Monthly Installment
-                    </Typography>
-                    <Typography variant="body1">{fCurrency(loanApp.installmentAmount)}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Loan Status
-                    </Typography>
-                    <Box sx={{ mt: 0.5 }}>
-                      <Label color={loanApp.status === 'approved' ? 'success' : 'warning'}>
-                        {loanApp?.status?.toUpperCase()}
-                      </Label>
-                    </Box>
-                  </Box>
-                </>
-              )}
-            </Stack>
-            {appliedRates && (
-              <>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5 }}>
-                  Applied Rates
-                </Typography>
-                <Stack direction="row" spacing={3} flexWrap="wrap" gap={2}>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Insurance Rate
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {appliedRates.insuranceRate ?? 0}%
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Interest Rate
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {appliedRates.interestRate ?? 0}%
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Total Insurance
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {fCurrency(appliedRates.totalInsurance ?? 0)}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Total Interest
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {fCurrency(appliedRates.totalInterest ?? 0)}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </>
-            )}
-          </Stack>
-        </Card>
-
-        {/* Installment Statistics */}
-        {borrower.installmentStats && (
+        {/* Repayment Schedule */}
+        {activeTab === 'repayment' && borrower.installmentStats && (
           <Card sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Installment Statistics
+              Repayment Schedule
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={3}>
@@ -569,17 +619,106 @@ export function BorrowerDetailView() {
           </Card>
         )}
 
-        {/* Recovery Overdues */}
-        {borrower.recoveryOverdues && borrower.recoveryOverdues.length > 0 && (
+        {/* Risk Profile */}
+        {activeTab === 'risk' && (
           <Card sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Recovery Overdues
+              Risk Profile
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Alert severity="warning">
-              {borrower.recoveryOverdues.length} recovery overdue record(s) found
+            <Stack spacing={1.5}>
+              <Stack direction="row" spacing={3} flexWrap="wrap">
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Rating
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {borrower.rating || 0}
+                  </Typography>
+                </Box>
+                {borrower.installmentStats && (
+                  <>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Overdue Count
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {borrower.installmentStats.overdueCount}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Overdue Amount
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {fCurrency(borrower.installmentStats.overdueAmount)}
+                      </Typography>
+                    </Box>
+                  </>
+                )}
+              </Stack>
+              {borrower.recoveryOverdues && borrower.recoveryOverdues.length > 0 && (
+                <Alert severity="warning">
+                  {borrower.recoveryOverdues.length} recovery overdue record(s) found
+                </Alert>
+              )}
+            </Stack>
+          </Card>
+        )}
+
+        {/* Collateral / Guarantor */}
+        {activeTab === 'collateral' && (
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Collateral / Guarantor
+            </Typography>
+            <Alert severity="info">
+              Collateral and guarantor details are not yet captured in the system. This section will
+              show pledged assets and guarantor information when available.
             </Alert>
-            {/* Add detailed recovery overdues display here if needed */}
+          </Card>
+        )}
+
+        {/* Field Officer Notes */}
+        {activeTab === 'notes' && (
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Field Officer Notes
+            </Typography>
+            <Alert severity="info">
+              Notes from field visits and customer interactions can be recorded and viewed here in a
+              future release.
+            </Alert>
+          </Card>
+        )}
+
+        {/* Legal / Recovery Status */}
+        {activeTab === 'legal' && (
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Legal / Recovery Status
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Stack spacing={1.5}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">
+                  Current Status
+                </Typography>
+                <Box sx={{ mt: 0.5 }}>
+                  <Label color={getStatusColor(borrower.status)}>
+                    {borrower?.status?.toUpperCase()}
+                  </Label>
+                </Box>
+              </Box>
+              {borrower.recoveryOverdues && borrower.recoveryOverdues.length > 0 ? (
+                <Alert severity="warning">
+                  {borrower.recoveryOverdues.length} recovery overdue record(s) found for this
+                  borrower.
+                </Alert>
+              ) : (
+                <Alert severity="success">No active legal or recovery actions recorded.</Alert>
+              )}
+            </Stack>
           </Card>
         )}
       </Stack>

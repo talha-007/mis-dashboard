@@ -17,6 +17,7 @@ import {
   getCurrentUser,
   initializeAuth,
   superAdminLogin,
+  login,
 } from 'src/redux/slice/authSlice';
 
 export const useAuth = () => {
@@ -37,6 +38,11 @@ export const useAuth = () => {
 
   const handleUserLogin = useCallback(
     async (credentials: LoginCredentials) => dispatch(userLogin(credentials)).unwrap(),
+    [dispatch]
+  );
+
+  const handleLogin = useCallback(
+    async (credentials: LoginCredentials) => dispatch(login(credentials)).unwrap(),
     [dispatch]
   );
 
@@ -69,6 +75,7 @@ export const useAuth = () => {
     loginSuperAdmin: handleSuperAdminLogin,
     loginAdmin: handleAdminLogin,
     loginUser: handleUserLogin,
+    login: handleLogin,
     loginWithGoogle: handleGoogleLogin,
     register: handleRegister,
     logout: handleLogout,

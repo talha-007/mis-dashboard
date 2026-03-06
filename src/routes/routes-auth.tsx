@@ -12,9 +12,6 @@ import { AuthLayout } from 'src/layouts/auth';
 import { AuthRouteGuard } from 'src/components/auth';
 
 // Import pages directly from their source, not from sections (avoid circular deps)
-const SignInSuperAdminPage = lazy(() => import('src/pages/auth/sign-in-superadmin'));
-const SignInAdminPage = lazy(() => import('src/pages/auth/sign-in-admin'));
-const SignInCustomerPage = lazy(() => import('src/pages/auth/sign-in-customer'));
 const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 const RegisterPage = lazy(() => import('src/pages/auth/register'));
 const ForgotPasswordPage = lazy(() => import('src/pages/auth/forgot-password'));
@@ -30,7 +27,7 @@ export const authRoutes: RouteObject[] = [
     element: (
       <AuthRouteGuard>
         <AuthLayout>
-          <SignInSuperAdminPage />
+          <SignInPage />
         </AuthLayout>
       </AuthRouteGuard>
     ),
@@ -42,7 +39,7 @@ export const authRoutes: RouteObject[] = [
     element: (
       <AuthRouteGuard>
         <AuthLayout>
-          <SignInAdminPage />
+          <SignInPage />
         </AuthLayout>
       </AuthRouteGuard>
     ),
@@ -84,7 +81,7 @@ export const authRoutes: RouteObject[] = [
     element: (
       <AuthRouteGuard>
         <AuthLayout>
-          <SignInCustomerPage />
+          <SignInPage />
         </AuthLayout>
       </AuthRouteGuard>
     ),

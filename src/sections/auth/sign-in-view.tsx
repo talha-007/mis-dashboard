@@ -15,17 +15,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from 'src/routes/hooks';
 
 import { useAuth } from 'src/hooks';
+import { getUserHomePath } from 'src/utils/role-home-path';
 
 import { Iconify } from 'src/components/iconify';
-import { GoogleLoginButton } from 'src/components/auth';
-
 // ----------------------------------------------------------------------
 
 export function SignInView() {
   const router = useRouter();
-  // This is the role selector view - no login needed here
-  // Individual role logins are handled by SignInSuperAdminView, SignInAdminView, SignInCustomerView
-  const { isLoading, error } = useAuth();
+  const { isLoading, error, login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,16 +30,27 @@ export function SignInView() {
     password: '',
   });
 
-  // This view is just for role selection - actual login happens in role-specific views
-  const handleSignIn = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    // This should not be called - role selector should navigate to specific login pages
-    console.warn('SignInView: This should redirect to role-specific login pages');
-  }, []);
-
-  const handleGoogleSuccess = useCallback(() => {
-    router.push('/');
-  }, [router]);
+  const handleSignIn = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        const result = await login({
+          email: formData.email,
+          password: formData.password,
+          rememberMe: true,
+        });
+        // AuthRouteGuard will automatically redirect once isAuthenticated becomes
+        // true and isLoading settles, but we also push here as an immediate fallback.
+        const targetUser = (result as any)?.user ?? null;
+        if (targetUser) {
+          router.push(getUserHomePath(targetUser));
+        }
+      } catch {
+        // Error is handled by Redux and exposed via the `error` selector
+      }
+    },
+    [formData.email, formData.password, login, router]
+  );
 
   const renderForm = (
     <Stack spacing={3} component="form" onSubmit={handleSignIn}>
@@ -180,44 +188,7 @@ export function SignInView() {
       {/* Sign In Form */}
       {renderForm}
 
-      {/* Divider */}
-      <Divider sx={{ '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-        <Typography variant="body2" sx={{ color: 'text.disabled', px: 2 }}>
-          or continue with
-        </Typography>
-      </Divider>
-
-      {/* Google Sign In */}
-      <GoogleLoginButton
-        onSuccess={handleGoogleSuccess}
-        disabled={isLoading}
-        sx={{
-          borderRadius: 2,
-          py: 1.5,
-          fontSize: '0.95rem',
-          textTransform: 'none',
-          fontWeight: 500,
-        }}
-      />
-
-      {/* Footer */}
-      <Stack spacing={2}>
-        <Divider />
-
-        <Box textAlign="center">
-          <Typography variant="body2" color="text.secondary" display="inline">
-            Don&apos;t have an account?{' '}
-          </Typography>
-          <Link
-            variant="body2"
-            fontWeight={600}
-            onClick={() => router.push('/register')}
-            sx={{ cursor: 'pointer' }}
-          >
-            Get Started
-          </Link>
-        </Box>
-      </Stack>
+      {/* No social login or signup here – MIS internal login only */}
     </Stack>
   );
 }

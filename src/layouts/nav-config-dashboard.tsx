@@ -59,6 +59,11 @@ export const adminNavData: NavItem[] = [
     icon: navIcon('solar:user-id-bold-duotone'),
   },
   {
+    title: 'Employees',
+    path: '/employees',
+    icon: navIcon('solar:users-group-rounded-bold-duotone'),
+  },
+  {
     title: 'Loan Applications',
     path: '/loan-applications',
     icon: navIcon('solar:document-text-bold-duotone'),
@@ -97,6 +102,15 @@ export const adminNavData: NavItem[] = [
     title: 'Settings',
     path: '/bank-settings',
     icon: navIcon('solar:settings-bold-duotone'),
+  },
+];
+
+// Navigation for Recovery Officer
+export const recoveryOfficerNavData: NavItem[] = [
+  {
+    title: 'My Recovery Cases',
+    path: '/employee/recovery-dashboard',
+    icon: navIcon('solar:calendar-mark-bold-duotone'),
   },
 ];
 
@@ -153,6 +167,8 @@ export const getNavDataByRole = (role: UserRole): NavItem[] => {
       return adminNavData;
     case UserRole.CUSTOMER:
       return customerNavData;
+    case UserRole.RECOVERY_OFFICER:
+      return recoveryOfficerNavData;
     default:
       return customerNavData;
   }

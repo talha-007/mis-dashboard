@@ -89,6 +89,11 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/loans',
     '/blog',
   ],
+  [UserRole.RECOVERY_OFFICER]: [
+    '/',
+    '/dashboard',
+    '/employee/recovery-dashboard',
+  ],
 };
 
 // Default redirects after login based on role
@@ -96,6 +101,7 @@ export const ROLE_DEFAULT_ROUTES: Record<UserRole, string> = {
   [UserRole.SUPER_ADMIN]: '/',
   [UserRole.ADMIN]: '/',
   [UserRole.CUSTOMER]: '/',
+  [UserRole.RECOVERY_OFFICER]: '/employee/recovery-dashboard',
 };
 
 // Get permissions for a role

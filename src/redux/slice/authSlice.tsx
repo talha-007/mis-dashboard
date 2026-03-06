@@ -75,7 +75,11 @@ const initialState: AuthState = {
 // Async thunks
 /** Merge /me API response (user + optional bank for subscriptionStatus) into user */
 function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
-  if (!loginUser) return loginUser as User;
+  // If the login response didn't include a user object, fall back to /me data entirely
+  if (!loginUser) {
+    if (userData) return mergeMeIntoUser(userData, userData, bankData);
+    return null as unknown as User;
+  }
   const meData = userData ?? loginUser;
   const name =
     (meData.name ?? `${loginUser.firstName ?? ''} ${loginUser.lastName ?? ''}`.trim()) || 'User';
@@ -85,10 +89,13 @@ function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
     bankData?.subscriptionStatus ?? meData.subscriptionStatus ?? loginUser.subscriptionStatus;
 
   // Normalize role coming from /me:
-  // Backend sends role: "user" for customers, but our app expects "customer".
+  // Backend sends role keys like "user" (customer) or "recovery_officer".
   let normalizedRole = meData.role ?? loginUser.role;
   if (normalizedRole === 'user') {
     normalizedRole = UserRole.CUSTOMER;
+  }
+  if (normalizedRole === 'recovery_officer') {
+    normalizedRole = UserRole.RECOVERY_OFFICER;
   }
 
   return {
@@ -245,6 +252,63 @@ export const userLogin = createAsyncThunk(
       return { user, token: data.token };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || error.message || 'User login failed');
+    }
+  }
+);
+
+// Unified login (POST /api/auth/login) - works for all roles
+export const login = createAsyncThunk(
+  'auth/login',
+  async (credentials: LoginCredentials, { rejectWithValue }) => {
+    try {
+      const response = await authService.login(credentials);
+      const data = response.data?.data || response.data;
+
+      // Store the token first so /me can be called with it
+      if (data.token) setAuthToken(data.token);
+
+      // The login response shape varies by role — some return "user", others
+      // "admin", "customer", etc. We always follow up with /me which is the
+      // authoritative source of truth. Keep the raw login payload as fallback.
+      const loginRawUser = data.user ?? data.admin ?? data.customer ?? null;
+
+      let user: User = loginRawUser as User;
+      let bank: AuthBank | null = null;
+      try {
+        const meRes = await authService.getMe();
+        const meData = meRes.data?.data ?? meRes.data;
+        if (meData) {
+          // /me is authoritative — use it to build the user, falling back to
+          // the login payload only for fields /me doesn't include (token, etc.)
+          user = mergeMeIntoUser(loginRawUser, meData.user ?? meData, meData.bank);
+          if (meData.bank) {
+            bank = {
+              id: meData.bank.id ?? meData.bank._id,
+              name: meData.bank.name,
+              slug: meData.bank.slug,
+              subscriptionStatus: meData.bank.subscriptionStatus,
+            };
+            if (bank.id) setBankData(bank);
+          }
+        }
+      } catch {
+        // /me failed — if we still have loginRawUser, try to use it directly
+        if (loginRawUser && !user) {
+          user = loginRawUser as User;
+        }
+      }
+
+      // Safety check: we must have a user object to proceed
+      if (!user) {
+        return rejectWithValue('Could not retrieve user profile after login');
+      }
+
+      setUserData(user);
+      return { user, bank, token: data.token };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || error.message || 'Login failed'
+      );
     }
   }
 );
@@ -468,6 +532,31 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(userLogin.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isLoggingIn = false;
+        state.error = action.payload as string;
+        state.isAuthenticated = false;
+      });
+
+    // Unified Login
+    builder
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+        state.isLoggingIn = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action: any) => {
+        state.isLoading = false;
+        state.isLoggingIn = false;
+        state.isInitialized = true;
+        state.user = action.payload.user;
+        state.bank = action.payload.bank ?? null;
+        state.token = action.payload.token;
+        // Only set authenticated when we actually have a user object
+        state.isAuthenticated = !!action.payload.user;
+        state.error = null;
+      })
+      .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.isLoggingIn = false;
         state.error = action.payload as string;

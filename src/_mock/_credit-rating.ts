@@ -4,7 +4,8 @@ export type CreditRating = {
   borrowerId: string;
   loanAmount: number;
   creditScore: number;
-  riskCategory: 'High Risk' | 'Moderate Risk' | 'Low Risk';
+  riskCategory: 'High Risk' | 'Moderate Risk' | 'Low Risk' | 'Critical';
+  riskGrade?: string;
   lastAssessment: string;
   status: 'active' | 'inactive' | 'under_review';
 };

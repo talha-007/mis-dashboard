@@ -8,6 +8,7 @@ export enum UserRole {
   SUPER_ADMIN = 'superadmin',
   ADMIN = 'admin',
   CUSTOMER = 'customer',
+  RECOVERY_OFFICER = 'recovery_officer',
 }
 
 // Permissions
@@ -93,6 +94,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.VIEW_TRANSACTIONS,
     Permission.VIEW_LOANS,
     Permission.CREATE_LOANS,
+  ],
+  [UserRole.RECOVERY_OFFICER]: [
+    // Recovery officers: limited to viewing loans and reports related to their cases
+    Permission.VIEW_LOANS,
+    Permission.VIEW_TRANSACTIONS,
+    Permission.VIEW_REPORTS,
   ],
 };
 

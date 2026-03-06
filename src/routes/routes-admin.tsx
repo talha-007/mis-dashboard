@@ -32,6 +32,7 @@ const UsersAddPage = lazy(() => import('src/pages/admin/users-add'));
 const UsersEditPage = lazy(() => import('src/pages/admin/users-edit'));
 const UsersDetailPage = lazy(() => import('src/pages/admin/users-detail'));
 const BankSettingsPage = lazy(() => import('src/pages/admin/bank-settings'));
+const EmployeesPage = lazy(() => import('src/pages/admin/employees'));
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -167,6 +168,14 @@ export const adminRoutes: RouteObject[] = [
     element: (
       <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
         <UsersDetailPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'employees',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <EmployeesPage />
       </MultiRoleGuard>
     ),
   },

@@ -9,6 +9,8 @@ export const getRoleHomePath = (role?: UserRole | null): string => {
       return '/borrower-management';
     case 'customer':
       return '/';
+    case 'recovery_officer':
+      return '/employee/recovery-dashboard';
     default:
       return '/';
   }

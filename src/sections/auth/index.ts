@@ -10,4 +10,3 @@ export * from './reset-password-view';
 export * from './forgot-password-view';
 export * from './sign-in-customer-view';
 export * from './sign-in-superadmin-view';
-export * from './sign-in-role-selector-view';

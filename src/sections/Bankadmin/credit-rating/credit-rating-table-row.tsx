@@ -2,6 +2,7 @@ import type { CreditRating } from 'src/_mock/_credit-rating';
 
 import { useState } from 'react';
 
+import Stack from '@mui/material/Stack';
 import Popover from '@mui/material/Popover';
 import Checkbox from '@mui/material/Checkbox';
 import MenuList from '@mui/material/MenuList';
@@ -34,6 +35,8 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
+      case 'Critical':
+        return 'error';
       case 'High Risk':
         return 'error';
       case 'Moderate Risk':
@@ -68,11 +71,19 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
         <TableCell>{row.borrowerName}</TableCell>
         <TableCell>{row.borrowerId}</TableCell>
         <TableCell align="right">${row.loanAmount.toLocaleString()}</TableCell>
-        <TableCell align="center">{row.creditScore}</TableCell>
+        <TableCell align="center">
+          <Stack direction="row" spacing={0.75} alignItems="center" justifyContent="center">
+            <span>{row.creditScore}</span>
+            {row.riskGrade && (
+              <Label color={getRiskColor(row.riskCategory)} sx={{ minWidth: 24 }}>
+                {row.riskGrade}
+              </Label>
+            )}
+          </Stack>
+        </TableCell>
         <TableCell>
           <Label color={getRiskColor(row.riskCategory)}>{row.riskCategory}</Label>
         </TableCell>
-        <TableCell>{row.lastAssessment}</TableCell>
         <TableCell>
           <Label color={getStatusColor(row.status)}>{row.status.replace('_', ' ')}</Label>
         </TableCell>

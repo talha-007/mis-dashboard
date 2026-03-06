@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { SignInRoleSelectorView } from 'src/sections/auth';
+import { SignInView } from 'src/sections/auth';
 
 // ----------------------------------------------------------------------
 
@@ -9,7 +9,7 @@ export default function Page() {
     <>
       <title>{`Sign in - ${CONFIG.appName}`}</title>
 
-      <SignInRoleSelectorView />
+      <SignInView />
     </>
   );
 }

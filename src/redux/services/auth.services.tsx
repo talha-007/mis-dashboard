@@ -1,5 +1,6 @@
 import type { MeUser, MeProfileResponse } from 'src/types/me.types';
 
+import { callAPi } from './http-common';
 import commonService from './common.services';
 import customerService from './customer.services';
 import bankAdminService from './bank-admin.services';
@@ -10,6 +11,9 @@ import superadminService from './superadmin.services';
  * Delegates to role-specific services: superadmin, bank-admin, customer.
  * Keeps same API for existing auth flows.
  */
+
+// Unified login for all roles (superadmin, admin, customer, recovery_officer)
+const login = (data: any) => callAPi.post('/api/auth/login', data);
 
 const superAdminLogin = (data: any) => superadminService.login(data);
 
@@ -67,6 +71,7 @@ const verifyEmail = (data: any) => customerService.verifyOtp(data);
 const getCurrentUser = () => getMe();
 
 const authService = {
+  login,
   getMe,
   getProfile,
   superAdminLogin,

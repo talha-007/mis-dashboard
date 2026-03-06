@@ -27,8 +27,10 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
     }
   }, [dispatch, isInitialized]);
 
-  // Show loading screen while initializing
-  if (!isInitialized || isLoading) {
+  // Show loading screen only during the one-time startup initialization.
+  // Do NOT block on isLoading here — that flag is also set during login/logout
+  // calls, which would unmount the entire RouterProvider and cause redirect loops.
+  if (!isInitialized) {
     return (
       <Box
         sx={{

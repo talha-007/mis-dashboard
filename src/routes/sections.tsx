@@ -50,10 +50,12 @@ export const MyCreditRatingPage = lazy(() => import('src/pages/customer/my-credi
 export const PayInstallmentPage = lazy(() => import('src/pages/customer/pay-installment'));
 export const PayoffOfferPage = lazy(() => import('src/pages/customer/payoff-offer'));
 
-// Auth
-export const SignInSuperAdminPage = lazy(() => import('src/pages/auth/sign-in-superadmin'));
-export const SignInAdminPage = lazy(() => import('src/pages/auth/sign-in-admin'));
-export const SignInCustomerPage = lazy(() => import('src/pages/auth/sign-in-customer'));
+// Employee / Recovery Officer
+export const RecoveryDashboardPage = lazy(
+  () => import('src/pages/employee/recovery-dashboard')
+);
+
+// Auth (single sign-in page for all roles)
 export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
 export const RegisterPage = lazy(() => import('src/pages/auth/register'));
 export const ForgotPasswordPage = lazy(() => import('src/pages/auth/forgot-password'));
@@ -129,7 +131,14 @@ export const routesSection: RouteObject[] = [
       {
         index: true,
         element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER]}>
+          <MultiRoleGuard
+            allowedRoles={[
+              UserRole.SUPER_ADMIN,
+              UserRole.ADMIN,
+              UserRole.CUSTOMER,
+              UserRole.RECOVERY_OFFICER,
+            ]}
+          >
             <DashboardPage />
           </MultiRoleGuard>
         ),
@@ -139,8 +148,25 @@ export const routesSection: RouteObject[] = [
       {
         path: 'profile',
         element: (
-          <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER]}>
+          <MultiRoleGuard
+            allowedRoles={[
+              UserRole.SUPER_ADMIN,
+              UserRole.ADMIN,
+              UserRole.CUSTOMER,
+              UserRole.RECOVERY_OFFICER,
+            ]}
+          >
             <ProfileMePage />
+          </MultiRoleGuard>
+        ),
+      },
+
+      // Recovery officer dashboard
+      {
+        path: 'employee/recovery-dashboard',
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.RECOVERY_OFFICER]}>
+            <RecoveryDashboardPage />
           </MultiRoleGuard>
         ),
       },

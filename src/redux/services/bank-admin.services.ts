@@ -140,6 +140,40 @@ const getGraphsData = (params?: { days?: number }) =>
 const getCreditRatingOverview = (params?: any) =>
   callAPi.get('/api/v1/bankAdmin/credit-ratings/overview', { params });
 
+// --- Employees (Recovery officers & staff) ---
+const createEmployee = (data: any) => callAPi.post('/api/v1/bankAdmin/employees', data);
+const getEmployees = (params?: any) =>
+  callAPi.get('/api/v1/bankAdmin/employees', { params });
+const getEmployeeById = (id: string) =>
+  callAPi.get(`/api/v1/bankAdmin/employees/${id}`);
+const updateEmployee = (id: string, data: any) =>
+  callAPi.put(`/api/v1/bankAdmin/employees/${id}`, data);
+
+// --- Recovery / Installment actions ---
+const assignInstallmentOfficer = (installmentId: string, employeeId: string) =>
+  callAPi.put(`/api/v1/bankAdmin/installments/${installmentId}/assign-officer`, {
+    employeeId,
+  });
+
+const markInstallmentDefaulter = (installmentId: string) =>
+  callAPi.put(`/api/v1/bankAdmin/installments/${installmentId}/mark-defaulter`);
+
+// --- Recovery cases (case-level operations) ---
+const getRecoveryCases = (params?: any) =>
+  callAPi.get('/api/v1/bankAdmin/installments/recovery-overview', { params });
+
+const getRecoveryCaseById = (id: string) =>
+  callAPi.get(`/api/v1/bankAdmin/recovery-cases/${id}`);
+
+const updateRecoveryCaseStatus = (id: string, data: any) =>
+  callAPi.put(`/api/v1/bankAdmin/recovery-cases/${id}/status`, data);
+
+const assignRecoveryCase = (id: string, data: any) =>
+  callAPi.put(`/api/v1/bankAdmin/recovery-cases/${id}/assign`, data);
+
+const autoAssignRecoveryCases = () =>
+  callAPi.post('/api/v1/bankAdmin/recovery-cases/auto-assign', {});
+
 const bankAdminService = {
   login,
   forgotPassword,
@@ -195,6 +229,17 @@ const bankAdminService = {
   getAdditionalStats,
   getGraphsData,
   getCreditRatingOverview,
+  createEmployee,
+  getEmployees,
+  getEmployeeById,
+  updateEmployee,
+  assignInstallmentOfficer,
+  markInstallmentDefaulter,
+  getRecoveryCases,
+  getRecoveryCaseById,
+  updateRecoveryCaseStatus,
+  assignRecoveryCase,
+  autoAssignRecoveryCases,
 };
 
 export default bankAdminService;

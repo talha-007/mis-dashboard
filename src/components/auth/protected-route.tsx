@@ -28,10 +28,14 @@ export function ProtectedRoute({
   fallback,
 }: ProtectedRouteProps) {
   const location = useLocation();
-  const { user, isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, isLoading, isInitialized } = useAppSelector(
+    (state) => state.auth
+  );
 
-  // Show loading state
-  if (isLoading) {
+  // Wait for the one-time startup auth check before making any routing decisions.
+  // Also wait while an active loading operation is in progress to avoid
+  // redirecting on the basis of a temporarily stale auth state.
+  if (!isInitialized || isLoading) {
     return (
       <Box
         sx={{

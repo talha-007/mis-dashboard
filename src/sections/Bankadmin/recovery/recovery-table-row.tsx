@@ -33,15 +33,15 @@ export type RecoveryProps = {
 type RecoveryTableRowProps = {
   row: RecoveryProps;
   selected: boolean;
-  // onSelectRow: () => void;
   onMarkDefaulter: (id: string) => void;
+  onAssignOfficer?: (id: string) => void;
 };
 
 export function RecoveryTableRow({
   row,
   selected,
-
   onMarkDefaulter,
+  onAssignOfficer,
 }: RecoveryTableRowProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -99,25 +99,35 @@ export function RecoveryTableRow({
       </TableCell>
 
       <TableCell align="right">
-        {row.isDefaulter ? (
-          <Label color="error">DEFAULTER</Label>
-        ) : (
-          <Button
-            size="small"
-            variant="contained"
-            onClick={handleMarkDefaulter}
-            disabled={isProcessing}
-            sx={{
-              bgcolor: 'grey.800',
-              color: 'white',
-              '&:hover': {
-                bgcolor: 'primary.main',
-              },
-            }}
-          >
-            Mark Defaulter
-          </Button>
-        )}
+        <Stack direction="row" spacing={1} justifyContent="flex-end">
+          {onAssignOfficer && (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => onAssignOfficer(row.id)}
+              disabled={isProcessing}
+            >
+              Assign
+            </Button>
+          )}
+          {row.isDefaulter ? (
+            <Label color="error">DEFAULTER</Label>
+          ) : (
+            <Button
+              size="small"
+              variant="contained"
+              onClick={handleMarkDefaulter}
+              disabled={isProcessing}
+              sx={{
+                bgcolor: 'grey.800',
+                color: 'white',
+                '&:hover': { bgcolor: 'primary.main' },
+              }}
+            >
+              Mark Defaulter
+            </Button>
+          )}
+        </Stack>
       </TableCell>
     </TableRow>
   );

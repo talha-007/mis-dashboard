@@ -20,6 +20,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { DashboardContent } from 'src/layouts/dashboard';
 import bankAdminService from 'src/redux/services/bank-admin.services';
 
+import { Iconify } from 'src/components/iconify';
+
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { TableEmptyRows } from '../table-empty-rows';
@@ -30,59 +32,57 @@ import { CreditRatingTableToolbar } from '../credit-rating-table-toolbar';
 
 // ----------------------------------------------------------------------
 
-// API Response Types
-type CreditRatingApiResponse = {
-  borrowerName: string;
-  borrowerId: string;
-  loanAmount: number;
-  creditScore: number;
-  riskCategory: string;
-  status: string;
-  customerCnic?: string;
-  customerEmail?: string;
-  loanApplicationStatus?: string;
-};
+// Exact API response shapes
+type SummaryBucket = { label: string; grade: string; count: number; percent: number };
 
 type CreditRatingOverviewResponse = {
-  message: string;
   summary: {
-    totalBorrowers: number;
-    riskDistribution: {
-      highRisk: number;
-      moderateRisk: number;
-      lowRisk: number;
-    };
+    lowRisk: SummaryBucket;
+    moderateRisk: SummaryBucket;
+    highRisk: SummaryBucket;
+    critical: SummaryBucket;
   };
-  tableData: CreditRatingApiResponse[];
+  tableData: Array<{
+    borrowerName: string;
+    borrowerId: string;
+    loanAmount: number;
+    creditScore: number;
+    riskCategory: string;
+    riskGrade: string;
+    status: string;
+  }>;
 };
 
-// Map API response to CreditRating type
-const mapApiToCreditRating = (apiData: CreditRatingApiResponse, index: number): CreditRating => {
-  // Map risk category to match type
-  let riskCategory: 'High Risk' | 'Moderate Risk' | 'Low Risk' = 'Moderate Risk';
-  if (apiData.riskCategory?.toLowerCase().includes('high')) {
-    riskCategory = 'High Risk';
-  } else if (apiData.riskCategory?.toLowerCase().includes('low')) {
-    riskCategory = 'Low Risk';
-  }
+type SummaryState = {
+  lowRisk: SummaryBucket;
+  moderateRisk: SummaryBucket;
+  highRisk: SummaryBucket;
+  critical: SummaryBucket;
+};
 
-  // Map status to match type
-  let status: 'active' | 'inactive' | 'under_review' = 'active';
-  const statusLower = (apiData.status || apiData.loanApplicationStatus || '').toLowerCase();
-  if (statusLower === 'inactive' || statusLower === 'rejected') {
-    status = 'inactive';
-  } else if (statusLower === 'under_review' || statusLower === 'pending' || statusLower === 'submitted') {
-    status = 'under_review';
-  }
+const DEFAULT_BUCKET: SummaryBucket = { label: '', grade: '', count: 0, percent: 0 };
+
+const mapApiToCreditRating = (raw: CreditRatingOverviewResponse['tableData'][0], index: number): CreditRating => {
+  const cat = raw.riskCategory?.toLowerCase() ?? '';
+  let riskCategory: CreditRating['riskCategory'] = 'Moderate Risk';
+  if (cat === 'critical') riskCategory = 'Critical';
+  else if (cat.includes('high')) riskCategory = 'High Risk';
+  else if (cat.includes('low')) riskCategory = 'Low Risk';
+
+  let status: CreditRating['status'] = 'active';
+  const s = (raw.status ?? '').toLowerCase();
+  if (s === 'inactive' || s === 'rejected') status = 'inactive';
+  else if (s === 'under_review' || s === 'pending' || s === 'submitted') status = 'under_review';
 
   return {
-    id: apiData.borrowerId || `credit-rating-${index}`,
-    borrowerName: apiData.borrowerName || 'N/A',
-    borrowerId: apiData.borrowerId || 'N/A',
-    loanAmount: apiData.loanAmount || 0,
-    creditScore: apiData.creditScore || 0,
+    id: raw.borrowerId || `cr-${index}`,
+    borrowerName: raw.borrowerName || 'N/A',
+    borrowerId: raw.borrowerId || 'N/A',
+    loanAmount: raw.loanAmount || 0,
+    creditScore: raw.creditScore || 0,
     riskCategory,
-    lastAssessment: 'N/A', // API doesn't provide this field
+    riskGrade: raw.riskGrade ?? '',
+    lastAssessment: 'N/A',
     status,
   };
 };
@@ -95,22 +95,21 @@ export function CreditRatingView() {
   const [selected, setSelected] = useState<string[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [creditRatings, setCreditRatings] = useState<CreditRating[]>([]);
-  const [creditRatingSummary, setCreditRatingSummary] = useState({
-    highRisk: 0,
-    moderateRisk: 0,
-    lowRisk: 0,
-    total: 0,
+  const [creditRatingSummary, setCreditRatingSummary] = useState<SummaryState>({
+    lowRisk: { ...DEFAULT_BUCKET, label: 'Low Risk', grade: 'A' },
+    moderateRisk: { ...DEFAULT_BUCKET, label: 'Moderate Risk', grade: 'B' },
+    highRisk: { ...DEFAULT_BUCKET, label: 'High Risk', grade: 'C' },
+    critical: { ...DEFAULT_BUCKET, label: 'Critical', grade: 'D' },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const HEAD_CELLS = [
-    { id: 'borrowerName', label: 'Borrower Name' },
+    { id: 'borrowerName', label: 'Borrower' },
     { id: 'borrowerId', label: 'Borrower ID' },
     { id: 'loanAmount', label: 'Loan Amount', align: 'right' as const },
     { id: 'creditScore', label: 'Credit Score', align: 'center' as const },
     { id: 'riskCategory', label: 'Risk Category' },
-    { id: 'lastAssessment', label: 'Last Assessment' },
     { id: 'status', label: 'Status' },
   ];
 
@@ -172,36 +171,25 @@ export function CreditRatingView() {
     setFilterName(event.target.value);
   }, []);
 
-  // Fetch credit rating overview data
   const fetchCreditRatingOverview = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await bankAdminService.getCreditRatingOverview();
-      if (response.status === 200) {
-        const data: CreditRatingOverviewResponse =
-          response.data?.data || response.data;
+      const data: CreditRatingOverviewResponse = response.data?.data ?? response.data;
 
-        // Update summary
-        if (data.summary?.riskDistribution) {
-          setCreditRatingSummary({
-            highRisk: data.summary.riskDistribution.highRisk || 0,
-            moderateRisk: data.summary.riskDistribution.moderateRisk || 0,
-            lowRisk: data.summary.riskDistribution.lowRisk || 0,
-            total: data.summary.totalBorrowers || 0,
-          });
-        }
-
-        // Map and update table data
-        if (data.tableData && Array.isArray(data.tableData)) {
-          const mappedData = data.tableData.map((item, index) =>
-            mapApiToCreditRating(item, index)
-          );
-          setCreditRatings(mappedData);
-        } else {
-          setCreditRatings([]);
-        }
+      if (data?.summary) {
+        setCreditRatingSummary({
+          lowRisk: data.summary.lowRisk ?? { ...DEFAULT_BUCKET, label: 'Low Risk', grade: 'A' },
+          moderateRisk: data.summary.moderateRisk ?? { ...DEFAULT_BUCKET, label: 'Moderate Risk', grade: 'B' },
+          highRisk: data.summary.highRisk ?? { ...DEFAULT_BUCKET, label: 'High Risk', grade: 'C' },
+          critical: data.summary.critical ?? { ...DEFAULT_BUCKET, label: 'Critical', grade: 'D' },
+        });
       }
+
+      setCreditRatings(
+        Array.isArray(data?.tableData) ? data.tableData.map(mapApiToCreditRating) : []
+      );
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to fetch credit rating overview');
       setCreditRatings([]);
@@ -229,97 +217,85 @@ export function CreditRatingView() {
           <Typography variant="h4">Credit Ratings Overview</Typography>
         </Stack>
 
-        {/* Summary Cards */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h3" sx={{ color: 'error.main' }}>
-                    {creditRatingSummary.highRisk.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
-                    High Risk
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    bgcolor: (theme) => theme.palette.error.lighter,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ color: 'error.main' }}>
-                    ⚠️
-                  </Typography>
-                </Box>
-              </Box>
-            </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h3" sx={{ color: 'warning.main' }}>
-                    {creditRatingSummary.moderateRisk.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
-                    Moderate Risk
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    bgcolor: (theme) => theme.palette.warning.lighter,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ color: 'warning.main' }}>
-                    ⚡
-                  </Typography>
-                </Box>
-              </Box>
-            </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Card sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h3" sx={{ color: 'success.main' }}>
-                    {creditRatingSummary.lowRisk.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
-                    Low Risk
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    bgcolor: (theme) => theme.palette.success.lighter,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ color: 'success.main' }}>
-                    ✓
-                  </Typography>
-                </Box>
-              </Box>
-            </Card>
-          </Grid>
+        {/* Summary Cards — one per risk bucket */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {(
+            [
+              {
+                key: 'lowRisk',
+                color: 'success.main',
+                lighterColor: 'success.lighter',
+                icon: 'solar:shield-check-bold-duotone',
+              },
+              {
+                key: 'moderateRisk',
+                color: 'warning.main',
+                lighterColor: 'warning.lighter',
+                icon: 'solar:shield-warning-bold-duotone',
+              },
+              {
+                key: 'highRisk',
+                color: 'error.main',
+                lighterColor: 'error.lighter',
+                icon: 'solar:danger-triangle-bold-duotone',
+              },
+              {
+                key: 'critical',
+                color: 'error.dark',
+                lighterColor: 'error.lighter',
+                icon: 'solar:skull-bold-duotone',
+              },
+            ] as const
+          ).map(({ key, color, lighterColor, icon }) => {
+            const bucket = creditRatingSummary[key];
+            return (
+              <Grid key={key} size={{ xs: 12, sm: 6, md: 3 }}>
+                <Card sx={{ p: 2.5 }}>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Box>
+                      <Typography variant="h3" sx={{ color }}>
+                        {bucket.count}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        {bucket.label || key}
+                      </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            px: 0.75,
+                            py: 0.25,
+                            borderRadius: 0.5,
+                            bgcolor: lighterColor,
+                            color,
+                            fontWeight: 700,
+                          }}
+                        >
+                          Grade {bucket.grade}
+                        </Typography>
+                        <Typography variant="caption" color="text.disabled">
+                          {bucket.percent}%
+                        </Typography>
+                      </Stack>
+                    </Box>
+                    <Box
+                      sx={{
+                        width: 56,
+                        height: 56,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%',
+                        bgcolor: lighterColor,
+                      }}
+                    >
+                      <Iconify icon={icon} width={28} sx={{ color }} />
+                    </Box>
+                  </Stack>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
 
         {/* Table Card */}

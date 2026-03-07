@@ -1,8 +1,6 @@
 import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
 
-import { useDebounce } from 'src/hooks';
-
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -23,6 +21,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { useDebounce } from 'src/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 import usersService from 'src/redux/services/users.services';
 
@@ -55,7 +54,6 @@ export function UsersView() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
 
   const [deleteConfirm, setDeleteConfirm] = useState({
     open: false,
@@ -89,7 +87,6 @@ export function UsersView() {
 
         // Set pagination info from server response
         setTotalCount(pagination.total || 0);
-        setTotalPages(pagination.totalPages || 1);
 
         // Optional: Sync page state with server's currentPage if needed
         // Note: Server uses 1-based, our state uses 0-based
@@ -103,7 +100,6 @@ export function UsersView() {
       setError(errorMessage);
       setTableData([]);
       setTotalCount(0);
-      setTotalPages(0);
       console.error('Error fetching users:', err);
     } finally {
       setIsLoading(false);

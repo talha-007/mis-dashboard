@@ -9,6 +9,7 @@ import { useCallback } from 'react';
 
 import { useAppDispatch, useAppSelector } from 'src/store';
 import {
+  login,
   logout,
   register,
   userLogin,
@@ -17,7 +18,6 @@ import {
   getCurrentUser,
   initializeAuth,
   superAdminLogin,
-  login,
 } from 'src/redux/slice/authSlice';
 
 export const useAuth = () => {

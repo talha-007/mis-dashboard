@@ -1,7 +1,6 @@
-import type { Notification } from 'src/types/notification';
 import type { IconButtonProps } from '@mui/material/IconButton';
 
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
@@ -17,121 +16,144 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { fToNow } from 'src/utils/format-time';
 
-import { useNotifications } from 'src/hooks';
+import notificationsService from 'src/redux/services/notifications.services';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 // ----------------------------------------------------------------------
 
-/**
- * Map Socket.io notification type to UI type
- */
-function getNotificationType(socketType: string): string {
-  const typeMap: Record<string, string> = {
-    status_change: 'bank-status',
-    loan_approved: 'loan',
-    loan_rejected: 'loan',
-    payment_success: 'payment',
-    payment_failed: 'payment',
-    payment_overdue: 'payment',
-    payment_reminder: 'payment',
+type NotifItem = {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+};
+
+function mapRaw(raw: any): NotifItem {
+  return {
+    id: String(raw._id ?? raw.id ?? ''),
+    title: raw.title ?? '',
+    message: raw.message ?? raw.body ?? '',
+    type: raw.type ?? 'info',
+    isRead: raw.isRead ?? raw.read ?? false,
+    createdAt: raw.createdAt ?? raw.timestamp ?? new Date().toISOString(),
   };
-  return typeMap[socketType] || 'mail';
 }
 
-/**
- * Get avatar icon for notification type
- */
-function getAvatarForType(notificationType: string): string | null {
-  // Return null to use default emoji/icon rendering
-  // The renderContent function will handle the actual icon
-  return null;
+function notifIcon(type: string) {
+  const map: Record<string, string> = {
+    loan_approved: 'solar:hand-money-bold-duotone',
+    loan_rejected: 'solar:close-circle-bold-duotone',
+    payment_success: 'solar:card-bold-duotone',
+    payment_failed: 'solar:card-bold-duotone',
+    payment_overdue: 'solar:bell-bing-bold-duotone',
+    payment_reminder: 'solar:bell-bing-bold-duotone',
+    bank_status: 'solar:bank-bold-duotone',
+    status_change: 'solar:bank-bold-duotone',
+    assessment_submitted: 'solar:clipboard-list-bold-duotone',
+    assessment_score_generated: 'solar:star-bold-duotone',
+    recovery: 'solar:wallet-money-bold-duotone',
+    info: 'solar:info-circle-bold-duotone',
+  };
+  return map[type] ?? 'solar:bell-bold-duotone';
+}
+
+function notifColor(
+  type: string
+): 'primary' | 'success' | 'warning' | 'error' | 'info' | 'default' {
+  if (type.includes('approved') || type.includes('success')) return 'success';
+  if (type.includes('rejected') || type.includes('failed')) return 'error';
+  if (type.includes('overdue') || type.includes('reminder') || type.includes('warning'))
+    return 'warning';
+  if (type.includes('bank') || type.includes('status')) return 'primary';
+  return 'info';
 }
 
 // ----------------------------------------------------------------------
 
-type NotificationItemProps = {
-  id: string;
-  type: string;
-  title: string;
-  isUnRead: boolean;
-  description: string;
-  avatarUrl: string | null;
-  postedAt: string | number | null;
-};
+export type NotificationsPopoverProps = IconButtonProps;
 
-export type NotificationsPopoverProps = IconButtonProps & {
-  data?: NotificationItemProps[];
-};
-
-export function NotificationsPopover({ data = [], sx, ...other }: NotificationsPopoverProps) {
-  const { notifications: socketNotifications, markAllAsRead, markAsRead } = useNotifications();
-
-  // Map Socket.io notifications to UI format
-  const mappedNotifications = useMemo(
-    () =>
-      socketNotifications.map((notif: Notification) => ({
-        id: notif.id,
-        type: getNotificationType(notif.type),
-        title: notif.title,
-        isUnRead: !notif.isRead,
-        description: notif.message,
-        avatarUrl: getAvatarForType(notif.type),
-        postedAt: new Date(notif.timestamp).getTime(),
-      })),
-    [socketNotifications]
-  );
-
-  // Fallback to initial data if no socket notifications
-  const [notificationsState, setNotificationsState] = useState<NotificationItemProps[]>(
-    mappedNotifications.length > 0 ? mappedNotifications : data
-  );
-
-  // Update state when socket notifications change
-  useEffect(() => {
-    if (mappedNotifications.length > 0) {
-      setNotificationsState(mappedNotifications);
-    }
-  }, [mappedNotifications]);
-
-  const totalUnRead = notificationsState.filter((item) => item.isUnRead === true).length;
-
+export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+  const [notifications, setNotifications] = useState<NotifItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
 
-  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setOpenPopover(event.currentTarget);
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await notificationsService.getNotifications({ page: 1, limit: 20 });
+      const raw = res.data?.data ?? res.data;
+      const list = raw?.notifications ?? raw?.data ?? raw ?? [];
+      setNotifications(Array.isArray(list) ? list.map(mapRaw) : []);
+    } catch {
+      // silently fail — keep previous list
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleClosePopover = useCallback(() => {
-    setOpenPopover(null);
-  }, []);
-
-  const handleMarkAllAsRead = useCallback(() => {
-    // Mark all as read in Socket.io notifications
-    markAllAsRead();
-
-    // Also update local state
-    const updatedNotifications = notificationsState.map((notification) => ({
-      ...notification,
-      isUnRead: false,
-    }));
-    setNotificationsState(updatedNotifications);
-  }, [notificationsState, markAllAsRead]);
-
-  const handleNotificationClick = useCallback(
-    (notificationId: string) => {
-      markAsRead(notificationId);
-      const updatedNotifications = notificationsState.map((notification) =>
-        notification.id === notificationId ? { ...notification, isUnRead: false } : notification
-      );
-      setNotificationsState(updatedNotifications);
+  // Fetch on first open
+  const handleOpenPopover = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setOpenPopover(event.currentTarget);
+      fetchNotifications();
     },
-    [notificationsState, markAsRead]
+    [fetchNotifications]
   );
+
+  const handleClosePopover = useCallback(() => setOpenPopover(null), []);
+
+  // Poll while popover is open (every 30 s)
+  useEffect(() => {
+    if (!openPopover) return () => {};
+    const id = setInterval(fetchNotifications, 30_000);
+    return () => clearInterval(id);
+  }, [openPopover, fetchNotifications]);
+
+  const handleMarkAsRead = useCallback(
+    async (notifId: string) => {
+      // Optimistic update
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notifId ? { ...n, isRead: true } : n))
+      );
+      try {
+        await notificationsService.markAsRead(notifId);
+      } catch {
+        // Revert on failure
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notifId ? { ...n, isRead: false } : n))
+        );
+      }
+    },
+    []
+  );
+
+  const handleMarkAllAsRead = useCallback(async () => {
+    setMarkingAll(true);
+    // Optimistic update
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    try {
+      await notificationsService.markAllAsRead();
+    } catch {
+      // Re-fetch to restore correct state
+      await fetchNotifications();
+    } finally {
+      setMarkingAll(false);
+    }
+  }, [fetchNotifications]);
+
+  const unread = notifications.filter((n) => !n.isRead);
+  const read = notifications.filter((n) => n.isRead);
 
   return (
     <>
@@ -141,7 +163,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
         sx={sx}
         {...other}
       >
-        <Badge badgeContent={totalUnRead} color="error">
+        <Badge badgeContent={unreadCount || undefined} color="error">
           <Iconify width={24} icon="solar:bell-bing-bold-duotone" />
         </Badge>
       </IconButton>
@@ -155,7 +177,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
         slotProps={{
           paper: {
             sx: {
-              width: 360,
+              width: 380,
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -163,6 +185,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
           },
         }}
       >
+        {/* Header */}
         <Box
           sx={{
             py: 2,
@@ -174,63 +197,84 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
         >
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="subtitle1">Notifications</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              You have {totalUnRead} unread messages
+            <Typography variant="body2" color="text.secondary">
+              {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
             </Typography>
           </Box>
 
-          {totalUnRead > 0 && (
+          {unreadCount > 0 && (
             <Tooltip title="Mark all as read">
-              <IconButton color="primary" onClick={handleMarkAllAsRead}>
-                <Iconify icon="eva:done-all-fill" />
-              </IconButton>
+              <span>
+                <IconButton color="primary" onClick={handleMarkAllAsRead} disabled={markingAll}>
+                  {markingAll ? (
+                    <CircularProgress size={18} />
+                  ) : (
+                    <Iconify icon="eva:done-all-fill" />
+                  )}
+                </IconButton>
+              </span>
             </Tooltip>
           )}
+
+          <Tooltip title="Refresh">
+            <span>
+              <IconButton onClick={fetchNotifications} disabled={loading}>
+                {loading ? (
+                  <CircularProgress size={18} />
+                ) : (
+                  <Iconify icon="solar:refresh-bold" />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
         </Box>
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <Scrollbar fillContent sx={{ minHeight: 240, maxHeight: { xs: 360, sm: 'none' } }}>
-          {notificationsState.length === 0 ? (
-            <Box sx={{ p: 3, textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                No notifications yet
+        <Scrollbar fillContent sx={{ minHeight: 240, maxHeight: 480 }}>
+          {loading && notifications.length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+              <CircularProgress size={28} />
+            </Box>
+          ) : notifications.length === 0 ? (
+            <Box sx={{ p: 4, textAlign: 'center' }}>
+              <Iconify
+                icon="solar:bell-off-bold-duotone"
+                width={40}
+                sx={{ color: 'text.disabled', mb: 1 }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                No notifications
               </Typography>
             </Box>
           ) : (
             <>
-              <List
-                disablePadding
-                subheader={
-                  <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                    New
-                  </ListSubheader>
-                }
-              >
-                {notificationsState.slice(0, 2).map((notification) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onClick={() => handleNotificationClick(notification.id)}
-                  />
-                ))}
-              </List>
-
-              {notificationsState.length > 2 && (
+              {unread.length > 0 && (
                 <List
                   disablePadding
                   subheader={
                     <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                      Before that
+                      Unread
                     </ListSubheader>
                   }
                 >
-                  {notificationsState.slice(2, 5).map((notification) => (
-                    <NotificationItem
-                      key={notification.id}
-                      notification={notification}
-                      onClick={() => handleNotificationClick(notification.id)}
-                    />
+                  {unread.map((n) => (
+                    <NotificationItem key={n.id} item={n} onMarkRead={handleMarkAsRead} />
+                  ))}
+                </List>
+              )}
+
+              {read.length > 0 && (
+                <List
+                  disablePadding
+                  subheader={
+                    <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
+                      {unread.length > 0 ? 'Earlier' : 'Read'}
+                    </ListSubheader>
+                  }
+                >
+                  {read.map((n) => (
+                    <NotificationItem key={n.id} item={n} onMarkRead={handleMarkAsRead} />
                   ))}
                 </List>
               )}
@@ -241,8 +285,8 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth disableRipple color="inherit">
-            View all
+          <Button fullWidth disableRipple color="inherit" onClick={fetchNotifications}>
+            Refresh
           </Button>
         </Box>
       </Popover>
@@ -253,133 +297,75 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
 // ----------------------------------------------------------------------
 
 function NotificationItem({
-  notification,
-  onClick,
+  item,
+  onMarkRead,
 }: {
-  notification: NotificationItemProps;
-  onClick?: () => void;
+  item: NotifItem;
+  onMarkRead: (id: string) => void;
 }) {
-  const { avatarUrl, title } = renderContent(notification);
-
   return (
     <ListItemButton
-      onClick={onClick}
+      onClick={() => !item.isRead && onMarkRead(item.id)}
       sx={{
         py: 1.5,
         px: 2.5,
         mt: '1px',
-        ...(notification.isUnRead && {
-          bgcolor: 'action.selected',
-        }),
+        ...(!item.isRead && { bgcolor: 'action.selected' }),
+        cursor: item.isRead ? 'default' : 'pointer',
       }}
     >
       <ListItemAvatar>
-        <Avatar sx={{ bgcolor: 'background.neutral' }}>{avatarUrl}</Avatar>
+        <Avatar
+          sx={{
+            bgcolor: `${notifColor(item.type)}.lighter`,
+            color: `${notifColor(item.type)}.dark`,
+          }}
+        >
+          <Iconify icon={notifIcon(item.type)} width={20} />
+        </Avatar>
       </ListItemAvatar>
+
       <ListItemText
-        primary={title}
-        secondary={
-          <Typography
-            variant="caption"
-            sx={{
-              mt: 0.5,
-              gap: 0.5,
-              display: 'flex',
-              alignItems: 'center',
-              color: 'text.disabled',
-            }}
-          >
-            <Iconify width={14} icon="solar:clock-circle-outline" />
-            {fToNow(notification.postedAt)}
+        primary={
+          <Typography variant="subtitle2" sx={{ mb: 0.25 }}>
+            {item.title}
+            {!item.isRead && (
+              <Box
+                component="span"
+                sx={{
+                  ml: 1,
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  bgcolor: 'error.main',
+                  display: 'inline-block',
+                  verticalAlign: 'middle',
+                }}
+              />
+            )}
           </Typography>
+        }
+        secondary={
+          <Box component="span">
+            <Typography
+              component="span"
+              variant="body2"
+              color="text.secondary"
+              sx={{ display: 'block', mb: 0.5 }}
+            >
+              {item.message}
+            </Typography>
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.disabled' }}
+            >
+              <Iconify width={12} icon="solar:clock-circle-outline" />
+              {fToNow(item.createdAt)}
+            </Typography>
+          </Box>
         }
       />
     </ListItemButton>
   );
-}
-
-/**
- * Map Socket.io notification type to UI type
- */
-function renderContent(notification: NotificationItemProps) {
-  const title = (
-    <Typography variant="subtitle2">
-      {notification.title}
-      <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
-        &nbsp; {notification.description}
-      </Typography>
-    </Typography>
-  );
-
-  if (notification.type === 'order-placed') {
-    return {
-      avatarUrl: (
-        <img
-          alt={notification.title}
-          src="/assets/icons/notification/ic-notification-package.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'order-shipped') {
-    return {
-      avatarUrl: (
-        <img
-          alt={notification.title}
-          src="/assets/icons/notification/ic-notification-shipping.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'mail') {
-    return {
-      avatarUrl: (
-        <img alt={notification.title} src="/assets/icons/notification/ic-notification-mail.svg" />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'chat-message') {
-    return {
-      avatarUrl: (
-        <img alt={notification.title} src="/assets/icons/notification/ic-notification-chat.svg" />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'bank-status') {
-    return {
-      avatarUrl: (
-        <img alt={notification.title} src="/assets/icons/notification/ic-notification-bank.svg" />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'payment') {
-    return {
-      avatarUrl: (
-        <img
-          alt={notification.title}
-          src="/assets/icons/notification/ic-notification-payment.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'loan') {
-    return {
-      avatarUrl: (
-        <img alt={notification.title} src="/assets/icons/notification/ic-notification-loan.svg" />
-      ),
-      title,
-    };
-  }
-  return {
-    avatarUrl: notification.avatarUrl ? (
-      <img alt={notification.title} src={notification.avatarUrl} />
-    ) : null,
-    title,
-  };
 }

@@ -21,7 +21,6 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import bankAdminService from 'src/redux/services/bank-admin.services';
 
 import { Iconify } from 'src/components/iconify';
-
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { TableEmptyRows } from '../table-empty-rows';

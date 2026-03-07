@@ -20,8 +20,8 @@ import { useParams, useRouter } from 'src/routes/hooks';
 
 import { useAppSelector } from 'src/redux/store';
 import { DashboardContent } from 'src/layouts/dashboard';
-import loanApplicationService from 'src/redux/services/loan-applications';
 import customerService from 'src/redux/services/customer.services';
+import loanApplicationService from 'src/redux/services/loan-applications';
 
 import { FormField } from 'src/components/form';
 import { Iconify } from 'src/components/iconify';

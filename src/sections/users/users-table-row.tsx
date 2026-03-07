@@ -71,8 +71,6 @@ export function UsersTableRow({
     return roleColors[roleVal] || 'default';
   };
 
-  const getStatusColor = (statusVal: string) => (statusVal === 'active' ? 'success' : 'error');
-
   return (
     <>
       <TableRow hover tabIndex={-1}>

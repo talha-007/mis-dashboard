@@ -657,19 +657,6 @@ export function PortfolioOverviewView() {
 
 // ----------------------------------------------------------------------
 
-function StatRow({ label, value }: { label: string; value: string }) {
-  return (
-    <Stack direction="row" justifyContent="space-between" alignItems="baseline" spacing={2}>
-      <Typography variant="body2" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography variant="subtitle2" fontWeight={600}>
-        {value}
-      </Typography>
-    </Stack>
-  );
-}
-
 type StatCardProps = CardProps & {
   title: string;
   value: string;
@@ -835,7 +822,7 @@ function DisbursementTrendChart({ data }: { data?: GraphDataPoint[] }) {
   // Handle mouse wheel zoom
   useEffect(() => {
     const chartElement = chartRef.current;
-    if (!chartElement) return;
+    if (!chartElement) return () => {};
 
     const handleWheel = (e: WheelEvent) => {
       const chartContainer = chartElement.querySelector('[id^="apexcharts"]') as HTMLElement;
@@ -948,7 +935,7 @@ function CollectionTrendChart({ data }: { data?: GraphDataPoint[] }) {
   // Handle mouse wheel zoom
   useEffect(() => {
     const chartElement = chartRef.current;
-    if (!chartElement) return;
+    if (!chartElement) return () => {};
 
     const handleWheel = (e: WheelEvent) => {
       const chartContainer = chartElement.querySelector('[id^="apexcharts"]') as HTMLElement;

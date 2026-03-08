@@ -306,9 +306,7 @@ export const login = createAsyncThunk(
       setUserData(user);
       return { user, bank, token: data.token };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message || 'Login failed'
-      );
+      return rejectWithValue(error.response?.data?.message || error.message || 'Login failed');
     }
   }
 );

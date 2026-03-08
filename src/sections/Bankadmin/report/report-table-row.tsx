@@ -2,14 +2,20 @@ import type { Report } from 'src/_mock/_report';
 
 import { useState } from 'react';
 
-import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
+import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
 import MenuList from '@mui/material/MenuList';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
+
+import { fDate } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
@@ -17,64 +23,47 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 type ReportTableRowProps = {
-  row: Report;
+  row: Report & { from?: string; to?: string };
   selected: boolean;
   onSelectRow: () => void;
+  onDelete?: () => void;
+  onRegenerate?: () => void;
+  onDownload?: (format: 'pdf' | 'excel') => void;
 };
 
-export function ReportTableRow({ row, selected, onSelectRow }: ReportTableRowProps) {
+export function ReportTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onDelete,
+  onRegenerate,
+  onDownload,
+}: ReportTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = (event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
   };
 
-  const handleClosePopover = () => {
-    setOpenPopover(null);
-  };
+  const handleClosePopover = () => setOpenPopover(null);
 
   const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'portfolio':
-        return 'primary';
-      case 'recovery':
-        return 'success';
-      case 'credit':
-        return 'warning';
-      case 'compliance':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'portfolio':
-        return 'Portfolio';
-      case 'recovery':
-        return 'Recovery';
-      case 'credit':
-        return 'Credit';
-      case 'compliance':
-        return 'Compliance';
-      default:
-        return type;
-    }
+    if (type === 'portfolio') return 'primary';
+    if (type === 'recovery') return 'success';
+    if (type === 'credit') return 'warning';
+    if (type === 'compliance') return 'error';
+    return 'default' as const;
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ready':
-        return 'success';
-      case 'generating':
-        return 'warning';
-      case 'failed':
-        return 'error';
-      default:
-        return 'default';
-    }
+    if (status === 'ready') return 'success';
+    if (status === 'generating' || status === 'pending') return 'warning';
+    if (status === 'failed') return 'error';
+    return 'default' as const;
   };
+
+  const isReady = row.status === 'ready';
+  const isGenerating = row.status === 'generating';
 
   return (
     <>
@@ -83,30 +72,95 @@ export function ReportTableRow({ row, selected, onSelectRow }: ReportTableRowPro
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
 
+        {/* Report name + date range */}
         <TableCell>
-          {row.name}
-          <br />
-          <span style={{ fontSize: '0.75rem', color: 'text.secondary' }}>{row.description}</span>
-        </TableCell>
-        <TableCell>
-          <Label color={getTypeColor(row.type)}>{getTypeLabel(row.type)}</Label>
-        </TableCell>
-        <TableCell>{row.lastGenerated}</TableCell>
-        <TableCell>{row.generatedBy}</TableCell>
-        <TableCell>
-          <Label color={getStatusColor(row.status)}>
-            {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
-          </Label>
-        </TableCell>
-        <TableCell>{row.fileSize || 'N/A'}</TableCell>
-        <TableCell>
-          <Chip label={row.format} size="small" variant="outlined" />
+          <Typography variant="subtitle2" noWrap>
+            {row.name}
+          </Typography>
+          {(row.from || row.to) && (
+            <Typography variant="caption" color="text.secondary">
+              {row.from ? fDate(row.from) : ''} {row.from && row.to ? '–' : ''}{' '}
+              {row.to ? fDate(row.to) : ''}
+            </Typography>
+          )}
+          {row.description && !(row.from || row.to) && (
+            <Typography variant="caption" color="text.secondary">
+              {row.description}
+            </Typography>
+          )}
         </TableCell>
 
+        {/* Type */}
+        <TableCell>
+          <Label color={getTypeColor(row.type)}>
+            {row.type.charAt(0).toUpperCase() + row.type.slice(1)}
+          </Label>
+        </TableCell>
+
+        {/* Generated date */}
+        <TableCell>
+          <Typography variant="body2">
+            {row.lastGenerated ? fDate(row.lastGenerated) : '—'}
+          </Typography>
+        </TableCell>
+
+        {/* Generated by */}
+        <TableCell>
+          <Typography variant="body2">{row.generatedBy || '—'}</Typography>
+        </TableCell>
+
+        {/* Status */}
+        <TableCell>
+          <Label color={getStatusColor(row.status)} sx={{ gap: 0.5 }}>
+            {isGenerating && <CircularProgress size={10} color="inherit" />}
+            {row.status === 'generating'
+              ? 'Generating'
+              : row.status === 'failed'
+                ? 'Failed'
+                : row.status === 'ready'
+                  ? 'Ready'
+                  : row.status}
+          </Label>
+        </TableCell>
+
+        {/* Download buttons + more actions */}
         <TableCell align="right">
-          <IconButton onClick={handleOpenPopover}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          <Stack direction="row" spacing={0.75} justifyContent="flex-end" alignItems="center">
+            <Tooltip title={isReady ? 'Download PDF' : 'Report not ready'}>
+              <span>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={!isReady}
+                  onClick={() => onDownload?.('pdf')}
+                  startIcon={<Iconify icon="solar:file-download-bold" width={15} />}
+                  sx={{ minWidth: 0, px: 1.25, fontSize: '0.72rem' }}
+                >
+                  PDF
+                </Button>
+              </span>
+            </Tooltip>
+
+            <Tooltip title={isReady ? 'Download Excel' : 'Report not ready'}>
+              <span>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="success"
+                  disabled={!isReady}
+                  onClick={() => onDownload?.('excel')}
+                  startIcon={<Iconify icon="solar:file-text-bold" width={15} />}
+                  sx={{ minWidth: 0, px: 1.25, fontSize: '0.72rem' }}
+                >
+                  Excel
+                </Button>
+              </span>
+            </Tooltip>
+
+            <IconButton size="small" onClick={handleOpenPopover}>
+              <Iconify icon="eva:more-vertical-fill" />
+            </IconButton>
+          </Stack>
         </TableCell>
       </TableRow>
 
@@ -122,33 +176,34 @@ export function ReportTableRow({ row, selected, onSelectRow }: ReportTableRowPro
           sx={{
             p: 0.5,
             gap: 0.5,
-            width: 160,
+            width: 150,
             display: 'flex',
             flexDirection: 'column',
             [`& .${menuItemClasses.root}`]: {
               px: 1,
               gap: 2,
               borderRadius: 0.75,
-              [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:eye-bold" />
-            View
-          </MenuItem>
-
-          <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:download-bold" />
-            Download
-          </MenuItem>
-
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              onRegenerate?.();
+            }}
+            disabled={isGenerating}
+          >
             <Iconify icon="solar:refresh-bold" />
             Regenerate
           </MenuItem>
 
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              onDelete?.();
+            }}
+            sx={{ color: 'error.main' }}
+          >
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>

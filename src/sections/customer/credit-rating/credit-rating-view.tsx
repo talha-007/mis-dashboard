@@ -29,13 +29,12 @@ export function CustomerCreditRatingView() {
         setError(null);
         const res = await customerService.getMyCreditRating();
         const body = res.data?.data ?? res.data;
-        // Try to be defensive about shape coming from backend
-        const rating = Number(body?.rating ?? 0);
-        const status = String(body?.status ?? 'N/A');
+        const ratingValue = Number(body?.rating ?? 0);
+        const statusValue = String(body?.status ?? 'N/A');
 
         setRating({
-          rating,
-          status,
+          rating: ratingValue,
+          status: statusValue,
         });
       } catch (err: any) {
         setError(err?.response?.data?.message || err?.message || 'Failed to load credit rating');
@@ -72,9 +71,7 @@ export function CustomerCreditRatingView() {
               <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
                 Rating
               </Typography>
-              <Typography variant="h4">
-                {rating.rating}
-              </Typography>
+              <Typography variant="h4">{rating.rating}</Typography>
             </Box>
 
             <Box>

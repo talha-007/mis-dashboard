@@ -89,11 +89,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/loans',
     '/blog',
   ],
-  [UserRole.RECOVERY_OFFICER]: [
-    '/',
-    '/dashboard',
-    '/employee/recovery-dashboard',
-  ],
+  [UserRole.RECOVERY_OFFICER]: ['/', '/dashboard', '/employee/recovery-dashboard'],
 };
 
 // Default redirects after login based on role

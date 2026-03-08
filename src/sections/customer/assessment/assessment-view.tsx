@@ -59,14 +59,17 @@ export function CustomerAssessmentView() {
     setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
   };
 
-  const allFilled = customFields.length > 0 && customFields.every((f) => {
-    const v = fieldValues[f._id]?.trim();
-    if (!v) return false;
-    const num = Number(v);
-    return !Number.isNaN(num) && num >= 0;
-  });
+  const allFilled =
+    customFields.length > 0 &&
+    customFields.every((f) => {
+      const v = fieldValues[f._id]?.trim();
+      if (!v) return false;
+      const num = Number(v);
+      return !Number.isNaN(num) && num >= 0;
+    });
 
-  const buildAnswersPayload = (): { fieldKey: string; amount: number }[] => customFields
+  const buildAnswersPayload = (): { fieldKey: string; amount: number }[] =>
+    customFields
       .filter((f) => fieldValues[f._id]?.trim())
       .map((f) => ({
         fieldKey: f.fieldKey,
@@ -178,7 +181,12 @@ export function CustomerAssessmentView() {
             <Typography variant="subtitle1" sx={{ mb: 2 }}>
               {index + 1}. {field.label}
               {field.questionType && (
-                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                <Typography
+                  component="span"
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ ml: 1 }}
+                >
                   ({field.questionType})
                 </Typography>
               )}

@@ -202,6 +202,7 @@ export function BorrowerView() {
                 table.onResetPage(); // Reset to first page when searching
                 // fetchBorrowers will be called automatically via useEffect dependency
               }}
+              onReload={fetchBorrowers}
             />
 
             <Scrollbar>

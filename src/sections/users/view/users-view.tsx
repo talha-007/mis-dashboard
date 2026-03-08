@@ -209,7 +209,11 @@ export function UsersView() {
       )}
 
       <Card>
-        <UsersTableToolbar filterName={filterName} onFilterName={handleFilterByName} />
+        <UsersTableToolbar
+          filterName={filterName}
+          onFilterName={handleFilterByName}
+          onReload={fetchUsers}
+        />
 
         {isLoading ? (
           <Box
@@ -248,7 +252,9 @@ export function UsersView() {
                       <TableRow>
                         <TableCell colSpan={TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {debouncedFilterName ? `No users found for "${debouncedFilterName}"` : 'No users found'}
+                            {debouncedFilterName
+                              ? `No users found for "${debouncedFilterName}"`
+                              : 'No users found'}
                           </Typography>
                         </TableCell>
                       </TableRow>

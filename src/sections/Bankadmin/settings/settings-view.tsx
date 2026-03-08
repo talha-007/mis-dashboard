@@ -101,8 +101,8 @@ export function BankSettingsView() {
         <Stack spacing={3}>
           <Typography variant="h4">Bank Settings</Typography>
           <Typography variant="body2" color="text.secondary">
-            Configure insurance and interest rates for your bank. These rates will be applied to loan
-            calculations.
+            Configure insurance and interest rates for your bank. These rates will be applied to
+            loan calculations.
           </Typography>
 
           {error && (

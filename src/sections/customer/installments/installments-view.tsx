@@ -199,6 +199,7 @@ export function InstallmentsView() {
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
+            onReload={fetchInstallments}
           />
 
           {error && (

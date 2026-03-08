@@ -1,7 +1,4 @@
-import type {
-  QuestionCategory,
-  AssessmentCustomField,
-} from 'src/types/assessment.types';
+import type { QuestionCategory, AssessmentCustomField } from 'src/types/assessment.types';
 
 import { useState, useEffect } from 'react';
 

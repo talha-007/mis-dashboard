@@ -58,7 +58,7 @@ export const useNotifications = () => {
 
   // Listen for WebSocket events via centralized socketService
   useEffect(() => {
-    // User login event
+    // User events
     const unsubUserLogin = on<SocketNotification>('user_login', (data: SocketNotification) => {
       console.log('📢 User login:', data);
       addNotification({
@@ -72,6 +72,21 @@ export const useNotifications = () => {
         data: data.data,
       });
     });
+
+    const unsubUserRegistered = on<SocketNotification>(
+      'user_registered',
+      (data: SocketNotification) => {
+        console.log('📢 User registered:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'success',
+          title: data.title || 'Registration Successful',
+          message: data.message || 'Your account has been created successfully',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
 
     // Bank events
     const unsubBank = on<SocketNotification>('bank_status_changed', (data: SocketNotification) => {
@@ -93,6 +108,21 @@ export const useNotifications = () => {
         },
       });
     });
+
+    const unsubSubscriptionStatus = on<SocketNotification>(
+      'subscription_status_changed',
+      (data: SocketNotification) => {
+        console.log('📢 Subscription status changed:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'info',
+          title: data.title || 'Subscription Status Changed',
+          message: data.message || 'Your subscription plan status has been updated',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
 
     // Loan events
     const unsubLoanApproved = on<SocketNotification>(
@@ -125,6 +155,21 @@ export const useNotifications = () => {
       }
     );
 
+    const unsubNewLoanApplication = on<SocketNotification>(
+      'new_loan_application',
+      (data: SocketNotification) => {
+        console.log('📢 New loan application:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'info',
+          title: data.title || 'New Loan Application',
+          message: data.message || 'A customer has submitted a new loan application',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
     // Assessment events
     const unsubAssessmentScoreGenerated = on<SocketNotification>(
       'assessment_score_generated',
@@ -151,6 +196,21 @@ export const useNotifications = () => {
           type: 'info',
           title: data.title || 'New Assessment Submitted',
           message: data.message || 'A customer has submitted a new assessment',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubNewCustomerRegistered = on<SocketNotification>(
+      'new_customer_registered',
+      (data: SocketNotification) => {
+        console.log('📢 New customer registered:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'info',
+          title: data.title || 'New Customer Registered',
+          message: data.message || 'A new customer has registered under your bank',
           timestamp: data.timestamp?.toString() || new Date().toISOString(),
         });
       }
@@ -209,18 +269,134 @@ export const useNotifications = () => {
       }
     );
 
+    const unsubPaymentReceipt = on<SocketNotification>(
+      'payment_receipt',
+      (data: SocketNotification) => {
+        console.log('📢 Payment receipt:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'success',
+          title: data.title || 'Payment Received',
+          message: data.message || 'Your installment payment was successful',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubInstallmentOverdue = on<SocketNotification>(
+      'installment_overdue',
+      (data: SocketNotification) => {
+        console.log('📢 Installment overdue:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'warning',
+          title: data.title || 'Installment Overdue',
+          message: data.message || 'An installment is past its due date',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubInstallmentPaid = on<SocketNotification>(
+      'installment_paid',
+      (data: SocketNotification) => {
+        console.log('📢 Installment paid:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'success',
+          title: data.title || 'Installment Paid',
+          message: data.message || 'A customer has paid an installment',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubAccountDefaulted = on<SocketNotification>(
+      'account_defaulted',
+      (data: SocketNotification) => {
+        console.log('📢 Account defaulted:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'error',
+          title: data.title || 'Account Defaulted',
+          message: data.message || 'Your account has been marked as defaulter',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubRecoveryCaseUpdate = on<SocketNotification>(
+      'recovery_case_update',
+      (data: SocketNotification) => {
+        console.log('📢 Recovery case update:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'info',
+          title: data.title || 'Recovery Case Updated',
+          message: data.message || 'A recovery officer has updated a case',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubEmployeeCreated = on<SocketNotification>(
+      'employee_created',
+      (data: SocketNotification) => {
+        console.log('📢 Employee created:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'success',
+          title: data.title || 'Account Created',
+          message: data.message || 'Your recovery officer account has been created',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
+    const unsubRecoveryCaseAssigned = on<SocketNotification>(
+      'recovery_case_assigned',
+      (data: SocketNotification) => {
+        console.log('📢 Recovery case assigned:', data);
+        addNotification({
+          ...data,
+          id: data.notificationId || data.id || Date.now().toString(),
+          type: 'info',
+          title: data.title || 'Recovery Case Assigned',
+          message: data.message || 'A recovery case has been assigned to you',
+          timestamp: data.timestamp?.toString() || new Date().toISOString(),
+        });
+      }
+    );
+
     // Cleanup on unmount
     return () => {
       unsubUserLogin();
+      unsubUserRegistered();
       unsubBank();
+      unsubSubscriptionStatus();
       unsubLoanApproved();
       unsubLoanRejected();
+      unsubNewLoanApplication();
       unsubAssessmentScoreGenerated();
       unsubAssessmentSubmitted();
+      unsubNewCustomerRegistered();
       unsubPaymentSuccess();
       unsubPaymentFailed();
       unsubPaymentOverdue();
       unsubPaymentReminder();
+      unsubPaymentReceipt();
+      unsubInstallmentOverdue();
+      unsubInstallmentPaid();
+      unsubAccountDefaulted();
+      unsubRecoveryCaseUpdate();
+      unsubEmployeeCreated();
+      unsubRecoveryCaseAssigned();
     };
   }, [on, addNotification]);
 

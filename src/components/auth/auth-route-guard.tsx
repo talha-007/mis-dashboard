@@ -19,9 +19,7 @@ interface AuthRouteGuardProps {
 }
 
 export function AuthRouteGuard({ children, redirectTo = '/' }: AuthRouteGuardProps) {
-  const { isAuthenticated, isInitialized, isLoading, user } = useAppSelector(
-    (state) => state.auth
-  );
+  const { isAuthenticated, isInitialized, isLoading, user } = useAppSelector((state) => state.auth);
 
   // Wait until auth is fully settled before deciding to redirect.
   // Redirecting while isLoading=true (e.g. during login) causes the sign-in

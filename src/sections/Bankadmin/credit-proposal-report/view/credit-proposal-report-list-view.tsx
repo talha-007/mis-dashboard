@@ -272,6 +272,7 @@ export function CreditProposalReportListView() {
             setPage(0); // Reset to first page when searching
             // fetchReports will be called automatically via useEffect dependency
           }}
+          onReload={fetchReports}
         />
 
         {summary && (
@@ -314,7 +315,9 @@ export function CreditProposalReportListView() {
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
                       <Typography variant="body2" color="text.secondary">
-                        {notFound ? `No reports found for "${debouncedFilterName}"` : 'No reports found'}
+                        {notFound
+                          ? `No reports found for "${debouncedFilterName}"`
+                          : 'No reports found'}
                       </Typography>
                     </TableCell>
                   </TableRow>

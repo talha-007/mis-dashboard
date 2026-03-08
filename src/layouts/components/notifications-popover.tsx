@@ -51,14 +51,26 @@ function notifIcon(type: string) {
   const map: Record<string, string> = {
     loan_approved: 'solar:hand-money-bold-duotone',
     loan_rejected: 'solar:close-circle-bold-duotone',
+    new_loan_application: 'solar:document-add-bold-duotone',
     payment_success: 'solar:card-bold-duotone',
     payment_failed: 'solar:card-bold-duotone',
+    payment_receipt: 'solar:card-bold-duotone',
     payment_overdue: 'solar:bell-bing-bold-duotone',
     payment_reminder: 'solar:bell-bing-bold-duotone',
+    installment_overdue: 'solar:bell-bing-bold-duotone',
+    installment_paid: 'solar:card-bold-duotone',
     bank_status: 'solar:bank-bold-duotone',
     status_change: 'solar:bank-bold-duotone',
+    bank_status_changed: 'solar:bank-bold-duotone',
+    subscription_status_changed: 'solar:wallet-money-bold-duotone',
+    user_registered: 'solar:user-plus-bold-duotone',
+    new_customer_registered: 'solar:users-group-rounded-bold-duotone',
     assessment_submitted: 'solar:clipboard-list-bold-duotone',
     assessment_score_generated: 'solar:star-bold-duotone',
+    account_defaulted: 'solar:danger-triangle-bold-duotone',
+    recovery_case_update: 'solar:wallet-money-bold-duotone',
+    recovery_case_assigned: 'solar:wallet-money-bold-duotone',
+    employee_created: 'solar:user-plus-bold-duotone',
     recovery: 'solar:wallet-money-bold-duotone',
     info: 'solar:info-circle-bold-duotone',
   };
@@ -68,11 +80,18 @@ function notifIcon(type: string) {
 function notifColor(
   type: string
 ): 'primary' | 'success' | 'warning' | 'error' | 'info' | 'default' {
-  if (type.includes('approved') || type.includes('success')) return 'success';
-  if (type.includes('rejected') || type.includes('failed')) return 'error';
+  if (type.includes('approved') || type.includes('success') || type.includes('paid'))
+    return 'success';
+  if (
+    type.includes('rejected') ||
+    type.includes('failed') ||
+    type.includes('defaulted')
+  )
+    return 'error';
   if (type.includes('overdue') || type.includes('reminder') || type.includes('warning'))
     return 'warning';
-  if (type.includes('bank') || type.includes('status')) return 'primary';
+  if (type.includes('bank') || type.includes('status') || type.includes('subscription'))
+    return 'primary';
   return 'info';
 }
 
@@ -120,23 +139,16 @@ export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps
     return () => clearInterval(id);
   }, [openPopover, fetchNotifications]);
 
-  const handleMarkAsRead = useCallback(
-    async (notifId: string) => {
-      // Optimistic update
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notifId ? { ...n, isRead: true } : n))
-      );
-      try {
-        await notificationsService.markAsRead(notifId);
-      } catch {
-        // Revert on failure
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notifId ? { ...n, isRead: false } : n))
-        );
-      }
-    },
-    []
-  );
+  const handleMarkAsRead = useCallback(async (notifId: string) => {
+    // Optimistic update
+    setNotifications((prev) => prev.map((n) => (n.id === notifId ? { ...n, isRead: true } : n)));
+    try {
+      await notificationsService.markAsRead(notifId);
+    } catch {
+      // Revert on failure
+      setNotifications((prev) => prev.map((n) => (n.id === notifId ? { ...n, isRead: false } : n)));
+    }
+  }, []);
 
   const handleMarkAllAsRead = useCallback(async () => {
     setMarkingAll(true);
@@ -219,11 +231,7 @@ export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps
           <Tooltip title="Refresh">
             <span>
               <IconButton onClick={fetchNotifications} disabled={loading}>
-                {loading ? (
-                  <CircularProgress size={18} />
-                ) : (
-                  <Iconify icon="solar:refresh-bold" />
-                )}
+                {loading ? <CircularProgress size={18} /> : <Iconify icon="solar:refresh-bold" />}
               </IconButton>
             </span>
           </Tooltip>

@@ -13,6 +13,7 @@ import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
+import { alpha, useTheme } from '@mui/material/styles';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -61,7 +62,10 @@ type SummaryState = {
 
 const DEFAULT_BUCKET: SummaryBucket = { label: '', grade: '', count: 0, percent: 0 };
 
-const mapApiToCreditRating = (raw: CreditRatingOverviewResponse['tableData'][0], index: number): CreditRating => {
+const mapApiToCreditRating = (
+  raw: CreditRatingOverviewResponse['tableData'][0],
+  index: number
+): CreditRating => {
   const cat = raw.riskCategory?.toLowerCase() ?? '';
   let riskCategory: CreditRating['riskCategory'] = 'Moderate Risk';
   if (cat === 'critical') riskCategory = 'Critical';
@@ -87,6 +91,7 @@ const mapApiToCreditRating = (raw: CreditRatingOverviewResponse['tableData'][0],
 };
 
 export function CreditRatingView() {
+  const theme = useTheme();
   const [filterName, setFilterName] = useState('');
   const [page, setPage] = useState(0);
   const [orderBy, setOrderBy] = useState('borrowerName');
@@ -180,7 +185,11 @@ export function CreditRatingView() {
       if (data?.summary) {
         setCreditRatingSummary({
           lowRisk: data.summary.lowRisk ?? { ...DEFAULT_BUCKET, label: 'Low Risk', grade: 'A' },
-          moderateRisk: data.summary.moderateRisk ?? { ...DEFAULT_BUCKET, label: 'Moderate Risk', grade: 'B' },
+          moderateRisk: data.summary.moderateRisk ?? {
+            ...DEFAULT_BUCKET,
+            label: 'Moderate Risk',
+            grade: 'B',
+          },
           highRisk: data.summary.highRisk ?? { ...DEFAULT_BUCKET, label: 'High Risk', grade: 'C' },
           critical: data.summary.critical ?? { ...DEFAULT_BUCKET, label: 'Critical', grade: 'D' },
         });
@@ -220,54 +229,40 @@ export function CreditRatingView() {
         <Grid container spacing={2} sx={{ mb: 3 }}>
           {(
             [
-              {
-                key: 'lowRisk',
-                color: 'success.main',
-                lighterColor: 'success.lighter',
-                icon: 'solar:shield-check-bold-duotone',
-              },
-              {
-                key: 'moderateRisk',
-                color: 'warning.main',
-                lighterColor: 'warning.lighter',
-                icon: 'solar:shield-warning-bold-duotone',
-              },
-              {
-                key: 'highRisk',
-                color: 'error.main',
-                lighterColor: 'error.lighter',
-                icon: 'solar:danger-triangle-bold-duotone',
-              },
-              {
-                key: 'critical',
-                color: 'error.dark',
-                lighterColor: 'error.lighter',
-                icon: 'solar:skull-bold-duotone',
-              },
+              { key: 'lowRisk', icon: 'solar:shield-check-bold-duotone' },
+              { key: 'moderateRisk', icon: 'solar:shield-warning-bold-duotone' },
+              { key: 'highRisk', icon: 'solar:danger-triangle-bold-duotone' },
+              { key: 'critical', icon: 'solar:fire-bold-duotone' },
             ] as const
-          ).map(({ key, color, lighterColor, icon }) => {
+          ).map(({ key, icon }) => {
             const bucket = creditRatingSummary[key];
             return (
               <Grid key={key} size={{ xs: 12, sm: 6, md: 3 }}>
-                <Card sx={{ p: 2.5 }}>
+                <Card
+                  sx={{
+                    p: 2.5,
+                    borderTop: 3,
+                    borderColor: 'primary.main',
+                  }}
+                >
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Box>
-                      <Typography variant="h3" sx={{ color }}>
+                      <Typography variant="h3" color="#000">
                         {bucket.count}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                         {bucket.label || key}
                       </Typography>
-                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.75 }}>
                         <Typography
                           variant="caption"
+                          fontWeight={700}
                           sx={{
                             px: 0.75,
                             py: 0.25,
                             borderRadius: 0.5,
-                            bgcolor: lighterColor,
-                            color,
-                            fontWeight: 700,
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: 'primary.main',
                           }}
                         >
                           Grade {bucket.grade}
@@ -279,16 +274,16 @@ export function CreditRatingView() {
                     </Box>
                     <Box
                       sx={{
-                        width: 56,
-                        height: 56,
+                        width: 52,
+                        height: 52,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: '50%',
-                        bgcolor: lighterColor,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
                       }}
                     >
-                      <Iconify icon={icon} width={28} sx={{ color }} />
+                      <Iconify icon={icon} width={26} sx={{ color: 'primary.main' }} />
                     </Box>
                   </Stack>
                 </Card>
@@ -303,6 +298,7 @@ export function CreditRatingView() {
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
+            onReload={fetchCreditRatingOverview}
           />
 
           <Scrollbar>

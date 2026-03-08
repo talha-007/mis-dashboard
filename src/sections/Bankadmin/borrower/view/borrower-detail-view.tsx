@@ -97,14 +97,7 @@ export function BorrowerDetailView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    | 'personal'
-    | 'kyc'
-    | 'loanHistory'
-    | 'repayment'
-    | 'risk'
-    | 'collateral'
-    | 'notes'
-    | 'legal'
+    'personal' | 'kyc' | 'loanHistory' | 'repayment' | 'risk' | 'collateral' | 'notes' | 'legal'
   >('personal');
 
   useEffect(() => {
@@ -117,7 +110,7 @@ export function BorrowerDetailView() {
           return;
         }
         const response = await borrowerService.get(id as string);
-       
+
         if (response.status === 200) {
           const data =
             response.data?.data?.borrower ||

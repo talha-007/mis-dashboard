@@ -169,7 +169,9 @@ export function LoanApplicationDetailView() {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogAction, setDialogAction] = useState<'approve' | 'reject' | null>(null);
   const [rejectReason, setRejectReason] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'assessment' | 'eligibility' | 'plan' | 'schedule'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'assessment' | 'eligibility' | 'plan' | 'schedule'
+  >('overview');
 
   useEffect(() => {
     const fetchApplication = async () => {
@@ -339,7 +341,10 @@ export function LoanApplicationDetailView() {
   const customerName =
     application.customerName ||
     (application.customerId
-      ? [application.customerId.name, application.customerId.lastname].filter(Boolean).join(' ').trim()
+      ? [application.customerId.name, application.customerId.lastname]
+          .filter(Boolean)
+          .join(' ')
+          .trim()
       : '—');
 
   return (
@@ -491,15 +496,11 @@ export function LoanApplicationDetailView() {
                 </Typography>
                 <DocRow
                   label="Income total"
-                  value={
-                    assessment.incomeTotal != null ? fCurrency(assessment.incomeTotal) : '—'
-                  }
+                  value={assessment.incomeTotal != null ? fCurrency(assessment.incomeTotal) : '—'}
                 />
                 <DocRow
                   label="Expense total"
-                  value={
-                    assessment.expenseTotal != null ? fCurrency(assessment.expenseTotal) : '—'
-                  }
+                  value={assessment.expenseTotal != null ? fCurrency(assessment.expenseTotal) : '—'}
                 />
                 <DocRow
                   label="Loan at scoring"
@@ -558,12 +559,8 @@ export function LoanApplicationDetailView() {
                         <TableRow key={a._id ?? i}>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell>{(a as any).question ?? a.text ?? '—'}</TableCell>
-                          <TableCell>
-                            {(a as any).selectedAnswer ?? a.optionText ?? '—'}
-                          </TableCell>
-                          <TableCell align="right">
-                            {a.pointsEarned ?? a.points ?? '—'}
-                          </TableCell>
+                          <TableCell>{(a as any).selectedAnswer ?? a.optionText ?? '—'}</TableCell>
+                          <TableCell align="right">{a.pointsEarned ?? a.points ?? '—'}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -603,9 +600,7 @@ export function LoanApplicationDetailView() {
               <DocRow
                 label="Eligible amount"
                 value={
-                  eligibility.eligibleAmount != null
-                    ? fCurrency(eligibility.eligibleAmount)
-                    : '—'
+                  eligibility.eligibleAmount != null ? fCurrency(eligibility.eligibleAmount) : '—'
                 }
               />
               <DocRow
@@ -619,9 +614,7 @@ export function LoanApplicationDetailView() {
               <DocRow
                 label="Recommended EMI"
                 value={
-                  eligibility.recommendedEMI != null
-                    ? fCurrency(eligibility.recommendedEMI)
-                    : '—'
+                  eligibility.recommendedEMI != null ? fCurrency(eligibility.recommendedEMI) : '—'
                 }
               />
               <DocRow label="Risk grade" value={eligibility.riskGrade ?? '—'} />
@@ -659,17 +652,13 @@ export function LoanApplicationDetailView() {
                 <DocRow
                   label="Interest rate"
                   value={
-                    projectedPlan.interestRate != null
-                      ? `${projectedPlan.interestRate}%`
-                      : '—'
+                    projectedPlan.interestRate != null ? `${projectedPlan.interestRate}%` : '—'
                   }
                 />
                 <DocRow
                   label="Insurance rate"
                   value={
-                    projectedPlan.insuranceRate != null
-                      ? `${projectedPlan.insuranceRate}%`
-                      : '—'
+                    projectedPlan.insuranceRate != null ? `${projectedPlan.insuranceRate}%` : '—'
                   }
                 />
               </Grid>
@@ -754,7 +743,7 @@ export function LoanApplicationDetailView() {
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-            {dialogAction === 'approve' ? 'Approve Application' : 'Reject Application'}
+          {dialogAction === 'approve' ? 'Approve Application' : 'Reject Application'}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <Stack spacing={2}>

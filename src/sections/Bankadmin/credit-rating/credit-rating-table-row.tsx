@@ -33,33 +33,9 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
     setOpenPopover(null);
   };
 
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'Critical':
-        return 'error';
-      case 'High Risk':
-        return 'error';
-      case 'Moderate Risk':
-        return 'warning';
-      case 'Low Risk':
-        return 'success';
-      default:
-        return 'default';
-    }
-  };
+  const getRiskColor = (_risk: string) => 'primary' as const;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'inactive':
-        return 'error';
-      case 'under_review':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
+  const getStatusColor = (_status: string) => 'primary' as const;
 
   return (
     <>

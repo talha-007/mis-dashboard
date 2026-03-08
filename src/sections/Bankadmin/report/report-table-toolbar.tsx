@@ -1,6 +1,7 @@
 import type { SelectChangeEvent } from '@mui/material/Select';
 
 import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
 import MenuItem from '@mui/material/MenuItem';
@@ -21,6 +22,7 @@ type ReportTableToolbarProps = {
   filterType: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onFilterType: (event: SelectChangeEvent) => void;
+  onReload?: () => void;
 };
 
 export function ReportTableToolbar({
@@ -29,6 +31,7 @@ export function ReportTableToolbar({
   filterType,
   onFilterName,
   onFilterType,
+  onReload,
 }: ReportTableToolbarProps) {
   return (
     <Toolbar
@@ -62,24 +65,33 @@ export function ReportTableToolbar({
         />
       )}
 
-      {numSelected > 0 ? (
-        <Tooltip title="Download Selected">
-          <IconButton>
-            <Iconify icon="solar:download-bold" />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Report Type</InputLabel>
-          <Select value={filterType} onChange={onFilterType} label="Report Type" size="small">
-            <MenuItem value="all">All Reports</MenuItem>
-            <MenuItem value="portfolio">Portfolio Reports</MenuItem>
-            <MenuItem value="recovery">Recovery Reports</MenuItem>
-            <MenuItem value="credit">Credit Reports</MenuItem>
-            <MenuItem value="compliance">Compliance Reports</MenuItem>
-          </Select>
-        </FormControl>
-      )}
+      <Stack direction="row" alignItems="center" spacing={0.5}>
+        {onReload && (
+          <Tooltip title="Reload">
+            <IconButton onClick={onReload} size="small">
+              <Iconify icon="solar:refresh-bold" width={20} />
+            </IconButton>
+          </Tooltip>
+        )}
+        {numSelected > 0 ? (
+          <Tooltip title="Download Selected">
+            <IconButton>
+              <Iconify icon="solar:download-bold" />
+            </IconButton>
+          </Tooltip>
+        ) : (
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel>Report Type</InputLabel>
+            <Select value={filterType} onChange={onFilterType} label="Report Type" size="small">
+              <MenuItem value="all">All Reports</MenuItem>
+              <MenuItem value="portfolio">Portfolio Reports</MenuItem>
+              <MenuItem value="recovery">Recovery Reports</MenuItem>
+              <MenuItem value="credit">Credit Reports</MenuItem>
+              <MenuItem value="compliance">Compliance Reports</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+      </Stack>
     </Toolbar>
   );
 }

@@ -54,7 +54,7 @@ const cnicPattern = /^\d{5}-\d{7}-\d$/;
 /** Monthly EMI with interest: P * r * (1+r)^n / ((1+r)^n - 1); r = monthly rate (annual % / 100 / 12). */
 function calcEMI(principal: number, annualRatePercent: number, months: number): number {
   if (months <= 0) return principal;
-  const r = (annualRatePercent / 100) / 12;
+  const r = annualRatePercent / 100 / 12;
   if (r <= 0) return Math.round(principal / months);
   const factor = (1 + r) ** months;
   return Math.round((principal * r * factor) / (factor - 1));

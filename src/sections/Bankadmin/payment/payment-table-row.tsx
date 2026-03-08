@@ -23,7 +23,19 @@ export type PaymentProps = {
   borrower: string;
   amount: number;
   status: string;
-  paymentType: 'loan_disbursement' | 'loan_repayment' | 'loan_refund' | 'borrower_recovery' | 'borrower_fee' | 'borrower_penalty' | 'borrower_commission' | 'fee' | 'penalty' | 'commission' | 'refund' | 'other';
+  paymentType:
+    | 'loan_disbursement'
+    | 'loan_repayment'
+    | 'loan_refund'
+    | 'borrower_recovery'
+    | 'borrower_fee'
+    | 'borrower_penalty'
+    | 'borrower_commission'
+    | 'fee'
+    | 'penalty'
+    | 'commission'
+    | 'refund'
+    | 'other';
 };
 
 type PaymentTableRowProps = {

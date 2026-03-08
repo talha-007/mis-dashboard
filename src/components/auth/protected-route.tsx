@@ -28,9 +28,7 @@ export function ProtectedRoute({
   fallback,
 }: ProtectedRouteProps) {
   const location = useLocation();
-  const { user, isAuthenticated, isLoading, isInitialized } = useAppSelector(
-    (state) => state.auth
-  );
+  const { user, isAuthenticated, isLoading, isInitialized } = useAppSelector((state) => state.auth);
 
   // Wait for the one-time startup auth check before making any routing decisions.
   // Also wait while an active loading operation is in progress to avoid

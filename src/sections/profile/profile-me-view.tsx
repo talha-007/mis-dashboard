@@ -265,12 +265,12 @@ export function ProfileMeView() {
           </Card>
 
           {/* User details */}
-          <SectionCard title="Account" icon="solar:user-id-bold-duotone">
+          <SectionCard title="Account" icon="solar:user-circle-bold-duotone">
             <Stack spacing={0}>
               <InfoRow icon="solar:user-bold-duotone" label="Full name" value={displayName} />
-              <InfoRow icon="solar:letter-bold-duotone" label="Email" value={user?.email} />
+              <InfoRow icon="solar:inbox-bold-duotone" label="Email" value={user?.email} />
               <InfoRow
-                icon="solar:medal-ribbons-star-bold-duotone"
+                icon="solar:shield-star-bold-duotone"
                 label="Role"
                 value={getRoleLabel(user?.role ?? '')}
               />
@@ -289,31 +289,31 @@ export function ProfileMeView() {
 
           {/* Bank (admin only) */}
           {isAdmin && bank && (
-            <SectionCard title="Bank" icon="solar:building-2-bold-duotone">
+            <SectionCard title="Bank" icon="solar:buildings-bold-duotone">
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <InfoRow
-                    icon="solar:building-2-bold-duotone"
+                    icon="solar:buildings-bold-duotone"
                     label="Bank name"
                     value={bank.name}
                   />
                   <InfoRow icon="solar:link-bold-duotone" label="Slug" value={bank.slug} />
                   <InfoRow icon="solar:document-text-bold-duotone" label="Code" value={bank.code} />
                   <InfoRow
-                    icon="solar:letter-bold-duotone"
+                    icon="solar:inbox-bold-duotone"
                     label="Admin email"
                     value={bank.adminEmail}
                   />
                   <InfoRow icon="solar:phone-bold-duotone" label="Phone" value={bank.phone} />
                   <InfoRow
-                    icon="solar:map-point-bold-duotone"
+                    icon="solar:map-point-wave-bold-duotone"
                     label="Address"
                     value={bank.address}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <InfoRow
-                    icon="solar:map-bold-duotone"
+                    icon="solar:global-bold-duotone"
                     label="City, State, Country"
                     value={[bank.city, bank.state, bank.country].filter(Boolean).join(', ') || '—'}
                   />
@@ -327,7 +327,11 @@ export function ProfileMeView() {
                     label="Established"
                     value={formatDate(bank.establishedDate)}
                   />
-                  <InfoRow icon="solar:verify-bold-duotone" label="Status" value={bank.status} />
+                  <InfoRow
+                    icon="solar:check-circle-bold-duotone"
+                    label="Status"
+                    value={bank.status}
+                  />
                   <InfoRow
                     icon="solar:card-bold-duotone"
                     label="Subscription status"
@@ -344,7 +348,7 @@ export function ProfileMeView() {
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <InfoRow
-                    icon="solar:verify-bold-duotone"
+                    icon="solar:check-circle-bold-duotone"
                     label="Status"
                     value={
                       <Chip
@@ -383,17 +387,13 @@ export function ProfileMeView() {
               sx={{
                 borderRadius: 2,
                 p: 3,
-                bgcolor: (theme) => varAlpha(theme.vars.palette.info.mainChannel, 0.08),
+                bgcolor: (theme) => varAlpha(theme.vars.palette.primary.mainChannel, 0.08),
                 border: (theme) =>
-                  `1px solid ${varAlpha(theme.vars.palette.info.mainChannel, 0.2)}`,
+                  `1px solid ${varAlpha(theme.vars.palette.primary.mainChannel, 0.2)}`,
               }}
             >
               <Stack direction="row" alignItems="center" spacing={1.5}>
-                <Iconify
-                  icon="solar:info-circle-bold-duotone"
-                  width={28}
-                  sx={{ color: 'info.main' }}
-                />
+                <Iconify icon="solar:info-bold-duotone" width={28} sx={{ color: 'primary.main' }} />
                 <Typography variant="body2" color="text.secondary">
                   Super admin account — no bank or subscription is associated.
                 </Typography>
@@ -403,7 +403,7 @@ export function ProfileMeView() {
 
           {/* Customer placeholder */}
           {isCustomer && (
-            <SectionCard title="More details" icon="solar:user-id-bold-duotone">
+            <SectionCard title="More details" icon="solar:user-circle-bold-duotone">
               <Typography variant="body2" color="text.secondary">
                 Customer-specific details will be shown here later.
               </Typography>

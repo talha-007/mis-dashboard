@@ -122,8 +122,8 @@ const getBankSettings = () =>
     console.log('res', res);
     const data = res.data?.settings;
     return {
-      insuranceRate: Number(data?.insuranceRate  ?? 0),
-      interestRate: Number(data?.interestRate  ?? 0),
+      insuranceRate: Number(data?.insuranceRate ?? 0),
+      interestRate: Number(data?.interestRate ?? 0),
     };
   });
 const updateBankSettings = (data: { insuranceRate: number; interestRate: number }) =>
@@ -142,10 +142,8 @@ const getCreditRatingOverview = (params?: any) =>
 
 // --- Employees (Recovery officers & staff) ---
 const createEmployee = (data: any) => callAPi.post('/api/v1/bankAdmin/employees', data);
-const getEmployees = (params?: any) =>
-  callAPi.get('/api/v1/bankAdmin/employees', { params });
-const getEmployeeById = (id: string) =>
-  callAPi.get(`/api/v1/bankAdmin/employees/${id}`);
+const getEmployees = (params?: any) => callAPi.get('/api/v1/bankAdmin/employees', { params });
+const getEmployeeById = (id: string) => callAPi.get(`/api/v1/bankAdmin/employees/${id}`);
 const updateEmployee = (id: string, data: any) =>
   callAPi.put(`/api/v1/bankAdmin/employees/${id}`, data);
 
@@ -162,8 +160,7 @@ const markInstallmentDefaulter = (installmentId: string) =>
 const getRecoveryCases = (params?: any) =>
   callAPi.get('/api/v1/bankAdmin/installments/recovery-overview', { params });
 
-const getRecoveryCaseById = (id: string) =>
-  callAPi.get(`/api/v1/bankAdmin/recovery-cases/${id}`);
+const getRecoveryCaseById = (id: string) => callAPi.get(`/api/v1/bankAdmin/recovery-cases/${id}`);
 
 const updateRecoveryCaseStatus = (id: string, data: any) =>
   callAPi.put(`/api/v1/bankAdmin/recovery-cases/${id}/status`, data);
@@ -173,6 +170,25 @@ const assignRecoveryCase = (id: string, data: any) =>
 
 const autoAssignRecoveryCases = () =>
   callAPi.post('/api/v1/bankAdmin/recovery-cases/auto-assign', {});
+
+// --- Reports ---
+const generateReport = (data: { type: string; from: string; to: string }) =>
+  callAPi.post('/api/v1/bankAdmin/reports/generate', data);
+
+const getReports = (params?: { type?: string; year?: number; month?: number; status?: string }) =>
+  callAPi.get('/api/v1/bankAdmin/reports', { params });
+
+const getLatestReport = (type: string) => callAPi.get(`/api/v1/bankAdmin/reports/latest/${type}`);
+
+const getReportById = (id: string) => callAPi.get(`/api/v1/bankAdmin/reports/${id}`);
+
+const deleteReport = (id: string) => callAPi.delete(`/api/v1/bankAdmin/reports/${id}`);
+
+const downloadReport = (id: string, format: 'pdf' | 'excel') =>
+  callAPi.get(`/api/v1/bankAdmin/reports/${id}/download`, {
+    params: { format },
+    responseType: 'blob',
+  });
 
 const bankAdminService = {
   login,
@@ -240,6 +256,12 @@ const bankAdminService = {
   updateRecoveryCaseStatus,
   assignRecoveryCase,
   autoAssignRecoveryCases,
+  generateReport,
+  getReports,
+  getLatestReport,
+  getReportById,
+  deleteReport,
+  downloadReport,
 };
 
 export default bankAdminService;

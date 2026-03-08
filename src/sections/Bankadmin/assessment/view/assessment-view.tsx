@@ -152,7 +152,7 @@ export function AssessmentView() {
             onClick={handleAddCustomField}
           >
             Add custom field
-          </Button> 
+          </Button>
           <Button
             variant="contained"
             onClick={handleSaveAssessment}
@@ -185,7 +185,8 @@ export function AssessmentView() {
       {!customFieldsOnly.length ? (
         <Card sx={{ p: 6, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            No custom fields yet. Add fields for income and expense (customers enter numeric values).
+            No custom fields yet. Add fields for income and expense (customers enter numeric
+            values).
           </Typography>
           <Box display="flex" gap={2} justifyContent="center" flexWrap="wrap">
             <Button

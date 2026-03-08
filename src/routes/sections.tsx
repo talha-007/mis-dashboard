@@ -51,9 +51,7 @@ export const PayInstallmentPage = lazy(() => import('src/pages/customer/pay-inst
 export const PayoffOfferPage = lazy(() => import('src/pages/customer/payoff-offer'));
 
 // Employee / Recovery Officer
-export const RecoveryDashboardPage = lazy(
-  () => import('src/pages/employee/recovery-dashboard')
-);
+export const RecoveryDashboardPage = lazy(() => import('src/pages/employee/recovery-dashboard'));
 
 // Auth (single sign-in page for all roles)
 export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));

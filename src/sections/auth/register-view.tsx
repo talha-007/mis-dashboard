@@ -1,6 +1,6 @@
 /**
  * Registration View
- * Two-column layout with image and form. Uses Formik + Yup for validation.
+ * Matches sign-in layout: left brand panel + right form. Uses Formik + Yup for validation.
  */
 
 import type { RegisterData } from 'src/types/auth.types';
@@ -12,12 +12,11 @@ import { memo, useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -30,8 +29,36 @@ import { useBankContext } from 'src/utils/bank-context';
 
 import { useAuth } from 'src/hooks';
 
+import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
 import { GoogleLoginButton } from 'src/components/auth';
+
+// ----------------------------------------------------------------------
+// Same feature list as sign-in for consistent brand panel
+// ----------------------------------------------------------------------
+
+const FEATURES = [
+  {
+    icon: 'solar:chart-2-bold-duotone',
+    title: 'Portfolio Analytics',
+    desc: 'Real-time KPIs, PAR tracking and disbursement trends',
+  },
+  {
+    icon: 'solar:users-group-rounded-bold-duotone',
+    title: 'Borrower Management',
+    desc: 'Full borrower lifecycle — KYC, scoring, and repayments',
+  },
+  {
+    icon: 'solar:shield-check-bold-duotone',
+    title: 'Credit Risk Engine',
+    desc: 'Automated grading, eligibility checks and risk reports',
+  },
+  {
+    icon: 'solar:graph-up-bold-duotone',
+    title: 'Recovery Tracking',
+    desc: 'Overdue management, officer assignment and case notes',
+  },
+];
 
 // ----------------------------------------------------------------------
 // Validation schema: email, phone, CNIC, password, confirmPassword
@@ -159,7 +186,11 @@ const FormPasswordField = memo(function FormPasswordField({
         input: {
           startAdornment: (
             <InputAdornment position="start">
-              <Iconify icon="eva:lock-outline" width={20} sx={{ color: 'text.disabled' }} />
+              <Iconify
+                icon="solar:lock-password-bold-duotone"
+                width={20}
+                sx={{ color: 'text.disabled' }}
+              />
             </InputAdornment>
           ),
           endAdornment: (
@@ -170,7 +201,7 @@ const FormPasswordField = memo(function FormPasswordField({
                 size="small"
                 aria-label="toggle password"
               >
-                <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} width={20} />
               </IconButton>
             </InputAdornment>
           ),
@@ -181,12 +212,12 @@ const FormPasswordField = memo(function FormPasswordField({
   );
 });
 
-// Stable slotProps so memoized fields don't re-render when other fields change
+// Stable slotProps so memoized fields don't re-render when other fields change (match sign-in icons)
 const emailSlotProps = {
   input: {
     startAdornment: (
       <InputAdornment position="start">
-        <Iconify icon="eva:email-outline" width={20} sx={{ color: 'text.disabled' }} />
+        <Iconify icon="solar:inbox-bold-duotone" width={20} sx={{ color: 'text.disabled' }} />
       </InputAdornment>
     ),
   },
@@ -196,7 +227,7 @@ const phoneSlotProps = {
   input: {
     startAdornment: (
       <InputAdornment position="start">
-        <Iconify icon="eva:phone-outline" width={20} sx={{ color: 'text.disabled' }} />
+        <Iconify icon="solar:phone-bold-duotone" width={20} sx={{ color: 'text.disabled' }} />
       </InputAdornment>
     ),
   },
@@ -206,7 +237,17 @@ const cnicSlotProps = {
   input: {
     startAdornment: (
       <InputAdornment position="start">
-        <Iconify icon="eva:id-card-outline" width={20} sx={{ color: 'text.disabled' }} />
+        <Iconify icon="solar:id-verified-bold-duotone" width={20} sx={{ color: 'text.disabled' }} />
+      </InputAdornment>
+    ),
+  },
+} as const;
+
+const nameSlotProps = {
+  input: {
+    startAdornment: (
+      <InputAdornment position="start">
+        <Iconify icon="solar:user-bold-duotone" width={20} sx={{ color: 'text.disabled' }} />
       </InputAdornment>
     ),
   },
@@ -262,12 +303,9 @@ function RegisterFormFields({
 
   return (
     <Form>
-      <Stack spacing={3}>
+      <Stack spacing={2.5}>
         {error && (
-          <Alert
-            severity="error"
-            sx={{ borderRadius: 2, '& .MuiAlert-message': { width: '100%' } }}
-          >
+          <Alert severity="error" sx={{ mb: 0, borderRadius: 2 }}>
             {error}
           </Alert>
         )}
@@ -283,6 +321,7 @@ function RegisterFormFields({
             onChange={handleChange}
             onBlur={handleBlur}
             disabled={isLoading}
+            slotProps={nameSlotProps}
             sx={textFieldSx}
           />
           <FormField
@@ -295,6 +334,7 @@ function RegisterFormFields({
             onChange={handleChange}
             onBlur={handleBlur}
             disabled={isLoading}
+            slotProps={nameSlotProps}
             sx={textFieldSx}
           />
         </Stack>
@@ -302,8 +342,8 @@ function RegisterFormFields({
         <FormField
           name="email"
           type="email"
-          label="Email Address"
-          placeholder="john.doe@example.com"
+          label="Email address"
+          placeholder="you@company.com"
           value={values.email}
           error={errors.email}
           touched={touched.email}
@@ -384,20 +424,27 @@ function RegisterFormFields({
             mt: 1,
             py: 1.5,
             borderRadius: 2,
-            fontSize: '1rem',
-            fontWeight: 600,
+            fontSize: '0.95rem',
+            fontWeight: 700,
             textTransform: 'none',
-            boxShadow: 'none',
-            '&:hover': { boxShadow: 'none' },
+            boxShadow: (theme) =>
+              `0 8px 24px ${alpha(theme.palette.primary.main, 0.32)}`,
+            '&:hover': {
+              boxShadow: (theme) =>
+                `0 12px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
+            },
           }}
         >
           {isLoading ? (
             <Stack direction="row" spacing={1} alignItems="center">
-              <CircularProgress size={20} color="inherit" />
-              <span>Creating Account...</span>
+              <CircularProgress size={18} color="inherit" />
+              <span>Creating account…</span>
             </Stack>
           ) : (
-            'Create Account'
+            <Stack direction="row" spacing={1} alignItems="center">
+              <span>Create account</span>
+              <Iconify icon="solar:arrow-right-bold" width={18} />
+            </Stack>
           )}
         </Button>
       </Stack>
@@ -408,6 +455,7 @@ function RegisterFormFields({
 // ----------------------------------------------------------------------
 
 export function RegisterView() {
+  const theme = useTheme();
   const router = useRouter();
   const { register, isLoading, error } = useAuth();
   const { bankSlug, initializeBankContext } = useBankContext();
@@ -455,225 +503,223 @@ export function RegisterView() {
   return (
     <Card
       sx={{
-        maxWidth: 1200,
-        height: '90vh',
-        overflow: 'hidden',
-        boxShadow: (theme) => theme.customShadows.card,
-        borderRadius: 3,
         display: 'flex',
+        overflow: 'hidden',
+        width: '100%',
+        maxWidth: 980,
+        maxHeight: { xs: 'calc(100vh - 48px)', md: 'calc(100vh - 80px)' },
+        minHeight: { xs: 0, md: 500 },
+        borderRadius: 3,
+        boxShadow: theme.customShadows?.z24 || '0 24px 48px rgba(0,0,0,0.18)',
       }}
     >
-      <Grid container sx={{ height: '100%', width: '100%' }}>
-        {/* Left Column - Image & Text */}
-        <Grid
-          size={{ xs: 12, md: 5 }}
-          sx={{
-            position: 'relative',
-            background: (theme) =>
-              `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-            display: { xs: 'none', md: 'flex' },
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            p: 6,
-            color: 'white',
-            overflow: 'hidden',
-          }}
-        >
-          <Box
+      {/* ── Left: Brand panel (matches sign-in) ───────────────────────────── */}
+      <Box
+        sx={{
+          display: { xs: 'none', md: 'flex' },
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          width: '44%',
+          flexShrink: 0,
+          p: 5,
+          background: `linear-gradient(145deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 60%, ${alpha(theme.palette.primary.light, 0.9)} 100%)`,
+          color: '#fff',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: -80,
+            right: -80,
+            width: 280,
+            height: 280,
+            borderRadius: '50%',
+            background: alpha('#fff', 0.06),
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: -60,
+            left: -60,
+            width: 200,
+            height: 200,
+            borderRadius: '50%',
+            background: alpha('#fff', 0.05),
+          },
+        }}
+      >
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Logo
             sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              opacity: 0.1,
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              filter: 'brightness(0) invert(1)',
+              height: 36,
+              '& img': { height: 36 },
             }}
           />
-          <Stack spacing={4} sx={{ zIndex: 1, maxWidth: 400 }}>
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <Iconify icon="solar:shield-check-bold" width={40} />
-            </Box>
-            <Stack spacing={2}>
-              <Typography variant="h3" fontWeight={700}>
-                Start Your Financial Journey
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9, lineHeight: 1.8 }}>
-                Join thousands of satisfied customers who trust us with their financial needs.
-              </Typography>
-            </Stack>
-            <Stack spacing={2.5}>
-              {[
-                {
-                  icon: 'solar:verified-check-bold',
-                  title: 'Secure & Trusted',
-                  desc: 'Bank-level security for your data',
-                },
-                {
-                  icon: 'solar:wallet-money-bold',
-                  title: 'Easy Management',
-                  desc: 'Manage your finances with ease',
-                },
-                {
-                  icon: 'solar:graph-up-bold',
-                  title: 'Grow Your Wealth',
-                  desc: 'Access to best financial products',
-                },
-              ].map((feature, index) => (
-                <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 1.5,
-                      bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Iconify icon={feature.icon} width={20} />
-                  </Box>
-                  <Box>
-                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                      {feature.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {feature.desc}
-                    </Typography>
-                  </Box>
-                </Stack>
-              ))}
-            </Stack>
-          </Stack>
-        </Grid>
+        </Box>
 
-        {/* Right Column - Form */}
-        <Grid
-          size={{ xs: 12, md: 7 }}
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            overflow: 'auto',
-            '&::-webkit-scrollbar': { width: '8px' },
-            '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: (theme) => theme.palette.divider,
-              borderRadius: '10px',
-              '&:hover': { backgroundColor: (theme) => theme.palette.action.hover },
-            },
-            scrollbarWidth: 'thin',
-          }}
-        >
-          <Box sx={{ p: { xs: 3, sm: 5, md: 6 }, flex: 1 }}>
-            <Stack spacing={4}>
-              <Stack spacing={1.5}>
-                <Typography variant="h4" fontWeight={700}>
-                  Create Your Account
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Join us today and start managing your finances
-                </Typography>
-              </Stack>
+        <Box sx={{ position: 'relative', zIndex: 1, my: 'auto', py: 4 }}>
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            lineHeight={1.2}
+            sx={{ mb: 1.5, letterSpacing: '-0.5px' }}
+          >
+            Manage your
+            <br />
+            portfolio smarter.
+          </Typography>
+          <Typography variant="body1" sx={{ opacity: 0.75, mb: 4, maxWidth: 280 }}>
+            Complete MIS platform built for modern microfinance institutions.
+          </Typography>
 
-              <GoogleLoginButton
-                onSuccess={handleGoogleSuccess}
-                disabled={isLoading}
-                sx={{
-                  borderRadius: 2,
-                  py: 1.5,
-                  fontSize: '0.95rem',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                }}
-              />
-
-              <Divider sx={{ '&::before, &::after': { borderTopStyle: 'dashed' } }}>
-                <Typography variant="body2" sx={{ color: 'text.disabled', px: 2 }}>
-                  or continue with email
-                </Typography>
-              </Divider>
-
-              <Formik
-                initialValues={initialValues}
-                validationSchema={registerValidationSchema}
-                onSubmit={handleSubmit}
-                validateOnChange={false}
-                validateOnBlur
-              >
-                {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
-                  <RegisterFormFields
-                    values={values}
-                    errors={errors}
-                    touched={touched}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    error={error}
-                    isLoading={isLoading}
-                    showPassword={showPassword}
-                    showConfirmPassword={showConfirmPassword}
-                    onTogglePassword={toggleShowPassword}
-                    onToggleConfirmPassword={toggleShowConfirmPassword}
-                    textFieldSx={textFieldSx}
-                  />
-                )}
-              </Formik>
-
-              <Stack spacing={2}>
-                <Typography variant="caption" color="text.secondary" textAlign="center">
-                  By creating an account, you agree to our{' '}
-                  <Link
-                    variant="caption"
-                    color="primary"
-                    underline="hover"
-                    sx={{ cursor: 'pointer', fontWeight: 500 }}
-                  >
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link
-                    variant="caption"
-                    color="primary"
-                    underline="hover"
-                    sx={{ cursor: 'pointer', fontWeight: 500 }}
-                  >
-                    Privacy Policy
-                  </Link>
-                </Typography>
-                <Divider />
-                <Box textAlign="center">
-                  <Typography variant="body2" color="text.secondary" display="inline">
-                    Already have an account?{' '}
+          <Stack spacing={2.5}>
+            {FEATURES.map((f) => (
+              <Stack key={f.title} direction="row" spacing={1.5} alignItems="flex-start">
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: alpha('#fff', 0.15),
+                    flexShrink: 0,
+                    mt: 0.25,
+                  }}
+                >
+                  <Iconify icon={f.icon} width={18} sx={{ color: '#fff' }} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#fff' }}>
+                    {f.title}
                   </Typography>
-                  <Link
-                    variant="body2"
-                    fontWeight={600}
-                    onClick={() => router.push('/sign-in')}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    Sign In
-                  </Link>
+                  <Typography variant="caption" sx={{ opacity: 0.65, color: '#fff' }}>
+                    {f.desc}
+                  </Typography>
                 </Box>
               </Stack>
-            </Stack>
+            ))}
+          </Stack>
+        </Box>
+
+        <Typography variant="caption" sx={{ opacity: 0.4, position: 'relative', zIndex: 1 }}>
+          © {new Date().getFullYear()} MIS Dashboard. All rights reserved.
+        </Typography>
+      </Box>
+
+      {/* ── Right: Form panel (scrollable when form is long) ───────────────── */}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'auto',
+          px: { xs: 3, sm: 5, md: 6 },
+          py: { xs: 4, sm: 5, md: 5 },
+          bgcolor: 'background.paper',
+          '&::-webkit-scrollbar': { width: 6 },
+          '&::-webkit-scrollbar-thumb': {
+            borderRadius: 3,
+            bgcolor: 'action.hover',
+          },
+        }}
+      >
+        <Box sx={{ display: { xs: 'flex', md: 'none' }, mb: 4 }}>
+          <Logo sx={{ height: 32, '& img': { height: 32 } }} />
+        </Box>
+
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" fontWeight={800} sx={{ mb: 0.75, letterSpacing: '-0.3px' }}>
+            Create your account
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Join us today and start managing your finances
+          </Typography>
+        </Box>
+
+        <GoogleLoginButton
+          onSuccess={handleGoogleSuccess}
+          disabled={isLoading}
+          sx={{
+            borderRadius: 2,
+            py: 1.5,
+            fontSize: '0.95rem',
+            textTransform: 'none',
+            fontWeight: 500,
+          }}
+        />
+
+        <Divider sx={{ my: 3, '&::before, &::after': { borderTopStyle: 'dashed' } }}>
+          <Typography variant="body2" sx={{ color: 'text.disabled', px: 2 }}>
+            or continue with email
+          </Typography>
+        </Divider>
+
+        <Formik
+          initialValues={initialValues}
+          validationSchema={registerValidationSchema}
+          onSubmit={handleSubmit}
+          validateOnChange={false}
+          validateOnBlur
+        >
+          {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
+            <RegisterFormFields
+              values={values}
+              errors={errors}
+              touched={touched}
+              handleChange={handleChange}
+              handleBlur={handleBlur}
+              setFieldValue={setFieldValue}
+              error={error}
+              isLoading={isLoading}
+              showPassword={showPassword}
+              showConfirmPassword={showConfirmPassword}
+              onTogglePassword={toggleShowPassword}
+              onToggleConfirmPassword={toggleShowConfirmPassword}
+              textFieldSx={textFieldSx}
+            />
+          )}
+        </Formik>
+
+        <Stack spacing={2} sx={{ mt: 4 }}>
+          <Typography variant="caption" color="text.secondary" textAlign="center">
+            By creating an account, you agree to our{' '}
+            <Link
+              variant="caption"
+              color="primary"
+              underline="hover"
+              sx={{ cursor: 'pointer', fontWeight: 500 }}
+            >
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link
+              variant="caption"
+              color="primary"
+              underline="hover"
+              sx={{ cursor: 'pointer', fontWeight: 500 }}
+            >
+              Privacy Policy
+            </Link>
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
+            <Typography variant="body2" color="text.secondary">
+              Already have an account?
+            </Typography>
+            <Link
+              variant="body2"
+              fontWeight={600}
+              onClick={() => router.push('/sign-in')}
+              sx={{ cursor: 'pointer', color: 'primary.main' }}
+            >
+              Sign in
+            </Link>
           </Box>
-        </Grid>
-      </Grid>
+        </Stack>
+      </Box>
     </Card>
   );
 }

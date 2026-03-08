@@ -1,5 +1,7 @@
+import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 
@@ -9,12 +11,14 @@ type CreditProposalReportTableToolbarProps = {
   numSelected: number;
   filterName: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onReload?: () => void;
 };
 
 export function CreditProposalReportTableToolbar({
   numSelected,
   filterName,
   onFilterName,
+  onReload,
 }: CreditProposalReportTableToolbarProps) {
   return (
     <Toolbar
@@ -43,6 +47,14 @@ export function CreditProposalReportTableToolbar({
           }
           sx={{ maxWidth: 360 }}
         />
+      )}
+
+      {onReload && (
+        <Tooltip title="Reload">
+          <IconButton onClick={onReload} size="small">
+            <Iconify icon="solar:refresh-bold" width={20} />
+          </IconButton>
+        </Tooltip>
       )}
     </Toolbar>
   );

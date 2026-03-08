@@ -121,7 +121,8 @@ export function PortfolioOverviewView() {
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
   const [bankAdminStats, setBankAdminStats] = useState<BankAdminStats | null>(null);
-  const [bankAdminAdditionalStats, setBankAdminAdditionalStats] = useState<BankAdminAdditionalStats | null>(null);
+  const [bankAdminAdditionalStats, setBankAdminAdditionalStats] =
+    useState<BankAdminAdditionalStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [additionalStatsLoading, setAdditionalStatsLoading] = useState(false);
   const [graphsData, setGraphsData] = useState<BankAdminGraphsData | null>(null);
@@ -189,7 +190,9 @@ export function PortfolioOverviewView() {
         const data = response.data?.data || response.data;
         const stats = data?.stats || data || {};
         setBankAdminAdditionalStats({
-          recentApplications: Array.isArray(stats.recentApplications) ? stats.recentApplications : [],
+          recentApplications: Array.isArray(stats.recentApplications)
+            ? stats.recentApplications
+            : [],
           highRiskBorrowers: stats.highRiskBorrowers || 0,
           loansNearDefault: stats.loansNearDefault || 0,
         });
@@ -229,13 +232,9 @@ export function PortfolioOverviewView() {
           disbursementTrend: mapTrendData(
             data?.disbursementTrend ?? data?.disbursement_trend ?? []
           ),
-          collectionTrend: mapTrendData(
-            data?.collectionTrend ?? data?.collection_trend ?? []
-          ),
+          collectionTrend: mapTrendData(data?.collectionTrend ?? data?.collection_trend ?? []),
           dpdBuckets: mapDPDBuckets(data?.dpdBuckets ?? data?.dpd_buckets ?? []),
-          branchExposure: mapBranchExposure(
-            data?.branchExposure ?? data?.branch_exposure ?? []
-          ),
+          branchExposure: mapBranchExposure(data?.branchExposure ?? data?.branch_exposure ?? []),
         });
       }
     } catch {
@@ -336,7 +335,7 @@ export function PortfolioOverviewView() {
                   title="Active Subscriptions"
                   value={fNumber(superAdminStats.activeSubscriptions)}
                   icon="solar:card-bold-duotone"
-                  color="success"
+                  color="primary"
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
@@ -344,7 +343,7 @@ export function PortfolioOverviewView() {
                   title="Expired Subscriptions"
                   value={fNumber(superAdminStats.expiredSubscriptions)}
                   icon="solar:clock-circle-bold-duotone"
-                  color="error"
+                  color="primary"
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
@@ -352,7 +351,7 @@ export function PortfolioOverviewView() {
                   title="Revenue"
                   value={fCurrency(superAdminStats.totalRevenue)}
                   icon="solar:wallet-money-bold-duotone"
-                  color="info"
+                  color="primary"
                 />
               </Grid>
             </>
@@ -360,94 +359,154 @@ export function PortfolioOverviewView() {
         </Grid>
       )}
 
-      {/* Bank Admin: Top KPI Cards */}
+      {/* Bank Admin: KPI Section */}
       {isAdmin && (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          {statsLoading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
-              </Grid>
-            ))
-          ) : (
-            bankAdminStats && (
+        <>
+          {/* Row 1 — 4 primary KPI cards, each shows main + sub metrics */}
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            {statsLoading ? (
+              [1, 2, 3, 4].map((i) => (
+                <Grid key={i} size={{ xs: 12, sm: 6, lg: 3 }}>
+                  <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
+                </Grid>
+              ))
+            ) : bankAdminStats ? (
               <>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
-                    title="Total Portfolio Outstanding"
-                    value={fCurrency(bankAdminStats.totalPortfolioOutstanding)}
+                <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                  <KpiCard
+                    title="Portfolio Outstanding"
+                    primary={fCurrency(bankAdminStats.totalPortfolioOutstanding)}
                     icon="solar:wallet-money-bold-duotone"
-                    color="primary"
+                    subs={[
+                      {
+                        label: 'Principal',
+                        value: fCurrency(bankAdminStats.totalPrincipalOutstanding),
+                      },
+                      {
+                        label: 'Interest',
+                        value: fCurrency(bankAdminStats.totalInterestOutstanding),
+                      },
+                    ]}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
-                    title="Bank Capital"
-                    value={fCurrency(bankAdminStats.bankCapital)}
-                    icon="solar:wallet-money-bold-duotone"
-                    color="primary"
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
-                    title="Total Principal Outstanding"
-                    value={fCurrency(bankAdminStats.totalPrincipalOutstanding)}
-                    icon="solar:card-bold-duotone"
-                    color="info"
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
-                    title="Total Interest Outstanding"
-                    value={fCurrency(bankAdminStats.totalInterestOutstanding)}
-                    icon="solar:percent-bold-duotone"
-                    color="info"
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
+                <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                  <KpiCard
                     title="Active Loans"
-                    value={fNumber(bankAdminStats.activeLoans)}
+                    primary={fNumber(bankAdminStats.activeLoans)}
                     icon="solar:document-text-bold-duotone"
-                    color="primary"
+                    subs={[
+                      { label: 'Borrowers', value: fNumber(bankAdminStats.activeBorrowers) },
+                      {
+                        label: 'Disbursed MTD',
+                        value: fCurrency(bankAdminStats.totalDisbursedMTD),
+                      },
+                    ]}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
-                    title="PAR %"
-                    value={formatPercent(bankAdminStats.par)}
-                    icon="solar:chart-2-bold-duotone"
-                    color="warning"
+                <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                  <KpiCard
+                    title="PAR"
+                    primary={formatPercent(bankAdminStats.par)}
+                    icon="solar:danger-triangle-bold-duotone"
+                    subs={[
+                      { label: 'Overdue', value: fCurrency(bankAdminStats.totalOverdueAmount) },
+                      { label: 'Audit Score', value: `${bankAdminStats.auditReadiness}%` },
+                    ]}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
-                    title="Total Overdue Amount"
-                    value={fCurrency(bankAdminStats.totalOverdueAmount)}
-                    icon="solar:clock-circle-bold-duotone"
-                    color="error"
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
-                    title="Total Disbursed (MTD)"
-                    value={fCurrency(bankAdminStats.totalDisbursedMTD)}
-                    icon="solar:card-send-bold-duotone"
-                    color="success"
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                  <StatCard
+                <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+                  <KpiCard
                     title="Recovery Today"
-                    value={fCurrency(bankAdminStats.recoveryToday)}
+                    primary={fCurrency(bankAdminStats.recoveryToday)}
                     icon="solar:graph-up-bold-duotone"
-                    color="success"
+                    subs={[
+                      { label: 'Recovery Rate', value: formatPercent(bankAdminStats.recoveryRate) },
+                      { label: 'Bank Capital', value: fCurrency(bankAdminStats.bankCapital) },
+                    ]}
                   />
                 </Grid>
               </>
-            )
+            ) : null}
+          </Grid>
+
+          {/* Row 2 — compact secondary metrics + risk alerts in one card */}
+          {!statsLoading && bankAdminStats && (
+            <Card sx={{ mb: 3, p: { xs: 2, sm: 2.5 } }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ mb: 2 }}
+              >
+                <Typography variant="subtitle1">Quick Stats</Typography>
+                {bankAdminAdditionalStats && !additionalStatsLoading && (
+                  <Stack direction="row" spacing={1.5}>
+                    <RiskBadge
+                      label="High Risk"
+                      value={fNumber(bankAdminAdditionalStats.highRiskBorrowers)}
+                      icon="solar:shield-warning-bold-duotone"
+                    />
+                    <RiskBadge
+                      label="Near Default"
+                      value={fNumber(bankAdminAdditionalStats.loansNearDefault)}
+                      icon="solar:bell-bing-bold-duotone"
+                    />
+                  </Stack>
+                )}
+              </Stack>
+              <Grid container spacing={0}>
+                {[
+                  {
+                    label: 'Total Portfolio Outstanding',
+                    value: fCurrency(bankAdminStats.totalPortfolioOutstanding),
+                  },
+                  {
+                    label: 'Total Principal Outstanding',
+                    value: fCurrency(bankAdminStats.totalPrincipalOutstanding),
+                  },
+                  {
+                    label: 'Total Interest Outstanding',
+                    value: fCurrency(bankAdminStats.totalInterestOutstanding),
+                  },
+                  {
+                    label: 'Total Disbursed (MTD)',
+                    value: fCurrency(bankAdminStats.totalDisbursedMTD),
+                  },
+                  {
+                    label: 'Total Overdue Amount',
+                    value: fCurrency(bankAdminStats.totalOverdueAmount),
+                  },
+                  { label: 'Bank Capital', value: fCurrency(bankAdminStats.bankCapital) },
+                  { label: 'Active Loans', value: fNumber(bankAdminStats.activeLoans) },
+                  { label: 'Active Borrowers', value: fNumber(bankAdminStats.activeBorrowers) },
+                  { label: 'PAR %', value: formatPercent(bankAdminStats.par) },
+                  { label: 'Recovery Rate', value: formatPercent(bankAdminStats.recoveryRate) },
+                  { label: 'Recovery Today', value: fCurrency(bankAdminStats.recoveryToday) },
+                  { label: 'Audit Readiness', value: `${bankAdminStats.auditReadiness}%` },
+                ].map((item) => (
+                  <Grid key={item.label} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
+                    <Box
+                      sx={{
+                        px: 1.5,
+                        py: 1.25,
+                        borderRight: '1px solid',
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                        {item.label}
+                      </Typography>
+                      <Typography variant="subtitle2" fontWeight={700} noWrap>
+                        {item.value}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Card>
           )}
-        </Grid>
+        </>
       )}
 
       {/* Bank Admin: Middle Section — Charts */}
@@ -580,28 +639,6 @@ export function PortfolioOverviewView() {
               )}
             </Box>
           </Card>
-
-          {/* Bottom: High Risk Borrowers & Loans Near Default */}
-          {bankAdminAdditionalStats && !additionalStatsLoading && (
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <StatCard
-                  title="High Risk Borrowers"
-                  value={fNumber(bankAdminAdditionalStats.highRiskBorrowers)}
-                  icon="solar:danger-triangle-bold-duotone"
-                  color="error"
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <StatCard
-                  title="Loans Near Default"
-                  value={fNumber(bankAdminAdditionalStats.loansNearDefault)}
-                  icon="solar:bell-bing-bold-duotone"
-                  color="warning"
-                />
-              </Grid>
-            </Grid>
-          )}
         </>
       )}
 
@@ -698,10 +735,7 @@ function StatCard({
         sx={{ flex: 1, minWidth: 0 }}
       >
         <Stack spacing={0.5} sx={{ flexGrow: 1, minWidth: 0, overflow: 'hidden' }}>
-          <Typography
-            variant="caption"
-            sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
-          >
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
             {title}
           </Typography>
           <Typography
@@ -762,13 +796,116 @@ function StatCard({
 
 // ----------------------------------------------------------------------
 
+type KpiCardProps = {
+  title: string;
+  primary: string;
+  icon: string;
+  subs?: { label: string; value: string }[];
+};
+
+function KpiCard({ title, primary, icon, subs }: KpiCardProps) {
+  const theme = useTheme();
+  return (
+    <Card
+      sx={{
+        p: { xs: 2, sm: 2.5 },
+        height: '100%',
+        borderTop: 3,
+        borderColor: 'primary.main',
+      }}
+    >
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography variant="caption" color="text.secondary" noWrap>
+            {title}
+          </Typography>
+          <Typography
+            variant="h5"
+            fontWeight={700}
+            color="primary.main"
+            sx={{ mt: 0.5, mb: subs?.length ? 1.5 : 0, lineHeight: 1.2 }}
+          >
+            {primary}
+          </Typography>
+          {subs && (
+            <Stack direction="row" spacing={2} flexWrap="wrap">
+              {subs.map((s) => (
+                <Box key={s.label}>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {s.label}
+                  </Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {s.value}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          )}
+        </Box>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            flexShrink: 0,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: alpha(theme.palette.primary.main, 0.1),
+          }}
+        >
+          <Iconify icon={icon} width={22} sx={{ color: 'primary.main' }} />
+        </Box>
+      </Stack>
+    </Card>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+type RiskBadgeProps = {
+  label: string;
+  value: string;
+  icon: string;
+};
+
+function RiskBadge({ label, value, icon }: RiskBadgeProps) {
+  const theme = useTheme();
+  return (
+    <Stack
+      direction="row"
+      alignItems="center"
+      spacing={0.75}
+      sx={{
+        px: 1.5,
+        py: 0.75,
+        borderRadius: 1,
+        bgcolor: alpha(theme.palette.primary.main, 0.08),
+        border: '1px solid',
+        borderColor: alpha(theme.palette.primary.main, 0.2),
+      }}
+    >
+      <Iconify icon={icon} width={16} sx={{ color: 'primary.main' }} />
+      <Typography variant="caption" color="primary.main" fontWeight={600}>
+        {value}
+      </Typography>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
+    </Stack>
+  );
+}
+
+// ----------------------------------------------------------------------
+
 // Disbursement Trend Chart Component
 function DisbursementTrendChart({ data }: { data?: GraphDataPoint[] }) {
   const theme = useTheme();
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const chartData =
-    data?.length ? data.map((d) => [dayjs(d.date).valueOf(), Number(d.amount)]) : [];
+  const chartData = data?.length
+    ? data.map((d) => [dayjs(d.date).valueOf(), Number(d.amount)])
+    : [];
 
   const chartOptions = useChart({
     colors: [theme.palette.primary.main],
@@ -880,8 +1017,9 @@ function CollectionTrendChart({ data }: { data?: GraphDataPoint[] }) {
   const theme = useTheme();
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const chartData =
-    data?.length ? data.map((d) => [dayjs(d.date).valueOf(), Number(d.amount)]) : [];
+  const chartData = data?.length
+    ? data.map((d) => [dayjs(d.date).valueOf(), Number(d.amount)])
+    : [];
 
   const chartOptions = useChart({
     colors: [theme.palette.success.main],

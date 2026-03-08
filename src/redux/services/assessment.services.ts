@@ -68,14 +68,13 @@ const updateBankAssessment = (
   _bankId: string,
   payload: { questions: BankAssessment['questions'] }
 ) => {
-  
   const body = {
     questions: payload.questions.map((q, index) => {
       if (q.type === 'multiple_choice') {
         return {
           type: 'multiple_choice' as const,
           text: q.text,
-          
+
           order: q.order ?? index + 1,
           questionType: q.questionType ?? 'income',
           options: q.options.map((o) => ({ text: o.text, points: o.points })),

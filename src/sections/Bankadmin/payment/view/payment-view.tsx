@@ -36,9 +36,8 @@ export function PaymentView() {
 
   const [filterName, setFilterName] = useState('');
   const debouncedFilterName = useDebounce(filterName, 400);
-  const [payments, setPayments] = useState<
-    { id: string; date: string; borrower: string; amount: number; status: string; paymentType: string }[]
-  >([]);
+  type PaymentRow = import('../payment-table-row').PaymentProps;
+  const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
@@ -50,25 +49,31 @@ export function PaymentView() {
   // Map API response to PaymentProps type
   // API structure: { id, amount, customerName, date, description, paymentType, status, subType, type }
   const validPaymentTypes = [
-    'loan_disbursement', 'loan_repayment', 'loan_refund', 'borrower_recovery',
-    'borrower_fee', 'borrower_penalty', 'borrower_commission', 'fee', 'penalty',
-    'commission', 'refund', 'other',
+    'loan_disbursement',
+    'loan_repayment',
+    'loan_refund',
+    'borrower_recovery',
+    'borrower_fee',
+    'borrower_penalty',
+    'borrower_commission',
+    'fee',
+    'penalty',
+    'commission',
+    'refund',
+    'other',
   ] as const;
-  const mapApiToPayment = useCallback(
-    (item: any): import('../payment-table-row').PaymentProps => {
-      const rawType = item.paymentType || item.subType || item.type || 'other';
-      const paymentType = validPaymentTypes.includes(rawType) ? rawType : 'other';
-      return {
-        id: item.id || item._id || '',
-        date: item.date || item.paymentDate || item.createdAt || new Date().toISOString(),
-        borrower: item.customerName || item.borrowerName || item.borrower || 'N/A',
-        amount: Number(item.amount || 0),
-        status: item.status || 'pending',
-        paymentType,
-      };
-    },
-    []
-  );
+  const mapApiToPayment = useCallback((item: any): import('../payment-table-row').PaymentProps => {
+    const rawType = item.paymentType || item.subType || item.type || 'other';
+    const resolvedType = validPaymentTypes.includes(rawType) ? rawType : 'other';
+    return {
+      id: item.id || item._id || '',
+      date: item.date || item.paymentDate || item.createdAt || new Date().toISOString(),
+      borrower: item.customerName || item.borrowerName || item.borrower || 'N/A',
+      amount: Number(item.amount || 0),
+      status: item.status || 'pending',
+      paymentType: resolvedType,
+    } as import('../payment-table-row').PaymentProps;
+  }, []);
 
   // Fetch payments from API
   // type=loan_transactions → loan_disbursement, loan_repayment, loan_refund
@@ -184,6 +189,7 @@ export function PaymentView() {
             table.onResetPage(); // Reset to first page when searching
             // fetchPayments will be called automatically via useEffect dependency
           }}
+          onReload={fetchPayments}
         />
 
         {/* Payment Type Filter Tabs */}

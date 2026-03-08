@@ -197,6 +197,7 @@ export function BankView() {
             setFilterName(event.target.value);
             table.onResetPage();
           }}
+          onReload={fetchBanks}
         />
 
         {loading ? (
@@ -249,7 +250,9 @@ export function BankView() {
                       <TableRow>
                         <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {notFound ? `No banks found for "${debouncedFilterName}"` : 'No banks found'}
+                            {notFound
+                              ? `No banks found for "${debouncedFilterName}"`
+                              : 'No banks found'}
                           </Typography>
                         </TableCell>
                       </TableRow>

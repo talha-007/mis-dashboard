@@ -39,9 +39,7 @@ function mapApiToRow(app: Record<string, any>): LoanApplicationProps {
   const customerId = app.customerId && typeof app.customerId === 'object' ? app.customerId : null;
   const name =
     app.customerName ||
-    (customerId
-      ? [customerId.name, customerId.lastname].filter(Boolean).join(' ').trim()
-      : '') ||
+    (customerId ? [customerId.name, customerId.lastname].filter(Boolean).join(' ').trim() : '') ||
     '—';
   return {
     id: String(app._id ?? app.id ?? ''),
@@ -53,7 +51,9 @@ function mapApiToRow(app: Record<string, any>): LoanApplicationProps {
     amount: Number(app.amount ?? 0),
     durationMonths: app.durationMonths != null ? Number(app.durationMonths) : undefined,
     score: Number(app.score ?? app.eligibility?.creditScore ?? 0),
-    status: (app.status === 'submitted' ? 'submitted' : app.status) as LoanApplicationProps['status'],
+    status: (app.status === 'submitted'
+      ? 'submitted'
+      : app.status) as LoanApplicationProps['status'],
     appliedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—',
     reviewedBy: app.reviewedBy ?? null,
     reviewedDate: app.reviewedDate ?? null,
@@ -73,33 +73,33 @@ export function LoanApplicationView() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectInProgress, setRejectInProgress] = useState(false);
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await loanApplicationService.list({
-          page: table.page + 1,
-          limit: table.rowsPerPage,
-        });
+  const fetchApplications = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await loanApplicationService.list({
+        page: table.page + 1,
+        limit: table.rowsPerPage,
+      });
 
-        const data = response.data?.data ?? response.data;
-        const loanApplications = data?.loanApplications ?? [];
-        const pagination = data?.pagination;
+      const data = response.data?.data ?? response.data;
+      const loanApplications = data?.loanApplications ?? [];
+      const pagination = data?.pagination;
 
-        setApplications(loanApplications.map(mapApiToRow));
-        setTotalCount(pagination?.total ?? loanApplications.length);
-      } catch (err: any) {
-        setError(err?.response?.data?.message || err.message || 'Failed to load applications');
-        setApplications([]);
-        setTotalCount(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchApplications();
+      setApplications(loanApplications.map(mapApiToRow));
+      setTotalCount(pagination?.total ?? loanApplications.length);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err.message || 'Failed to load applications');
+      setApplications([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
   }, [table.page, table.rowsPerPage]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
 
   const handleApprove = useCallback(
     async (id: string) => {
@@ -208,6 +208,7 @@ export function LoanApplicationView() {
               setFilterName(event.target.value);
               table.onResetPage();
             }}
+            onReload={fetchApplications}
           />
 
           <Scrollbar>
@@ -248,7 +249,7 @@ export function LoanApplicationView() {
                     ))
                   ) : (
                     <TableRow>
-                        <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                      <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
                         <Typography variant="body2" color="text.secondary">
                           {filterName
                             ? `No loan applications found for "${filterName}"`

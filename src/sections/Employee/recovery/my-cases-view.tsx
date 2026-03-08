@@ -73,7 +73,7 @@ function mapCase(c: any): MyCase {
     borrowerRef: borrower?.borrowerId ?? '—',
     customerName: customer
       ? `${customer.name ?? ''} ${customer.lastname ?? ''}`.trim()
-      : c.customerName ?? '—',
+      : (c.customerName ?? '—'),
     customerEmail: customer?.email ?? '—',
     customerPhone: customer?.phone ?? '—',
     customerCnic: customer?.cnic ?? '—',
@@ -312,9 +312,7 @@ export function RecoveryOfficerDashboardView() {
                       </TableCell>
 
                       <TableCell>
-                        <Label color={statusColor(c.status)}>
-                          {c.status.replace('_', ' ')}
-                        </Label>
+                        <Label color={statusColor(c.status)}>{c.status.replace('_', ' ')}</Label>
                       </TableCell>
 
                       <TableCell align="right">
@@ -593,14 +591,7 @@ export function RecoveryOfficerDashboardView() {
               value={noteForm.outcome}
               onChange={(e) => setNoteForm((f) => ({ ...f, outcome: e.target.value }))}
             >
-              {[
-                'no_answer',
-                'contacted',
-                'promise_to_pay',
-                'refused',
-                'paid',
-                'other',
-              ].map((o) => (
+              {['no_answer', 'contacted', 'promise_to_pay', 'refused', 'paid', 'other'].map((o) => (
                 <MenuItem key={o} value={o}>
                   {o.replace(/_/g, ' ')}
                 </MenuItem>
@@ -630,7 +621,10 @@ export function RecoveryOfficerDashboardView() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNoteDialog({ open: false, caseId: null })} disabled={savingNote}>
+          <Button
+            onClick={() => setNoteDialog({ open: false, caseId: null })}
+            disabled={savingNote}
+          >
             Cancel
           </Button>
           <Button

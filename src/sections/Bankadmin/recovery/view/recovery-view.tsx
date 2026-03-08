@@ -250,6 +250,7 @@ function OverduesTab() {
           setFilterName(e.target.value);
           table.onResetPage();
         }}
+        onReload={fetchRecoveries}
       />
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
@@ -478,9 +479,7 @@ function RecoveryCasesTab() {
       // recovery-overview returns { installments, pagination, summary }
       const list = raw?.installments ?? raw?.cases ?? raw?.recoveryCases ?? [];
       setCases(Array.isArray(list) ? list.map(mapCase) : []);
-      setTotalCount(
-        raw?.pagination?.total ?? (Array.isArray(list) ? list.length : 0)
-      );
+      setTotalCount(raw?.pagination?.total ?? (Array.isArray(list) ? list.length : 0));
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Failed to load recovery cases');
       setCases([]);
@@ -848,10 +847,7 @@ function RecoveryCasesTab() {
                 ) : (
                   <Stack spacing={1.5}>
                     {viewDialog.caseData.notes.map((note, i) => (
-                      <Box
-                        key={i}
-                        sx={{ p: 1.5, bgcolor: 'background.neutral', borderRadius: 1 }}
-                      >
+                      <Box key={i} sx={{ p: 1.5, bgcolor: 'background.neutral', borderRadius: 1 }}>
                         <Typography variant="body2">{note.text}</Typography>
                         <Typography variant="caption" color="text.secondary">
                           {note.author ? `${note.author} · ` : ''}
@@ -985,28 +981,20 @@ function useTable() {
     setSelected(checked ? newSelecteds : []);
   }, []);
 
-  const onSelectRow = useCallback(
-    (inputValue: string) => {
-      setSelected((prev) =>
-        prev.includes(inputValue)
-          ? prev.filter((v) => v !== inputValue)
-          : [...prev, inputValue]
-      );
-    },
-    []
-  );
+  const onSelectRow = useCallback((inputValue: string) => {
+    setSelected((prev) =>
+      prev.includes(inputValue) ? prev.filter((v) => v !== inputValue) : [...prev, inputValue]
+    );
+  }, []);
 
   const onResetPage = useCallback(() => setPage(0), []);
 
   const onChangePage = useCallback((_: unknown, newPage: number) => setPage(newPage), []);
 
-  const onChangeRowsPerPage = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
-    },
-    []
-  );
+  const onChangeRowsPerPage = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  }, []);
 
   return {
     page,

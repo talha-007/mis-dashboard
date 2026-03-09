@@ -67,6 +67,7 @@ export function PaymentView() {
     const resolvedType = validPaymentTypes.includes(rawType) ? rawType : 'other';
     return {
       id: item.id || item._id || '',
+      paymentId: item.paymentId || item.transactionId || '',
       date: item.date || item.paymentDate || item.createdAt || new Date().toISOString(),
       borrower: item.customerName || item.borrowerName || item.borrower || 'N/A',
       amount: Number(item.amount || 0),
@@ -267,6 +268,7 @@ export function PaymentView() {
                     numSelected={table.selected.length}
                     onSort={table.onSort}
                     headLabel={[
+                      { id: 'transaction_id', label: 'Transaction ID' },
                       { id: 'date', label: 'Date' },
                       { id: 'borrower', label: 'Borrower' },
                       { id: 'amount', label: 'Amount' },

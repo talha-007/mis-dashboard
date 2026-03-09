@@ -19,6 +19,7 @@ import { Iconify } from 'src/components/iconify';
 
 export type PaymentProps = {
   id: string;
+  paymentId: string;
   date: string;
   borrower: string;
   amount: number;
@@ -61,6 +62,8 @@ export function PaymentTableRow({ row, selected }: PaymentTableRowProps) {
         {/* <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell> */}
+
+        <TableCell>{row.paymentId}</TableCell>
 
         <TableCell>{fDate(row.date)}</TableCell>
 
@@ -113,10 +116,10 @@ export function PaymentTableRow({ row, selected }: PaymentTableRowProps) {
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
+          {/* <MenuItem onClick={handleClosePopover}>
             <Iconify icon="solar:eye-bold" />
             View
-          </MenuItem>
+          </MenuItem> */}
 
           <MenuItem onClick={handleClosePopover}>
             <Iconify icon="solar:pen-bold" />

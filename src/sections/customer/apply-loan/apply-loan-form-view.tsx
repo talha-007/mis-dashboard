@@ -19,6 +19,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useParams, useRouter } from 'src/routes/hooks';
 
 import { useAppSelector } from 'src/redux/store';
+import { getBankData, getBankSlugFromStorage } from 'src/utils/auth-storage';
+import { getCurrentBankSlug } from 'src/utils/bank-context';
 import { DashboardContent } from 'src/layouts/dashboard';
 import customerService from 'src/redux/services/customer.services';
 import loanApplicationService from 'src/redux/services/loan-applications';
@@ -118,7 +120,7 @@ type ApplyLoanFormViewProps = {
 export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormViewProps) {
   const { id } = useParams();
   const router = useRouter();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, bank } = useAppSelector((state) => state.auth);
   const [existing, setExisting] = useState<CustomerLoanApplication | null>(null);
   const [loadingEdit, setLoadingEdit] = useState(!!id && id !== 'new');
   const [rates, setRates] = useState<{
@@ -127,7 +129,12 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
     bankName: string | null;
   }>({ interestRate: null, insuranceRate: null, bankName: null });
 
-  const bankSlug = (user as { bankSlug?: string })?.bankSlug;
+  const bankSlug =
+    (user as { bankSlug?: string })?.bankSlug ??
+    bank?.slug ??
+    getBankData<{ slug?: string }>()?.slug ??
+    getBankSlugFromStorage() ??
+    getCurrentBankSlug();
 
   useEffect(() => {
     if (!bankSlug) {

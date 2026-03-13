@@ -43,6 +43,7 @@ type CreditRatingOverviewResponse = {
     critical: SummaryBucket;
   };
   tableData: Array<{
+    borrower_id: string;
     borrowerName: string;
     borrowerId: string;
     loanAmount: number;
@@ -79,6 +80,7 @@ const mapApiToCreditRating = (
 
   return {
     id: raw.borrowerId || `cr-${index}`,
+    borrower_id: raw.borrower_id || 'N/A',
     borrowerName: raw.borrowerName || 'N/A',
     borrowerId: raw.borrowerId || 'N/A',
     loanAmount: raw.loanAmount || 0,

@@ -2,6 +2,8 @@ import type { CreditRating } from 'src/_mock/_credit-rating';
 
 import { useState } from 'react';
 
+import { useRouter } from 'src/routes/hooks';
+
 import Stack from '@mui/material/Stack';
 import Popover from '@mui/material/Popover';
 import Checkbox from '@mui/material/Checkbox';
@@ -23,6 +25,7 @@ type CreditRatingTableRowProps = {
 };
 
 export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatingTableRowProps) {
+  const router = useRouter();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -33,6 +36,14 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
     setOpenPopover(null);
   };
 
+  const handleViewBorrower = () => {
+    handleClosePopover();
+    const borrowerId = row.borrower_id ;
+    if (borrowerId) {
+      router.push(`/borrower-management/view/${borrowerId}`);
+    }
+  };
+
   const getRiskColor = (_risk: string) => 'primary' as const;
 
   const getStatusColor = (_status: string) => 'primary' as const;
@@ -40,13 +51,13 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell>{row.borrowerName}</TableCell>
         <TableCell>{row.borrowerId}</TableCell>
-        <TableCell align="right">${row.loanAmount.toLocaleString()}</TableCell>
+        <TableCell align="right">Rs{row.loanAmount.toLocaleString()}</TableCell>
         <TableCell align="center">
           <Stack direction="row" spacing={0.75} alignItems="center" justifyContent="center">
             <span>{row.creditScore}</span>
@@ -94,16 +105,10 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem onClick={handleViewBorrower}>
             <Iconify icon="solar:eye-bold" />
             View
           </MenuItem>
-
-          <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:pen-bold" />
-            Edit
-          </MenuItem>
-
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete

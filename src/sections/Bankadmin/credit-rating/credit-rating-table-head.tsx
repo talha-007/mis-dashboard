@@ -35,13 +35,13 @@ export function CreditRatingTableHead({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
+        {/* <TableCell padding="checkbox">
           <Checkbox
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={(event) => onSelectAllRows(event.target.checked)}
           />
-        </TableCell>
+        </TableCell> */}
 
         {headCells.map((headCell) => (
           <TableCell

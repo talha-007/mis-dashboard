@@ -142,7 +142,9 @@ export const adminRoutes: RouteObject[] = [
   {
     path: 'users-management',
     element: (
-      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+      <MultiRoleGuard
+        allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RECOVERY_OFFICER]}
+      >
         <UsersManagementPage />
       </MultiRoleGuard>
     ),
@@ -150,7 +152,9 @@ export const adminRoutes: RouteObject[] = [
   {
     path: 'users-management/add',
     element: (
-      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+      <MultiRoleGuard
+        allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RECOVERY_OFFICER]}
+      >
         <UsersAddPage />
       </MultiRoleGuard>
     ),
@@ -158,7 +162,9 @@ export const adminRoutes: RouteObject[] = [
   {
     path: 'users-management/edit/:userId',
     element: (
-      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+      <MultiRoleGuard
+        allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RECOVERY_OFFICER]}
+      >
         <UsersEditPage />
       </MultiRoleGuard>
     ),
@@ -166,7 +172,9 @@ export const adminRoutes: RouteObject[] = [
   {
     path: 'users-management/view/:userId',
     element: (
-      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+      <MultiRoleGuard
+        allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RECOVERY_OFFICER]}
+      >
         <UsersDetailPage />
       </MultiRoleGuard>
     ),

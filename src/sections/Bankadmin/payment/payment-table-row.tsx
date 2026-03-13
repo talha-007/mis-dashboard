@@ -86,11 +86,11 @@ export function PaymentTableRow({ row, selected }: PaymentTableRowProps) {
 
         <TableCell>{row.paymentType}</TableCell>
 
-        <TableCell align="right">
+        {/* <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
-        </TableCell>
+        </TableCell> */}
       </TableRow>
 
       <Popover
@@ -121,10 +121,10 @@ export function PaymentTableRow({ row, selected }: PaymentTableRowProps) {
             View
           </MenuItem> */}
 
-          <MenuItem onClick={handleClosePopover}>
+          {/* <MenuItem onClick={handleClosePopover}>
             <Iconify icon="solar:pen-bold" />
             Edit
-          </MenuItem>
+          </MenuItem> */}
 
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />

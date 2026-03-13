@@ -21,13 +21,17 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { useAppSelector } from 'src/store';
 import { useDebounce } from 'src/hooks';
+import { UserRole } from 'src/types/auth.types';
 import { DashboardContent } from 'src/layouts/dashboard';
+import employeeService from 'src/redux/services/employee.services';
 import usersService from 'src/redux/services/users.services';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
+import { EmployeeApplyLoanDialog } from '../employee-apply-loan-dialog';
 import { UsersTableRow } from '../users-table-row';
 import { UsersTableHead } from '../users-table-head';
 import { UsersTableToolbar } from '../users-table-toolbar';
@@ -44,6 +48,8 @@ const TABLE_HEAD = [
 
 export function UsersView() {
   const router = useRouter();
+  const { user } = useAppSelector((state) => state.auth);
+  const isEmployee = user?.role === UserRole.RECOVERY_OFFICER;
 
   const [tableData, setTableData] = useState<any[]>([]);
   const [page, setPage] = useState(0);
@@ -59,6 +65,12 @@ export function UsersView() {
     open: false,
     id: null as string | null,
   });
+
+  const [applyLoanDialog, setApplyLoanDialog] = useState<{
+    open: boolean;
+    customerId: string;
+    customer?: { name?: string; lastname?: string; cnic?: string; city?: string; region?: string; bankSlug?: string };
+  }>({ open: false, customerId: '' });
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -76,11 +88,14 @@ export function UsersView() {
         params.search = debouncedFilterName.trim();
       }
 
-      const response = await usersService.list(params);
+      const response = isEmployee
+        ? await employeeService.listCustomers(params)
+        : await usersService.list(params);
 
       if (response.status === 200) {
         const data = response.data?.data || response.data;
-        const { users = [], pagination = {} } = data;
+        const users = data?.users ?? data?.customers ?? [];
+        const pagination = data?.pagination ?? {};
 
         // Extract users array and set table data (only current page data from server)
         setTableData(Array.isArray(users) ? users : []);
@@ -104,7 +119,7 @@ export function UsersView() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, rowsPerPage, debouncedFilterName]);
+  }, [page, rowsPerPage, debouncedFilterName, isEmployee]);
 
   useEffect(() => {
     fetchUsers();
@@ -140,12 +155,24 @@ export function UsersView() {
     setDeleteConfirm({ open: true, id: userId });
   };
 
+  const handleApplyLoan = (customerId: string, customer: { name?: string; lastname?: string; cnic?: string; city?: string; region?: string; bankSlug?: string }) => {
+    setApplyLoanDialog({ open: true, customerId, customer });
+  };
+
+  const handleCloseApplyLoan = () => {
+    setApplyLoanDialog((prev) => ({ ...prev, open: false }));
+  };
+
   const handleConfirmDelete = async () => {
     if (!deleteConfirm.id) return;
 
     setIsDeleting(true);
     try {
-      await usersService.deleteById(deleteConfirm.id);
+      if (isEmployee) {
+        await employeeService.deleteCustomer(deleteConfirm.id);
+      } else {
+        await usersService.deleteById(deleteConfirm.id);
+      }
       toast.success('User deleted successfully!');
       setDeleteConfirm({ open: false, id: null });
 
@@ -236,16 +263,19 @@ export function UsersView() {
                     {tableData.length > 0 ? (
                       tableData.map((row) => (
                         <UsersTableRow
-                          key={row.id}
-                          id={row.id}
+                          key={row._id}
+                          id={row._id}
                           firstName={row.name || ''}
                           lastName={row.lastname || ''}
                           email={row.email}
                           phone={row.phone || 'N/A'}
                           role={row.role || 'user'}
+                          bankSlug={row.bankSlug ?? row.bank?.slug}
                           onViewRow={handleViewRow}
                           onEditRow={handleEditRow}
                           onDeleteRow={handleDeleteRow}
+                          onApplyLoan={handleApplyLoan}
+                          showApplyLoan={isEmployee}
                         />
                       ))
                     ) : (
@@ -277,6 +307,15 @@ export function UsersView() {
           </>
         )}
       </Card>
+
+      {/* Apply Loan Dialog (employee only) */}
+      <EmployeeApplyLoanDialog
+        open={applyLoanDialog.open}
+        onClose={handleCloseApplyLoan}
+        onSuccess={fetchUsers}
+        customerId={applyLoanDialog.customerId}
+        customer={applyLoanDialog.customer}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteConfirm.open} onClose={handleCancelDelete}>

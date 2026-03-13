@@ -105,12 +105,17 @@ export const adminNavData: NavItem[] = [
   },
 ];
 
-// Navigation for Recovery Officer
+// Navigation for Recovery Officer (Bank Employee)
 export const recoveryOfficerNavData: NavItem[] = [
   {
     title: 'My Recovery Cases',
     path: '/employee/recovery-dashboard',
     icon: navIcon('solar:calendar-mark-bold-duotone'),
+  },
+  {
+    title: 'Customer Management',
+    path: '/users-management',
+    icon: navIcon('solar:user-id-bold-duotone'),
   },
 ];
 

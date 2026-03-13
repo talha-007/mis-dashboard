@@ -63,7 +63,7 @@ export function BorrowerTableToolbar({
             </IconButton>
           </Tooltip>
         )}
-        {numSelected > 0 ? (
+        {/* {numSelected > 0 ? (
           <Tooltip title="Delete">
             <IconButton>
               <Iconify icon="solar:trash-bin-trash-bold" />
@@ -75,7 +75,7 @@ export function BorrowerTableToolbar({
               <Iconify icon="ic:round-filter-list" />
             </IconButton>
           </Tooltip>
-        )}
+        )} */}
       </Stack>
     </Toolbar>
   );

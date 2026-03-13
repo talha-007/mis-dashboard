@@ -1,4 +1,5 @@
 export type CreditRating = {
+  borrower_id: any;
   id: string;
   borrowerName: string;
   borrowerId: string;

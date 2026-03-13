@@ -70,6 +70,7 @@ export type BankAdminStats = {
   totalOverdueAmount: number;
   totalPortfolioOutstanding: number;
   totalPrincipalOutstanding: number;
+  totalLoanRepayment: number;
   // Legacy / optional
   parCount?: number;
 };
@@ -167,12 +168,13 @@ export function PortfolioOverviewView() {
         outstandingPortfolio: Number(stats.outstandingPortfolio ?? 0),
         par: Number(stats.par ?? stats.parCount ?? 0),
         recoveryRate: Number(stats.recoveryRate ?? 0),
-        recoveryToday: Number(stats.recoveryToday ?? 0),
+        recoveryToday: Number(stats.todayLoanRepayment ?? 0),
         totalDisbursedMTD: Number(stats.totalDisbursedMTD ?? 0),
         totalInterestOutstanding: Number(stats.totalInterestOutstanding ?? 0),
         totalOverdueAmount: Number(stats.totalOverdueAmount ?? 0),
         totalPortfolioOutstanding: Number(stats.totalPortfolioOutstanding ?? 0),
         totalPrincipalOutstanding: Number(stats.totalPrincipalOutstanding ?? 0),
+        totalLoanRepayment: Number(stats.totalLoanRepayment ?? 0),
       });
     } catch {
       setBankAdminStats(null);
@@ -481,7 +483,7 @@ export function PortfolioOverviewView() {
                   { label: 'Active Borrowers', value: fNumber(bankAdminStats.activeBorrowers) },
                   { label: 'PAR %', value: formatPercent(bankAdminStats.par) },
                   { label: 'Recovery Rate', value: formatPercent(bankAdminStats.recoveryRate) },
-                  { label: 'Recovery Today', value: fCurrency(bankAdminStats.recoveryToday) },
+                  { label: 'Total Repayments', value: fCurrency(bankAdminStats.totalLoanRepayment) },
                   { label: 'Audit Readiness', value: `${bankAdminStats.auditReadiness}%` },
                 ].map((item) => (
                   <Grid key={item.label} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>

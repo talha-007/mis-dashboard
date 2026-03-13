@@ -19,6 +19,9 @@ interface UsersTableRowProps {
   onViewRow?: (id: string) => void;
   onEditRow: (id: string) => void;
   onDeleteRow: (id: string) => void;
+  onApplyLoan?: (id: string, customer: { name?: string; lastname?: string; cnic?: string; city?: string; region?: string; bankSlug?: string }) => void;
+  showApplyLoan?: boolean;
+  bankSlug?: string;
 }
 
 export function UsersTableRow({
@@ -31,6 +34,9 @@ export function UsersTableRow({
   onViewRow,
   onEditRow,
   onDeleteRow,
+  onApplyLoan,
+  showApplyLoan,
+  bankSlug: rowBankSlug,
 }: UsersTableRowProps) {
   const [open, setOpen] = useState<HTMLButtonElement | null>(null);
 
@@ -56,6 +62,13 @@ export function UsersTableRow({
 
   const handleDelete = () => {
     onDeleteRow(id);
+    handleCloseMenu();
+  };
+
+  const handleApplyLoan = () => {
+    if (onApplyLoan) {
+      onApplyLoan(id, { name: firstName, lastname: lastName, bankSlug: rowBankSlug });
+    }
     handleCloseMenu();
   };
 
@@ -100,6 +113,12 @@ export function UsersTableRow({
           <Iconify icon="eva:eye-fill" sx={{ mr: 2 }} />
           View
         </MenuItem>
+        {showApplyLoan && onApplyLoan && (
+          <MenuItem onClick={handleApplyLoan} sx={{ color: 'success.main' }}>
+            <Iconify icon="solar:hand-money-bold" sx={{ mr: 2 }} />
+            Apply Loan
+          </MenuItem>
+        )}
         <MenuItem onClick={handleEdit} sx={{ color: 'info.main' }}>
           <Iconify icon="eva:edit-fill" sx={{ mr: 2 }} />
           Edit

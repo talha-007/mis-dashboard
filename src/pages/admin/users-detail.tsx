@@ -11,7 +11,10 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { CONFIG } from 'src/config-global';
+import { useAppSelector } from 'src/store';
+import { UserRole } from 'src/types/auth.types';
 import { DashboardContent } from 'src/layouts/dashboard';
+import employeeService from 'src/redux/services/employee.services';
 import usersService from 'src/redux/services/users.services';
 
 import { Iconify } from 'src/components/iconify';
@@ -79,6 +82,8 @@ function DetailRow({ label, value, isChip = false, chipColor = 'default' }: Deta
 export default function Page() {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
+  const isEmployee = user?.role === UserRole.RECOVERY_OFFICER;
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,8 +98,11 @@ export default function Page() {
 
       try {
         setIsLoading(true);
-        const response = await usersService.get(userId);
-        setUserData(response.data.user);
+        const response = isEmployee
+          ? await employeeService.getCustomerById(userId)
+          : await usersService.get(userId);
+        const data = response.data?.data ?? response.data;
+        setUserData(data?.user ?? data);
       } catch (err: any) {
         const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load user';
         setError(errorMessage);
@@ -105,7 +113,7 @@ export default function Page() {
     };
 
     fetchUser();
-  }, [userId]);
+  }, [userId, isEmployee]);
 
   if (isLoading) {
     return (

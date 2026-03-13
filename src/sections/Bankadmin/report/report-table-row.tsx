@@ -186,7 +186,7 @@ export function ReportTableRow({
             },
           }}
         >
-          <MenuItem
+          {/* <MenuItem
             onClick={() => {
               handleClosePopover();
               onRegenerate?.();
@@ -195,7 +195,7 @@ export function ReportTableRow({
           >
             <Iconify icon="solar:refresh-bold" />
             Regenerate
-          </MenuItem>
+          </MenuItem> */}
 
           <MenuItem
             onClick={() => {

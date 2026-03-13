@@ -57,6 +57,22 @@ export const getBankData = <T = any>(): T | null => {
   }
 };
 
+/** Get bank slug from storage (checks bankData, userData, and direct bankSlug key) */
+export const getBankSlugFromStorage = (): string | null => {
+  try {
+    const direct = localStorage.getItem('bankSlug');
+    if (direct) return direct;
+    const bankData = getBankData<{ slug?: string; bankSlug?: string }>();
+    if (bankData?.slug) return bankData.slug;
+    if (bankData?.bankSlug) return bankData.bankSlug;
+    const userData = getUserData<{ bankSlug?: string }>();
+    if (userData?.bankSlug) return userData.bankSlug;
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Set bank data in storage
  */

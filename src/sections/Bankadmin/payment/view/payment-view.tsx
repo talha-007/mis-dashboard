@@ -194,7 +194,7 @@ export function PaymentView() {
         />
 
         {/* Payment Type Filter Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
+        {/* <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
           <Tabs value={paymentType} onChange={handlePaymentTypeChange}>
             <Tab label="All" value="all" />
             <Tab label="Loan transactions" value="loan_transactions" />
@@ -202,7 +202,7 @@ export function PaymentView() {
             <Tab label="Penalty" value="penalty" />
             <Tab label="Fee" value="fee" />
           </Tabs>
-        </Box>
+        </Box> */}
 
         {/* Summary Display */}
         {summary && (

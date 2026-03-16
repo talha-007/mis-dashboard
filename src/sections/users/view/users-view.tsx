@@ -21,20 +21,21 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { useAppSelector } from 'src/store';
 import { useDebounce } from 'src/hooks';
-import { UserRole } from 'src/types/auth.types';
+import { useAppSelector } from 'src/store';
 import { DashboardContent } from 'src/layouts/dashboard';
-import employeeService from 'src/redux/services/employee.services';
 import usersService from 'src/redux/services/users.services';
+import employeeService from 'src/redux/services/employee.services';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
-import { EmployeeApplyLoanDialog } from '../employee-apply-loan-dialog';
+import { UserRole } from 'src/types/auth.types';
+
 import { UsersTableRow } from '../users-table-row';
 import { UsersTableHead } from '../users-table-head';
 import { UsersTableToolbar } from '../users-table-toolbar';
+import { EmployeeApplyLoanDialog } from '../employee-apply-loan-dialog';
 
 const TABLE_HEAD = [
   { id: 'firstName', label: 'First Name', width: 150 },

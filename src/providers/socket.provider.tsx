@@ -3,13 +3,13 @@
  * Manages socket connection and real-time events (notifications)
  */
 
-import type { StatsUpdatePayload, NotificationPayload } from 'src/services/socket';
+import type { StatsUpdatePayload, NotificationPayload } from 'src/redux/services/socket';
 
 import { useMemo, useState, useEffect, useContext, createContext, type ReactNode } from 'react';
 
 import ENV from 'src/config/environment';
 import { useAppSelector } from 'src/store';
-import { SocketEvent, socketService } from 'src/services/socket';
+import { SocketEvent, socketService } from 'src/redux/services/socket';
 
 interface SocketContextValue {
   isConnected: boolean;

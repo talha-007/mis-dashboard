@@ -18,9 +18,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useParams, useRouter } from 'src/routes/hooks';
 
-import { useAppSelector } from 'src/redux/store';
-import { getBankData, getBankSlugFromStorage } from 'src/utils/auth-storage';
 import { getCurrentBankSlug } from 'src/utils/bank-context';
+import { getBankData, getBankSlugFromStorage } from 'src/utils/auth-storage';
+
+import { useAppSelector } from 'src/redux/store';
 import { DashboardContent } from 'src/layouts/dashboard';
 import customerService from 'src/redux/services/customer.services';
 import loanApplicationService from 'src/redux/services/loan-applications';

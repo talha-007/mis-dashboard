@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
@@ -13,8 +15,8 @@ import { fCurrency } from 'src/utils/format-number';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import payoffOfferService from 'src/redux/services/payoffOffer.services';
+
 import { Iconify } from 'src/components/iconify';
-import { useEffect, useState } from 'react';
 
 // ----------------------------------------------------------------------
 

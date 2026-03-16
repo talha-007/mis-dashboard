@@ -5,30 +5,31 @@
  */
 
 import * as Yup from 'yup';
+import { useFormik } from 'formik';
 import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
+import Step from '@mui/material/Step';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import Stepper from '@mui/material/Stepper';
 import TextField from '@mui/material/TextField';
-import { useFormik } from 'formik';
+import StepLabel from '@mui/material/StepLabel';
+import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
-import Step from '@mui/material/Step';
-import Stepper from '@mui/material/Stepper';
-import StepLabel from '@mui/material/StepLabel';
-import Typography from '@mui/material/Typography';
+
+import { getCurrentBankSlug } from 'src/utils/bank-context';
+import { getBankData, getBankSlugFromStorage } from 'src/utils/auth-storage';
 
 import { useAppSelector } from 'src/store';
-import { getBankData, getBankSlugFromStorage } from 'src/utils/auth-storage';
-import { getCurrentBankSlug } from 'src/utils/bank-context';
 import customerService from 'src/redux/services/customer.services';
 import employeeService from 'src/redux/services/employee.services';
 
@@ -274,7 +275,7 @@ export function EmployeeApplyLoanDialog({
   // Fetch full customer when dialog opens (also may have bankSlug for questions)
   const [customerBankSlug, setCustomerBankSlug] = useState<string | null>(null);
   useEffect(() => {
-    if (!open || !customerId) return;
+    if (!open || !customerId) return undefined;
     setCustomer(initialCustomer);
     setCustomerBankSlug(null);
     let cancelled = false;
@@ -303,7 +304,7 @@ export function EmployeeApplyLoanDialog({
 
   useEffect(() => {
     const slug = bankSlug ?? customerBankSlug;
-    if (!slug || !open) return;
+    if (!slug || !open) return undefined;
     let cancelled = false;
     customerService
       .getRates(slug)

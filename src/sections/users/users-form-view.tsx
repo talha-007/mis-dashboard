@@ -10,16 +10,17 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import LoadingButton from '@mui/lab/LoadingButton';
+import InputAdornment from '@mui/material/InputAdornment';
 
 import { useAppSelector } from 'src/store';
-import { UserRole } from 'src/types/auth.types';
 import { DashboardContent } from 'src/layouts/dashboard';
-import employeeService from 'src/redux/services/employee.services';
 import usersService from 'src/redux/services/users.services';
+import employeeService from 'src/redux/services/employee.services';
 
 import { Iconify } from 'src/components/iconify';
+
+import { UserRole } from 'src/types/auth.types';
 
 // CNIC format: 12345-6789012-3
 const sanitizeCnic = (value: string) => {

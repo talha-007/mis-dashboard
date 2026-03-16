@@ -12,12 +12,14 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
@@ -118,16 +120,24 @@ export type BankAdminGraphsData = {
 export function PortfolioOverviewView() {
   const theme = useTheme();
   const { user } = useAuth();
-  const { bank } = useAppSelector((state) => state.auth);
+  const bank = useAppSelector((state: any) => state.auth?.bank);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
   const [bankAdminStats, setBankAdminStats] = useState<BankAdminStats | null>(null);
-  const [bankAdminAdditionalStats, setBankAdminAdditionalStats] =
+  const [bankAdminAdditionalStats, setBankAdminAdditionalStats] = useState<BankAdminAdditionalStats | null>(null);
     useState<BankAdminAdditionalStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [additionalStatsLoading, setAdditionalStatsLoading] = useState(false);
   const [graphsData, setGraphsData] = useState<BankAdminGraphsData | null>(null);
   const [graphsLoading, setGraphsLoading] = useState(false);
+  const [statsPeriod, setStatsPeriod] = useState<'default' | 'today' | 'weekly' | 'monthly' | 'yearly'>(
+    'default'
+  );
+  const [statsStartDate, setStatsStartDate] = useState<string>(
+    dayjs().startOf('month').format('YYYY-MM-DD')
+  );
+  const [statsEndDate, setStatsEndDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
+  const [statsUseCustomRange, setStatsUseCustomRange] = useState(false);
   const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
   const isAdmin = user?.role === UserRole.ADMIN;
 
@@ -157,7 +167,14 @@ export function PortfolioOverviewView() {
     if (!isAdmin) return;
     setStatsLoading(true);
     try {
-      const response = await bankAdminService.getStats();
+      const params: Record<string, string> = {};
+      if (statsUseCustomRange) {
+        params.startDate = statsStartDate;
+        params.endDate = statsEndDate;
+      } else if (statsPeriod !== 'default') {
+        params.period = statsPeriod;
+      }
+      const response = await bankAdminService.getStats(params);
       const data = response.data?.data ?? response.data;
       const stats = data?.stats ?? data ?? {};
       setBankAdminStats({
@@ -181,7 +198,7 @@ export function PortfolioOverviewView() {
     } finally {
       setStatsLoading(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, statsPeriod, statsUseCustomRange, statsStartDate, statsEndDate]);
 
   const fetchBankAdminAdditionalStats = useCallback(async () => {
     if (!isAdmin) return;
@@ -364,6 +381,106 @@ export function PortfolioOverviewView() {
       {/* Bank Admin: KPI Section */}
       {isAdmin && (
         <>
+          {/* Stats period filter — compact chip-style */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            flexWrap="wrap"
+            gap={1}
+            sx={{ mb: 3, pb: 2, borderBottom: 1, borderColor: 'divider' }}
+          >
+            <Iconify icon="solar:calendar-bold-duotone" width={20} sx={{ color: 'text.secondary' }} />
+            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+              Period:
+            </Typography>
+            {(['default', 'today', 'weekly', 'monthly', 'yearly'] as const).map((p) => (
+              <Chip
+                key={p}
+                size="small"
+                label={
+                  p === 'default'
+                    ? 'MTD'
+                    : p === 'today'
+                      ? 'Today'
+                      : p === 'weekly'
+                        ? '7 days'
+                        : p === 'monthly'
+                          ? 'Month'
+                          : 'Year'
+                }
+                onClick={() => {
+                  setStatsUseCustomRange(false);
+                  setStatsPeriod(p);
+                }}
+                color={!statsUseCustomRange && statsPeriod === p ? 'primary' : 'default'}
+                variant={!statsUseCustomRange && statsPeriod === p ? 'filled' : 'outlined'}
+                sx={{ fontWeight: !statsUseCustomRange && statsPeriod === p ? 600 : 400 }}
+              />
+            ))}
+            <Chip
+              size="small"
+              label="Custom"
+              onClick={() => setStatsUseCustomRange(true)}
+              color={statsUseCustomRange ? 'primary' : 'default'}
+              variant={statsUseCustomRange ? 'filled' : 'outlined'}
+              sx={{ fontWeight: statsUseCustomRange ? 600 : 400 }}
+            />
+            {statsUseCustomRange && (
+              <Stack direction="row" alignItems="center" gap={1} sx={{ ml: 1 }}>
+                <TextField
+                  size="small"
+                  type="date"
+                  value={statsStartDate}
+                  onChange={(e) => setStatsStartDate(e.target.value)}
+                  slotProps={{
+                    input: { sx: { fontSize: '0.8125rem', py: 0.75 }, inputProps: { max: statsEndDate } },
+                    inputLabel: { shrink: true },
+                  }}
+                  sx={{ width: 150 }}
+                />
+                <Typography variant="body2" color="text.disabled">
+                  –
+                </Typography>
+                <TextField
+                  size="small"
+                  type="date"
+                  value={statsEndDate}
+                  onChange={(e) => setStatsEndDate(e.target.value)}
+                  slotProps={{
+                    input: { sx: { fontSize: '0.8125rem', py: 0.75 }, inputProps: { min: statsStartDate } },
+                    inputLabel: { shrink: true },
+                  }}
+                  sx={{ width: 150 }}
+                />
+              </Stack>
+            )}
+            <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
+              {bank?.slug && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<Iconify icon="solar:copy-bold" width={16} />}
+                  onClick={handleCopyRegisterLink}
+                >
+                  Copy registration link
+                </Button>
+              )}
+              <Button
+                size="small"
+                variant="contained"
+                color="primary"
+                startIcon={<Iconify icon="solar:refresh-bold" width={16} />}
+                onClick={() => {
+                  fetchBankAdminStats();
+                  fetchBankAdminAdditionalStats();
+                }}
+              >
+                Refresh
+              </Button>
+            </Stack>
+          </Stack>
+
           {/* Row 1 — 4 primary KPI cards, each shows main + sub metrics */}
           <Grid container spacing={2} sx={{ mb: 2 }}>
             {statsLoading ? (
@@ -642,44 +759,6 @@ export function PortfolioOverviewView() {
             </Box>
           </Card>
         </>
-      )}
-
-      {/* Customer registration link (admin only) */}
-      {isAdmin && bank?.slug && (
-        <Card sx={{ mb: 3, p: 2 }}>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
-            spacing={2}
-            sx={{ gap: 2 }}
-          >
-            <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
-              <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 0.5 }}>
-                Customer registration link
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontFamily: 'monospace',
-                  wordBreak: 'break-all',
-                  bgcolor: alpha(theme.palette.grey[500], 0.08),
-                  px: 1.5,
-                  py: 1,
-                  borderRadius: 1,
-                }}
-              >
-                {customerRegisterUrl}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="solar:copy-bold" />}
-              onClick={handleCopyRegisterLink}
-            >
-              Copy link
-            </Button>
-          </Stack>
-        </Card>
       )}
 
       {/* Bank Payment Dialog */}

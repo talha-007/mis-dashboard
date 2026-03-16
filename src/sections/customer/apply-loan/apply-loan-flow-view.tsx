@@ -23,6 +23,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useParams, useRouter } from 'src/routes/hooks';
 
+import { getCurrentBankSlug } from 'src/utils/bank-context';
+import { getBankData, getBankSlugFromStorage } from 'src/utils/auth-storage';
+
 import { useAppSelector } from 'src/store';
 import { DashboardContent } from 'src/layouts/dashboard';
 import customerService from 'src/redux/services/customer.services';
@@ -42,7 +45,7 @@ function AssessmentStepContent({
 }: {
   onComplete: (result: { submissionId?: string }) => void;
 }) {
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, bank } = useAppSelector((state) => state.auth);
   const [assessment, setAssessment] = useState<BankAssessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -54,7 +57,12 @@ function AssessmentStepContent({
       setLoading(true);
       setError(null);
 
-      const bankSlug = (user as any)?.bankSlug;
+      const bankSlug =
+        (user as { bankSlug?: string })?.bankSlug ??
+        bank?.slug ??
+        getBankData<{ slug?: string }>()?.slug ??
+        getBankSlugFromStorage() ??
+        getCurrentBankSlug();
       if (!bankSlug) {
         setError('Bank slug not found. Unable to load assessment.');
         setAssessment(null);
@@ -89,7 +97,7 @@ function AssessmentStepContent({
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, bank]);
 
   useEffect(() => {
     fetchAssessment();
@@ -119,8 +127,13 @@ function AssessmentStepContent({
           amount: Number(fieldValues[f._id]) || 0,
         }));
 
+      const bankSlugForSubmit =
+        (user as { bankSlug?: string })?.bankSlug ??
+        bank?.slug ??
+        getBankSlugFromStorage() ??
+        '';
       const submitPayload = {
-        bankSlug: user?.bankSlug ?? '',
+        bankSlug: bankSlugForSubmit,
         answers,
       };
 

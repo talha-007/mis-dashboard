@@ -12,12 +12,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { CONFIG } from 'src/config-global';
 import { useAppSelector } from 'src/store';
-import { UserRole } from 'src/types/auth.types';
 import { DashboardContent } from 'src/layouts/dashboard';
-import employeeService from 'src/redux/services/employee.services';
 import usersService from 'src/redux/services/users.services';
+import employeeService from 'src/redux/services/employee.services';
 
 import { Iconify } from 'src/components/iconify';
+
+import { UserRole } from 'src/types/auth.types';
 
 interface DetailRowProps {
   label: string;

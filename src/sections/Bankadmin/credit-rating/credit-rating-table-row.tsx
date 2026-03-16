@@ -2,16 +2,15 @@ import type { CreditRating } from 'src/_mock/_credit-rating';
 
 import { useState } from 'react';
 
-import { useRouter } from 'src/routes/hooks';
-
 import Stack from '@mui/material/Stack';
 import Popover from '@mui/material/Popover';
-import Checkbox from '@mui/material/Checkbox';
 import MenuList from '@mui/material/MenuList';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
+
+import { useRouter } from 'src/routes/hooks';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';

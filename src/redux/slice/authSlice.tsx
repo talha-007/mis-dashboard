@@ -73,11 +73,16 @@ const initialState: AuthState = {
 };
 
 // Async thunks
-/** Merge /me API response (user + optional bank for subscriptionStatus) into user */
-function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
+/** Merge /me API response (user + optional bank + customer) into user */
+function mergeMeIntoUser(
+  loginUser: any,
+  userData: any,
+  bankData?: any,
+  customerData?: { slug?: string; bankSlug?: string } | null
+): User {
   // If the login response didn't include a user object, fall back to /me data entirely
   if (!loginUser) {
-    if (userData) return mergeMeIntoUser(userData, userData, bankData);
+    if (userData) return mergeMeIntoUser(userData, userData, bankData, customerData);
     return null as unknown as User;
   }
   const meData = userData ?? loginUser;
@@ -105,7 +110,15 @@ function mergeMeIntoUser(loginUser: any, userData: any, bankData?: any): User {
     firstName: meData.firstName ?? loginUser.firstName ?? firstName,
     lastName: meData.lastName ?? loginUser.lastName ?? lastName,
     role: normalizedRole,
-    bankSlug: meData.bankSlug ?? meData.slug ?? loginUser.bankSlug ?? undefined,
+    bankSlug:
+      meData.bankSlug ??
+      meData.slug ??
+      loginUser.bankSlug ??
+      bankData?.slug ??
+      bankData?.bankSlug ??
+      customerData?.slug ??
+      customerData?.bankSlug ??
+      undefined,
     subscriptionStatus,
     permissions: loginUser.permissions ?? [],
     isActive: loginUser.isActive ?? true,
@@ -125,8 +138,9 @@ async function fetchMeApi(): Promise<{ user: User; bank: AuthBank | null } | nul
     if (!data) return null;
     const userData = data.user ?? data;
     const bankData = data.bank ?? null;
+    const customerData = data.customer ?? null;
     const cached = getUserData<User>();
-    const merged = mergeMeIntoUser(cached ?? {}, userData, bankData);
+    const merged = mergeMeIntoUser(cached ?? {}, userData, bankData, customerData);
     const bank = bankData?.id
       ? {
           id: bankData.id,
@@ -173,7 +187,7 @@ export const superAdminLogin = createAsyncThunk(
         const meRes = await authService.getMe();
         const meData = meRes.data?.data ?? meRes.data;
         if (meData) {
-          user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
+          user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank, meData.customer);
           if (meData.bank?.id) {
             bank = {
               id: meData.bank.id,
@@ -212,7 +226,7 @@ export const adminLogin = createAsyncThunk(
         const meRes = await authService.getMe();
         const meData = meRes.data?.data ?? meRes.data;
         if (meData) {
-          user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
+          user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank, meData.customer);
           if (meData.bank?.id) {
             bank = {
               id: meData.bank.id,
@@ -280,7 +294,7 @@ export const login = createAsyncThunk(
         if (meData) {
           // /me is authoritative — use it to build the user, falling back to
           // the login payload only for fields /me doesn't include (token, etc.)
-          user = mergeMeIntoUser(loginRawUser, meData.user ?? meData, meData.bank);
+          user = mergeMeIntoUser(loginRawUser, meData.user ?? meData, meData.bank, meData.customer);
           if (meData.bank) {
             bank = {
               id: meData.bank.id ?? meData.bank._id,
@@ -325,7 +339,7 @@ export const googleLogin = createAsyncThunk(
       try {
         const meRes = await authService.getMe();
         const meData = meRes.data?.data ?? meRes.data;
-        if (meData) user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank);
+        if (meData) user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank, meData.customer);
       } catch {
         // keep login user if /me fails
       }

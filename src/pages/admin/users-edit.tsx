@@ -8,11 +8,12 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { CONFIG } from 'src/config-global';
 import { useAppSelector } from 'src/store';
-import { UserRole } from 'src/types/auth.types';
-import employeeService from 'src/redux/services/employee.services';
 import usersService from 'src/redux/services/users.services';
+import employeeService from 'src/redux/services/employee.services';
 
 import { UsersFormView } from 'src/sections/users/users-form-view';
+
+import { UserRole } from 'src/types/auth.types';
 
 export default function Page() {
   const { userId } = useParams();

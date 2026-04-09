@@ -14,7 +14,7 @@ type TableNoDataProps = TableRowProps & {
 export function TableNoData({ searchQuery, ...other }: TableNoDataProps) {
   return (
     <TableRow {...other}>
-      <TableCell align="center" colSpan={7}>
+      <TableCell align="center" colSpan={6}>
         <Box sx={{ py: 15, textAlign: 'center' }}>
           <Typography variant="h6" sx={{ mb: 1 }}>
             Not found

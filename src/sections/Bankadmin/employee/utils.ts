@@ -61,7 +61,11 @@ export function applyFilter({ inputData, comparator, filterName }: ApplyFilterPr
       (e) =>
         e.name.toLowerCase().includes(q) ||
         e.email.toLowerCase().includes(q) ||
-        (e.phone && e.phone.includes(filterName))
+        (e.phone && e.phone.toLowerCase().includes(q)) ||
+        e.jobRole.toLowerCase().includes(q) ||
+        e.department.toLowerCase().includes(q) ||
+        e.designation.toLowerCase().includes(q) ||
+        e.employeeCode.toLowerCase().includes(q)
     );
   }
   return result;

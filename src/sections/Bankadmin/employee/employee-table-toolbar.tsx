@@ -47,7 +47,7 @@ export function EmployeeTableToolbar({
           fullWidth
           value={filterName}
           onChange={onFilterName}
-          placeholder="Search employee..."
+          placeholder="Search name, email, phone, role, department..."
           startAdornment={
             <InputAdornment position="start">
               <Iconify width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />

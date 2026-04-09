@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -29,7 +30,6 @@ import { TableNoData } from './table-no-data';
 import { TableEmptyRows } from './table-empty-rows';
 import { EmployeeTableRow } from './employee-table-row';
 import { EmployeeTableHead } from './employee-table-head';
-import { EmployeeFormDialog } from './employee-form-dialog';
 import { EmployeeTableToolbar } from './employee-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from './utils';
 
@@ -38,6 +38,7 @@ import type { EmployeeProps } from './employee-table-row';
 // ----------------------------------------------------------------------
 
 export function EmployeeView() {
+  const navigate = useNavigate();
   const table = useTable();
 
   const [employees, setEmployees] = useState<EmployeeProps[]>([]);
@@ -45,10 +46,6 @@ export function EmployeeView() {
   const [error, setError] = useState<string | null>(null);
   const [filterName, setFilterName] = useState('');
   const debouncedFilterName = useDebounce(filterName, 400);
-
-  const [formDialogOpen, setFormDialogOpen] = useState(false);
-  const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
-  const [editingEmployee, setEditingEmployee] = useState<EmployeeProps | null>(null);
 
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({
     open: false,
@@ -69,8 +66,12 @@ export function EmployeeView() {
             name: e.name ?? '',
             email: e.email ?? '',
             phone: e.phone ?? '',
+            jobRole: String(e.jobRole ?? e.role ?? '').trim(),
+            department: e.department ?? '',
+            designation: e.designation ?? '',
+            employeeCode: e.employeeCode ?? e.code ?? '',
             isActive: e.isActive ?? e.active ?? true,
-            openCases: e.openCases ?? e.openCaseCount ?? 0,
+            openCases: Number(e.openCases ?? e.openCaseCount ?? 0),
           }))
         : [];
       setEmployees(mapped);
@@ -86,39 +87,6 @@ export function EmployeeView() {
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
-
-  const handleOpenAddDialog = () => {
-    setFormMode('add');
-    setEditingEmployee(null);
-    setFormDialogOpen(true);
-  };
-
-  const handleOpenEditDialog = (row: EmployeeProps) => {
-    setFormMode('edit');
-    setEditingEmployee(row);
-    setFormDialogOpen(true);
-  };
-
-  const handleCloseFormDialog = () => {
-    setFormDialogOpen(false);
-    setEditingEmployee(null);
-  };
-
-  const handleFormSubmit = async (data: {
-    name: string;
-    email: string;
-    phone: string;
-    password?: string;
-  }) => {
-    if (formMode === 'edit' && editingEmployee) {
-      await bankAdminService.updateEmployee(editingEmployee._id, data);
-      toast.success('Employee updated successfully');
-    } else {
-      await bankAdminService.createEmployee(data);
-      toast.success('Employee added successfully');
-    }
-    fetchEmployees();
-  };
 
   const handleDeleteClick = (id: string) => {
     setDeleteConfirm({ open: true, id });
@@ -165,7 +133,7 @@ export function EmployeeView() {
         <Button
           variant="contained"
           startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={handleOpenAddDialog}
+          onClick={() => navigate('/employees/add')}
         >
           Add employee
         </Button>
@@ -199,7 +167,7 @@ export function EmployeeView() {
 
             <Scrollbar>
               <TableContainer sx={{ overflow: 'unset' }}>
-                <Table sx={{ minWidth: 720 }}>
+                <Table sx={{ minWidth: 900 }}>
                   <EmployeeTableHead
                     order={table.order}
                     orderBy={table.orderBy}
@@ -207,11 +175,12 @@ export function EmployeeView() {
                     numSelected={table.selected.length}
                     onSort={table.onSort}
                     headLabel={[
-                      { id: 'name', label: 'Name' },
-                      { id: 'phone', label: 'Phone' },
-                      { id: 'openCases', label: 'Open cases', align: 'right' },
-                      { id: 'isActive', label: 'Status' },
-                      { id: '', label: '', align: 'right' },
+                      { id: 'name', label: 'Employee', minWidth: 200 },
+                      { id: 'email', label: 'Contact', minWidth: 240 },
+                      { id: 'jobRole', label: 'Role', minWidth: 160 },
+                      { id: 'openCases', label: 'Open cases', align: 'right', minWidth: 100 },
+                      { id: 'isActive', label: 'Status', minWidth: 100 },
+                      { id: '', label: '', align: 'right', minWidth: 56 },
                     ]}
                   />
                   <TableBody>
@@ -222,13 +191,13 @@ export function EmployeeView() {
                           row={row}
                           selected={table.selected.includes(row._id)}
                           onSelectRow={() => table.onSelectRow(row._id)}
-                          onEdit={handleOpenEditDialog}
+                          onEdit={(row) => navigate(`/employees/edit/${row._id}`)}
                           onDelete={handleDeleteClick}
                         />
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                        <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
                           <Typography variant="body2" color="text.secondary">
                             {notFound
                               ? `No employees found for "${debouncedFilterName}"`
@@ -264,15 +233,6 @@ export function EmployeeView() {
         )}
       </Card>
 
-      <EmployeeFormDialog
-        open={formDialogOpen}
-        onClose={handleCloseFormDialog}
-        onSuccess={fetchEmployees}
-        mode={formMode}
-        initialData={editingEmployee}
-        onSubmit={handleFormSubmit}
-      />
-
       <Dialog open={deleteConfirm.open} onClose={handleCancelDelete} maxWidth="xs" fullWidth>
         <DialogTitle>Delete Employee</DialogTitle>
         <DialogContent>
@@ -301,7 +261,7 @@ export function EmployeeView() {
 
 function useTable() {
   const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy, setOrderBy] = useState<keyof EmployeeProps>('name');
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selected, setSelected] = useState<string[]>([]);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
@@ -311,7 +271,7 @@ function useTable() {
       if (!id) return;
       const isAsc = orderBy === id && order === 'asc';
       setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(id);
+      setOrderBy(id as keyof EmployeeProps);
     },
     [order, orderBy]
   );

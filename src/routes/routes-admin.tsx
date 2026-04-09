@@ -33,6 +33,8 @@ const UsersEditPage = lazy(() => import('src/pages/admin/users-edit'));
 const UsersDetailPage = lazy(() => import('src/pages/admin/users-detail'));
 const BankSettingsPage = lazy(() => import('src/pages/admin/bank-settings'));
 const EmployeesPage = lazy(() => import('src/pages/admin/employees'));
+const EmployeeAddPage = lazy(() => import('src/pages/admin/employee-add'));
+const EmployeeEditPage = lazy(() => import('src/pages/admin/employee-edit'));
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -176,6 +178,22 @@ export const adminRoutes: RouteObject[] = [
         allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RECOVERY_OFFICER]}
       >
         <UsersDetailPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'employees/add',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <EmployeeAddPage />
+      </MultiRoleGuard>
+    ),
+  },
+  {
+    path: 'employees/edit/:id',
+    element: (
+      <MultiRoleGuard allowedRoles={[UserRole.SUPER_ADMIN, UserRole.ADMIN]}>
+        <EmployeeEditPage />
       </MultiRoleGuard>
     ),
   },

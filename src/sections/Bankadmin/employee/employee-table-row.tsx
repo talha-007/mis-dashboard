@@ -19,9 +19,21 @@ export type EmployeeProps = {
   name: string;
   email: string;
   phone: string;
-  isActive?: boolean;
-  openCases?: number;
+  jobRole: string;
+  department: string;
+  designation: string;
+  employeeCode: string;
+  isActive: boolean;
+  openCases: number;
 };
+
+function formatJobRole(role: string) {
+  if (!role.trim()) return '—';
+  return role
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 type EmployeeTableRowProps = {
   row: EmployeeProps;
@@ -62,21 +74,45 @@ export function EmployeeTableRow({
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
         <TableCell component="th" scope="row">
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle2">{row.name}</Typography>
-            <Typography variant="caption" color="text.secondary">
-              {row.email}
+          <Stack spacing={0.25}>
+            <Typography variant="subtitle2" noWrap title={row.name}>
+              {row.name || '—'}
+            </Typography>
+            {(row.employeeCode || row.designation) && (
+              <Typography variant="caption" color="text.secondary" noWrap>
+                {[row.employeeCode, row.designation].filter(Boolean).join(' · ')}
+              </Typography>
+            )}
+          </Stack>
+        </TableCell>
+
+        <TableCell sx={{ maxWidth: 280 }}>
+          <Stack spacing={0.25}>
+            <Typography variant="body2" noWrap title={row.email}>
+              {row.email || '—'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              {row.phone || '—'}
             </Typography>
           </Stack>
         </TableCell>
 
-        <TableCell>{row.phone || '—'}</TableCell>
+        <TableCell sx={{ maxWidth: 200 }}>
+          <Stack spacing={0.25}>
+            <Typography variant="body2">{formatJobRole(row.jobRole)}</Typography>
+            {row.department ? (
+              <Typography variant="caption" color="text.secondary" noWrap title={row.department}>
+                {row.department}
+              </Typography>
+            ) : null}
+          </Stack>
+        </TableCell>
 
-        <TableCell align="right">{row.openCases ?? 0}</TableCell>
+        <TableCell align="right">{row.openCases}</TableCell>
 
         <TableCell>
-          <Label color={row.isActive !== false ? 'success' : 'default'}>
-            {row.isActive !== false ? 'Active' : 'Inactive'}
+          <Label color={row.isActive ? 'success' : 'default'}>
+            {row.isActive ? 'Active' : 'Inactive'}
           </Label>
         </TableCell>
 

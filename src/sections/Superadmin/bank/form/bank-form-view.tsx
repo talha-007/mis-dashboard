@@ -48,6 +48,17 @@ type BankFormValues = {
   status: 'active';
 };
 
+/** API may return ISO strings; `<input type="date">` only accepts `yyyy-MM-dd`. */
+function toDateInputValue(value: unknown): string {
+  if (value == null || value === '') return '';
+  const s = String(value);
+  const head = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (head) return head[1];
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
+
 const defaultValues: BankFormValues = {
   name: '',
   code: '',
@@ -329,7 +340,7 @@ export function BankFormView({ bankId }: BankFormViewProps) {
             taxId: bank.taxId || '',
             licenseNumber: bank.licenseNumber || '',
             bankType: bank.bankType || '',
-            establishedDate: bank.establishedDate || '',
+            establishedDate: toDateInputValue(bank.establishedDate),
             capitalAmount: bank.capitalAmount ?? '',
             email: bank.email || '',
             phone: bank.phone || '',

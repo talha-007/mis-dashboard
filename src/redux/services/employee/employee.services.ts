@@ -1,3 +1,5 @@
+import type { AssessmentSubmitAnswer } from 'src/types/assessment.types';
+
 import { callAPi } from '../http-common';
 
 /**
@@ -32,7 +34,7 @@ const deleteCustomer = (id: string) => callAPi.delete(`/api/v1/employee/customer
 const submitAssessmentOnBehalf = (
   customerId: string,
   bankSlug: string,
-  answers: Array<{ fieldKey: string; amount: number }>
+  answers: AssessmentSubmitAnswer[]
 ) => callAPi.post('/api/v1/employee/assessments/submit', { customerId, bankSlug, answers });
 
 // --- Loan Applications (on behalf of customer) ---

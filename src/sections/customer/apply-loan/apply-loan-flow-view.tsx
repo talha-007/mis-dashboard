@@ -32,13 +32,17 @@ import customerService from 'src/redux/services/customer.services';
 
 import { Iconify } from 'src/components/iconify';
 
-import { isCustomField } from 'src/types/assessment.types';
+import { isCustomField, buildAssessmentSubmitAnswers } from 'src/types/assessment.types';
 
 import { ApplyLoanFormView } from './apply-loan-form-view';
 
 // ----------------------------------------------------------------------
 
 type FieldValuesState = Record<string, string>;
+
+function freeTextStorageKey(fieldId: string) {
+  return `${fieldId}__note`;
+}
 
 function AssessmentStepContent({
   onComplete,
@@ -51,6 +55,7 @@ function AssessmentStepContent({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<FieldValuesState>({});
+  const [freeTextValues, setFreeTextValues] = useState<FieldValuesState>({});
 
   const fetchAssessment = useCallback(async () => {
     try {
@@ -84,6 +89,8 @@ function AssessmentStepContent({
           order: q.order ?? index + 1,
           unit: q.unit,
           questionType: q.questionType === 'expense' ? 'expense' : 'income',
+          allowFreeText: Boolean(q.allowFreeText),
+          freeTextLabel: typeof q.freeTextLabel === 'string' ? q.freeTextLabel : undefined,
         }));
 
       setAssessment({
@@ -120,12 +127,12 @@ function AssessmentStepContent({
       setSubmitting(true);
       setError(null);
 
-      const answers = customFields
-        .filter((f) => fieldValues[f._id]?.trim())
-        .map((f) => ({
-          fieldKey: f.fieldKey,
-          amount: Number(fieldValues[f._id]) || 0,
-        }));
+      const answers = buildAssessmentSubmitAnswers(
+        customFields,
+        fieldValues,
+        freeTextValues,
+        freeTextStorageKey
+      );
 
       const bankSlugForSubmit =
         (user as { bankSlug?: string })?.bankSlug ??
@@ -213,6 +220,23 @@ function AssessmentStepContent({
               ) : undefined,
             }}
           />
+          {field.allowFreeText && (
+            <TextField
+              fullWidth
+              multiline
+              minRows={2}
+              sx={{ mt: 2 }}
+              value={freeTextValues[freeTextStorageKey(field._id)] ?? ''}
+              onChange={(e) =>
+                setFreeTextValues((prev) => ({
+                  ...prev,
+                  [freeTextStorageKey(field._id)]: e.target.value,
+                }))
+              }
+              label={field.freeTextLabel || 'Additional details (optional)'}
+              placeholder="Optional"
+            />
+          )}
         </Card>
       ))}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>

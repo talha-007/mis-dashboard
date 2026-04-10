@@ -1,15 +1,8 @@
-import type { BankAssessment, AssessmentSubmission } from 'src/types/assessment.types';
+import type { BankAssessment, AssessmentSubmitAnswer } from 'src/types/assessment.types';
 
 import { callAPi } from '../http-common';
-import customerService from '../customer/customer.services';
 import bankAdminService from '../bank-admin/bank-admin.services';
-import systemUserService from '../system-user/system-user.services';
-
-/**
- * Assessment Service (facade + mapping)
- * Bank Admin: get/update bank questions. System User: submit assessment, my assessments.
- * Endpoints: /api/v1/bankAdmin/bank-questions, /api/v1/systemUser/assessments
- */
+import customerService from '../customer/customer.services';
 
 function mapToBankAssessment(raw: any): BankAssessment {
   const questions: BankAssessment['questions'] = (raw?.questions ?? []).map(
@@ -37,6 +30,8 @@ function mapToBankAssessment(raw: any): BankAssessment {
         order: q.order ?? index + 1,
         unit: q.unit,
         questionType: q.questionType === 'expense' ? 'expense' : 'income',
+        allowFreeText: Boolean(q.allowFreeText),
+        freeTextLabel: typeof q.freeTextLabel === 'string' ? q.freeTextLabel : undefined,
       };
     }
   );
@@ -57,12 +52,22 @@ function mapToBankAssessment(raw: any): BankAssessment {
   };
 }
 
-const getBankAssessment = (_bankId?: string) =>
+const getBankAssessment = () =>
   bankAdminService.getBankQuestions().then((res) => {
     const body = res.data?.data ?? res.data;
     const bankQuestions = body?.bankQuestions ?? body;
     return { data: mapToBankAssessment(bankQuestions) };
   });
+
+const getAssessmentForCustomer = (bankSlug?: string) =>
+  customerService.getBankQuestionsForCustomer(bankSlug || '').then((res) => {
+    const body = res.data?.data ?? res.data;
+    const bankQuestions = body?.bankQuestions ?? body;
+    return { data: mapToBankAssessment(bankQuestions) };
+  });
+
+const submitAssessment = (bankSlug: string, answers: AssessmentSubmitAnswer[]) =>
+  customerService.submitAssessmentAnswers({ bankSlug, answers });
 
 const updateBankAssessment = (
   _bankId: string,
@@ -74,7 +79,6 @@ const updateBankAssessment = (
         return {
           type: 'multiple_choice' as const,
           text: q.text,
-
           order: q.order ?? index + 1,
           questionType: q.questionType ?? 'income',
           options: q.options.map((o) => ({ text: o.text, points: o.points })),
@@ -88,6 +92,8 @@ const updateBankAssessment = (
         order: q.order ?? index + 1,
         unit: q.unit,
         questionType: q.questionType ?? 'income',
+        allowFreeText: Boolean(q.allowFreeText),
+        ...(q.allowFreeText && q.freeTextLabel ? { freeTextLabel: q.freeTextLabel } : {}),
       };
     }),
   };
@@ -97,41 +103,6 @@ const updateBankAssessment = (
   }));
 };
 
-const getAssessmentForCustomer = (bankId?: string) => {
-  if (bankId) {
-    // Use new customer-side API: /api/v1/bank-questions/customer/:bankId
-    return customerService.getBankQuestionsForCustomer(bankId).then((res) => ({
-      data: mapToBankAssessment(res.data?.data ?? res.data),
-    }));
-  }
-  // Fallback to existing API
-  return bankAdminService.getBankQuestionsForCustomer(bankId || '').then((res) => ({
-    data: mapToBankAssessment(res.data?.data ?? res.data),
-  }));
-};
-
-export type AssessmentAnswerPayload = { fieldKey: string; amount: number };
-
-const submitAssessment = (bankSlug: string, answers: AssessmentAnswerPayload[]) => {
-  const payload = {
-    bankSlug,
-    answers,
-  };
-  // Use new customer-side API: /api/v1/assessments/submit
-  return customerService.submitAssessmentAnswers(payload).then((res) => ({
-    data: (res.data?.data ?? res.data) as AssessmentSubmission,
-  }));
-};
-
-const getMyLatestSubmission = () =>
-  systemUserService.getMyAssessments().then((res) => {
-    const list = res.data?.data ?? res.data;
-    const arr = Array.isArray(list) ? list : (list?.assessments ?? []);
-    const latest = arr[0] ?? null;
-    return { data: latest as AssessmentSubmission | null };
-  });
-
-// Credit proposal reports
 const getCreditProposalReports = (params?: any) =>
   callAPi.get('/api/v1/bankAdmin/credit-proposal-reports', { params });
 
@@ -146,10 +117,9 @@ const rejectLoanApplication = (reportId: string) =>
 
 const assessmentService = {
   getBankAssessment,
-  updateBankAssessment,
   getAssessmentForCustomer,
   submitAssessment,
-  getMyLatestSubmission,
+  updateBankAssessment,
   getCreditProposalReports,
   getCreditProposalReportById,
   approveLoanApplication,

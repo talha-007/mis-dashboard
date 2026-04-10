@@ -30,7 +30,44 @@ export type AssessmentCustomField = {
   order: number;
   unit?: string; // e.g. "PKR/month"
   questionType?: QuestionCategory; // income or expense
+  /** When true (from API), show an optional text field under the amount. */
+  allowFreeText?: boolean;
+  /** Label for the optional text field. */
+  freeTextLabel?: string;
 };
+
+/** One answer row for POST /api/v1/assessments/submit */
+export type AssessmentSubmitAnswer = {
+  fieldKey: string;
+  amount: number | '';
+  text: string;
+};
+
+/**
+ * Builds `answers` with unified `{ fieldKey, amount, text }`.
+ * Optional free text is merged into the same row when `allowFreeText` is true.
+ */
+export function buildAssessmentSubmitAnswers(
+  customFields: AssessmentCustomField[],
+  fieldValues: Record<string, string>,
+  freeTextValues: Record<string, string>,
+  getFreeTextStorageKey: (fieldId: string) => string
+): AssessmentSubmitAnswer[] {
+  const items: AssessmentSubmitAnswer[] = [];
+  customFields.forEach((f) => {
+    const amountStr = fieldValues[f._id]?.trim();
+    if (!amountStr) return;
+    const text = f.allowFreeText
+      ? freeTextValues[getFreeTextStorageKey(f._id)]?.trim() ?? ''
+      : '';
+    items.push({
+      fieldKey: f.fieldKey,
+      amount: Number(amountStr) || 0,
+      text,
+    });
+  });
+  return items;
+}
 
 export type AssessmentItem = AssessmentQuestion | AssessmentCustomField;
 

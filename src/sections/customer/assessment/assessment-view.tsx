@@ -20,9 +20,13 @@ import assessmentService from 'src/redux/services/assessment.services';
 
 import { Iconify } from 'src/components/iconify';
 
-import { isCustomField } from 'src/types/assessment.types';
+import { isCustomField, buildAssessmentSubmitAnswers } from 'src/types/assessment.types';
 
 type FieldValuesState = Record<string, string>;
+
+function freeTextStorageKey(fieldId: string) {
+  return `${fieldId}__note`;
+}
 
 export function CustomerAssessmentView() {
   const navigate = useNavigate();
@@ -32,6 +36,7 @@ export function CustomerAssessmentView() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<FieldValuesState>({});
+  const [freeTextValues, setFreeTextValues] = useState<FieldValuesState>({});
   const [submittedResult, setSubmittedResult] = useState<boolean>(false);
 
   const fetchAssessment = useCallback(async () => {
@@ -59,6 +64,10 @@ export function CustomerAssessmentView() {
     setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
   };
 
+  const handleFreeTextChange = (fieldId: string, value: string) => {
+    setFreeTextValues((prev) => ({ ...prev, [freeTextStorageKey(fieldId)]: value }));
+  };
+
   const allFilled =
     customFields.length > 0 &&
     customFields.every((f) => {
@@ -68,13 +77,8 @@ export function CustomerAssessmentView() {
       return !Number.isNaN(num) && num >= 0;
     });
 
-  const buildAnswersPayload = (): { fieldKey: string; amount: number }[] =>
-    customFields
-      .filter((f) => fieldValues[f._id]?.trim())
-      .map((f) => ({
-        fieldKey: f.fieldKey,
-        amount: Number(fieldValues[f._id]) || 0,
-      }));
+  const buildAnswersPayload = () =>
+    buildAssessmentSubmitAnswers(customFields, fieldValues, freeTextValues, freeTextStorageKey);
 
   const handleSubmit = async () => {
     if (!allFilled) return;
@@ -126,6 +130,7 @@ export function CustomerAssessmentView() {
               onClick={() => {
                 setSubmittedResult(false);
                 setFieldValues({});
+                setFreeTextValues({});
               }}
             >
               Retake assessment
@@ -204,6 +209,18 @@ export function CustomerAssessmentView() {
                 ) : undefined,
               }}
             />
+            {field.allowFreeText && (
+              <TextField
+                fullWidth
+                multiline
+                minRows={2}
+                sx={{ mt: 2 }}
+                value={freeTextValues[freeTextStorageKey(field._id)] ?? ''}
+                onChange={(e) => handleFreeTextChange(field._id, e.target.value)}
+                label={field.freeTextLabel || 'Additional details (optional)'}
+                placeholder="Optional"
+              />
+            )}
           </Card>
         ))}
       </Stack>

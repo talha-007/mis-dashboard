@@ -15,6 +15,7 @@ import FormControl from '@mui/material/FormControl';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 
 import { ASSESSMENT_CUSTOM_FIELD_OPTIONS } from 'src/types/assessment.types';
 
@@ -38,6 +39,8 @@ export function AssessmentCustomFieldDialog({
   const [label, setLabel] = useState('');
   const [unit, setUnit] = useState('');
   const [questionType, setQuestionType] = useState<QuestionCategory>('income');
+  const [allowFreeText, setAllowFreeText] = useState(false);
+  const [freeTextLabel, setFreeTextLabel] = useState('');
 
   useEffect(() => {
     if (open) {
@@ -46,11 +49,15 @@ export function AssessmentCustomFieldDialog({
         setLabel(field.label);
         setUnit(field.unit ?? '');
         setQuestionType(field.questionType ?? 'income');
+        setAllowFreeText(Boolean(field.allowFreeText));
+        setFreeTextLabel(field.freeTextLabel ?? '');
       } else {
         setFieldKey('');
         setLabel('');
         setUnit('');
         setQuestionType('income');
+        setAllowFreeText(false);
+        setFreeTextLabel('');
       }
     }
   }, [open, field]);
@@ -76,6 +83,8 @@ export function AssessmentCustomFieldDialog({
       order: field?.order ?? 0,
       unit: unit.trim() || undefined,
       questionType,
+      allowFreeText: allowFreeText || undefined,
+      freeTextLabel: allowFreeText ? freeTextLabel.trim() || undefined : undefined,
     });
     onClose();
   };
@@ -128,7 +137,30 @@ export function AssessmentCustomFieldDialog({
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
           placeholder="e.g. PKR/month"
+          sx={{ mb: 2 }}
         />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={allowFreeText}
+              onChange={(e) => setAllowFreeText(e.target.checked)}
+              color="primary"
+            />
+          }
+          label="Allow optional text with the amount"
+        />
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2, pl: 0.5 }}>
+          When on, customers see an extra text field under the amount (same field key in submit).
+        </Typography>
+        {allowFreeText && (
+          <TextField
+            fullWidth
+            label="Label for optional text (optional)"
+            value={freeTextLabel}
+            onChange={(e) => setFreeTextLabel(e.target.value)}
+            placeholder="e.g. Explain or add context"
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>

@@ -1,6 +1,12 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 
-import { getAuthToken } from 'src/utils/auth-storage';
+import {
+  getAuthToken,
+  getRefreshToken,
+  isTokenNearExpiry,
+  setAuthSessionTokens,
+  clearAuthToken,
+} from 'src/utils/auth-storage';
 
 import ENV from 'src/config/environment';
 
@@ -24,13 +30,98 @@ export const callAPiMultiPart = axios.create({
   },
 });
 
-// Request interceptors
-const requestInterceptor = (config: InternalAxiosRequestConfig) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+  _skipAuthRefresh?: boolean;
+};
+
+let refreshInProgress: Promise<string | null> | null = null;
+
+const resolveLoginPathByRole = () => {
+  try {
+    const raw = localStorage.getItem('userData');
+    const user = raw ? JSON.parse(raw) : null;
+    const role = user?.role;
+    if (role === 'superadmin') return '/sign-in/superadmin';
+    if (role === 'admin') return '/sign-in/admin';
+    return '/sign-in';
+  } catch {
+    return '/sign-in';
   }
-  return config;
+};
+
+const clearSessionAndRedirect = () => {
+  try {
+    clearAuthToken();
+    if (typeof window !== 'undefined') {
+      window.location.href = resolveLoginPathByRole();
+    }
+  } catch {
+    // no-op: avoid crashing interceptor path
+  }
+};
+
+const extractRefreshPayload = (payload: any) => {
+  const data = payload?.data ?? payload;
+  return {
+    token: data?.token as string | undefined,
+    refreshToken: data?.refreshToken as string | undefined,
+    expiresAt: (data?.expiresAt ?? data?.expiresIn) as string | number | undefined,
+    tokenType: data?.tokenType as string | undefined,
+  };
+};
+
+const performTokenRefresh = async (): Promise<string | null> => {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return null;
+
+  const response = await axios.post(
+    `${API_URL}/api/auth/refresh-token`,
+    { refreshToken },
+    {
+      withCredentials: true,
+      timeout: ENV.API.TIMEOUT,
+      headers: { 'Content-type': 'application/json' },
+    }
+  );
+  const next = extractRefreshPayload(response?.data);
+  if (!next.token) return null;
+  setAuthSessionTokens({
+    token: next.token,
+    refreshToken: next.refreshToken || refreshToken,
+    expiresAt: next.expiresAt,
+    tokenType: next.tokenType,
+  });
+  return next.token;
+};
+
+const getFreshAccessToken = async (): Promise<string | null> => {
+  if (refreshInProgress) return refreshInProgress;
+  refreshInProgress = performTokenRefresh()
+    .catch(() => null)
+    .finally(() => {
+      refreshInProgress = null;
+    });
+  return refreshInProgress;
+};
+
+// Request interceptors
+const requestInterceptor = async (config: InternalAxiosRequestConfig) => {
+  const req = config as RetryableRequestConfig;
+  let token = getAuthToken();
+  if (!req._skipAuthRefresh && token && isTokenNearExpiry(60)) {
+    const refreshed = await getFreshAccessToken();
+    token = refreshed || getAuthToken();
+    if (!token) {
+      clearSessionAndRedirect();
+      return Promise.reject(new Error('Session expired'));
+    }
+  }
+  if (token) {
+    req.headers = req.headers ?? {};
+    req.headers.Authorization = `Bearer ${token}`;
+  }
+  return req;
 };
 
 const requestErrorInterceptor = (error: any) => Promise.reject(error);
@@ -38,6 +129,22 @@ const requestErrorInterceptor = (error: any) => Promise.reject(error);
 // Response interceptor - handle errors with toast notifications
 const responseErrorInterceptor = async (error: any) => {
   const { response } = error;
+  const originalRequest = error?.config as RetryableRequestConfig | undefined;
+
+  if (response?.status === 401 && originalRequest && !originalRequest._retry) {
+    originalRequest._retry = true;
+    const refreshedToken = await getFreshAccessToken();
+    if (refreshedToken) {
+      originalRequest.headers = originalRequest.headers ?? {};
+      originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
+      if ((originalRequest.baseURL ?? '') === callAPiMultiPart.defaults.baseURL) {
+        return callAPiMultiPart(originalRequest);
+      }
+      return callAPi(originalRequest);
+    }
+    clearSessionAndRedirect();
+    return Promise.reject(error);
+  }
 
   // 401 Unauthorized - show error toast, don't logout
   if (response?.status === 401) {

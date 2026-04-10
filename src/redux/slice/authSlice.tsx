@@ -9,6 +9,7 @@ import {
   setBankData,
   getBankData,
   setAuthToken,
+  setAuthSessionTokens,
   getAuthToken,
   clearAuthToken,
 } from 'src/utils/auth-storage';
@@ -278,8 +279,15 @@ export const login = createAsyncThunk(
       const response = await authService.login(credentials);
       const data = response.data?.data || response.data;
 
-      // Store the token first so /me can be called with it
-      if (data.token) setAuthToken(data.token);
+      // Store session tokens first so /me can be called with valid auth.
+      if (data.token) {
+        setAuthSessionTokens({
+          token: data.token,
+          refreshToken: data.refreshToken,
+          expiresAt: data.expiresAt ?? data.expiresIn,
+          tokenType: data.tokenType,
+        });
+      }
 
       // The login response shape varies by role — some return "user", others
       // "admin", "customer", etc. We always follow up with /me which is the

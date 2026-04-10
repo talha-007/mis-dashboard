@@ -14,6 +14,7 @@ import superadminService from '../superadmin/superadmin.services';
 
 // Unified login for all roles (superadmin, admin, customer, recovery_officer)
 const login = (data: any) => callAPi.post('/api/auth/login', data);
+const refreshToken = (data: { refreshToken: string }) => callAPi.post('/api/auth/refresh-token', data);
 
 const superAdminLogin = (data: any) => superadminService.login(data);
 
@@ -72,6 +73,7 @@ const getCurrentUser = () => getMe();
 
 const authService = {
   login,
+  refreshToken,
   getMe,
   getProfile,
   superAdminLogin,

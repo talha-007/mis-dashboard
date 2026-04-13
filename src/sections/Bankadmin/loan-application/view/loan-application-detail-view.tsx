@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -33,6 +34,8 @@ import loanApplicationService from 'src/redux/services/loan-applications';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
+
+import { LoanApplicationRescheduleDialog } from '../loan-application-reschedule-dialog';
 
 // ----------------------------------------------------------------------
 // API response types (detail GET)
@@ -136,6 +139,28 @@ interface DetailResponse {
   projectedPlan?: ProjectedPlan;
 }
 
+function mapRawToDetail(raw: any): DetailResponse | null {
+  if (raw?.loanApplication) {
+    return {
+      loanApplication: raw.loanApplication,
+      assessment: raw.assessment,
+      eligibility: raw.eligibility,
+      paymentSchedule: raw.paymentSchedule,
+      projectedPlan: raw.projectedPlan,
+    };
+  }
+  if (raw?._id) {
+    return {
+      loanApplication: raw as LoanApplication,
+      assessment: raw.assessment,
+      eligibility: raw.eligibility,
+      paymentSchedule: raw.paymentSchedule,
+      projectedPlan: raw.projectedPlan,
+    };
+  }
+  return null;
+}
+
 // Helper: key-value row for doc sections
 function DocRow({
   label,
@@ -172,47 +197,53 @@ export function LoanApplicationDetailView() {
   const [activeTab, setActiveTab] = useState<
     'overview' | 'assessment' | 'eligibility' | 'plan' | 'schedule'
   >('overview');
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchApplication = async () => {
+  const fetchDetail = useCallback(
+    async (opts?: { showSpinner?: boolean }) => {
+      const showSpinner = opts?.showSpinner !== false;
+      if (!id) {
+        setError('Application ID not found');
+        return;
+      }
       try {
-        setLoading(true);
-        setError(null);
-        if (!id) {
-          setError('Application ID not found');
-          return;
+        if (showSpinner) {
+          setLoading(true);
+          setError(null);
         }
         const response = await loanApplicationService.get(id as string);
         const raw = response.data?.data ?? response.data;
-        if (raw?.loanApplication) {
-          setData({
-            loanApplication: raw.loanApplication,
-            assessment: raw.assessment,
-            eligibility: raw.eligibility,
-            paymentSchedule: raw.paymentSchedule,
-            projectedPlan: raw.projectedPlan,
-          });
-        } else if (raw?._id) {
-          setData({
-            loanApplication: raw as LoanApplication,
-            assessment: raw.assessment,
-            eligibility: raw.eligibility,
-            paymentSchedule: raw.paymentSchedule,
-            projectedPlan: raw.projectedPlan,
-          });
-        } else {
-          setData(null);
-        }
+        setData(mapRawToDetail(raw));
       } catch (err: any) {
-        setError(err?.response?.data?.message || err.message || 'Failed to load application');
-        setData(null);
+        const msg = err?.response?.data?.message || err.message || 'Failed to load application';
+        if (showSpinner) {
+          setError(msg);
+          setData(null);
+        } else {
+          toast.error(msg);
+        }
       } finally {
-        setLoading(false);
+        if (showSpinner) setLoading(false);
       }
-    };
+    },
+    [id]
+  );
 
-    fetchApplication();
-  }, [id]);
+  useEffect(() => {
+    fetchDetail();
+  }, [fetchDetail]);
+
+  const handleRescheduleSuccess = useCallback(async () => {
+    await fetchDetail({ showSpinner: false });
+    setActiveTab('schedule');
+  }, [fetchDetail]);
+
+  /** Approved loans no longer show Projected Plan — avoid staying on a removed tab. */
+  useEffect(() => {
+    if (data?.loanApplication?.status === 'approved' && activeTab === 'plan') {
+      setActiveTab('schedule');
+    }
+  }, [data?.loanApplication?.status, activeTab]);
 
   const application = data?.loanApplication;
 
@@ -246,24 +277,10 @@ export function LoanApplicationDetailView() {
 
       await loanApplicationService.updateStatus(application._id, payload);
 
-      const response = await loanApplicationService.get(id as string);
-      const raw = response.data?.data ?? response.data;
-      if (raw?.loanApplication) {
-        setData({
-          loanApplication: raw.loanApplication,
-          assessment: raw.assessment,
-          eligibility: raw.eligibility,
-          paymentSchedule: raw.paymentSchedule,
-          projectedPlan: raw.projectedPlan,
-        });
-      } else if (raw?._id) {
-        setData({
-          loanApplication: raw as LoanApplication,
-          assessment: raw.assessment,
-          eligibility: raw.eligibility,
-          paymentSchedule: raw.paymentSchedule,
-          projectedPlan: raw.projectedPlan,
-        });
+      await fetchDetail({ showSpinner: false });
+
+      if (dialogAction === 'approve') {
+        setActiveTab('schedule');
       }
 
       setOpenDialog(false);
@@ -313,6 +330,8 @@ export function LoanApplicationDetailView() {
     application?.status === 'under_review' ||
     application?.status === 'submitted';
 
+  const canReschedule = application?.status === 'approved';
+
   if (loading) {
     return (
       <DashboardContent>
@@ -338,6 +357,7 @@ export function LoanApplicationDetailView() {
   const eligibility = data?.eligibility;
   const paymentSchedule = data?.paymentSchedule;
   const projectedPlan = data?.projectedPlan;
+  const isApproved = application.status === 'approved';
   const customerName =
     application.customerName ||
     (application.customerId
@@ -358,7 +378,7 @@ export function LoanApplicationDetailView() {
         gap={2}
       >
         <Typography variant="h4">Loan Application Details</Typography>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           <Button
             variant="outlined"
             startIcon={<Iconify icon="eva:arrow-back-fill" />}
@@ -366,6 +386,16 @@ export function LoanApplicationDetailView() {
           >
             Back
           </Button>
+          {canReschedule && (
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<Iconify icon="solar:calendar-date-bold-duotone" />}
+              onClick={() => setRescheduleOpen(true)}
+            >
+              Reschedule payment plan
+            </Button>
+          )}
           {isPending && (
             <>
               <Button
@@ -405,7 +435,7 @@ export function LoanApplicationDetailView() {
           <Tab label="Overview" value="overview" />
           <Tab label="Assessment" value="assessment" />
           <Tab label="Eligibility" value="eligibility" />
-          <Tab label="Projected Plan" value="plan" />
+          {!isApproved && <Tab label="Projected Plan" value="plan" />}
           <Tab label="Payment Schedule" value="schedule" />
         </Tabs>
       </Card>
@@ -628,7 +658,7 @@ export function LoanApplicationDetailView() {
         )}
 
         {/* Projected plan tab */}
-        {activeTab === 'plan' && projectedPlan && (
+        {activeTab === 'plan' && !isApproved && projectedPlan && (
           <Card sx={{ p: 3 }}>
             <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
               Projected Plan
@@ -696,9 +726,28 @@ export function LoanApplicationDetailView() {
         {/* Payment schedule tab */}
         {activeTab === 'schedule' && paymentSchedule?.installments && (
           <Card sx={{ p: 3 }}>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
-              Payment Schedule
-            </Typography>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              alignItems={{ xs: 'flex-start', sm: 'center' }}
+              justifyContent="space-between"
+              spacing={1}
+              sx={{ mb: 2 }}
+            >
+              <Typography variant="subtitle1" fontWeight={700}>
+                Payment Schedule
+              </Typography>
+              {canReschedule && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<Iconify icon="solar:calendar-date-bold-duotone" />}
+                  onClick={() => setRescheduleOpen(true)}
+                >
+                  Reschedule plan
+                </Button>
+              )}
+            </Stack>
             <Divider sx={{ mb: 2 }} />
             {paymentSchedule.note && (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -781,6 +830,18 @@ export function LoanApplicationDetailView() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {application && (
+        <LoanApplicationRescheduleDialog
+          open={rescheduleOpen}
+          onClose={() => setRescheduleOpen(false)}
+          loanApplicationId={application._id}
+          loanPrincipal={Number(application.amount) || 0}
+          interestRatePercent={projectedPlan?.interestRate ?? null}
+          insuranceRatePercent={projectedPlan?.insuranceRate ?? null}
+          onSuccess={handleRescheduleSuccess}
+        />
+      )}
     </DashboardContent>
   );
 }

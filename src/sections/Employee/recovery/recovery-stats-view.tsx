@@ -1,36 +1,36 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import type {
+  RecoveryStatsPeriod,
+  EmployeeRecoveryStatsBody,
+} from 'src/types/employee-recovery-stats.types';
+
+import { useMemo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
+import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
-import Table from '@mui/material/Table';
 import TableRow from '@mui/material/TableRow';
+import Checkbox from '@mui/material/Checkbox';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
-import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
-import { fCurrency } from 'src/utils/format-number';
 import { fDate } from 'src/utils/format-time';
+import { fCurrency } from 'src/utils/format-number';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import employeeService from 'src/redux/services/employee.services';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-
-import type {
-  EmployeeRecoveryStatsBody,
-  RecoveryStatsPeriod,
-} from 'src/types/employee-recovery-stats.types';
 
 // ----------------------------------------------------------------------
 

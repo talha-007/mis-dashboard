@@ -1,41 +1,41 @@
+import type { CustomerDocument, CustomerDocumentType } from 'src/types/customer-documents.types';
+
+import { toast } from 'react-toastify';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
+import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import Table from '@mui/material/Table';
-import Container from '@mui/material/Container';
 import TableRow from '@mui/material/TableRow';
+import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
+import { alpha, useTheme } from '@mui/material/styles';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
-import { alpha, useTheme } from '@mui/material/styles';
-
-import { toast } from 'react-toastify';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import customerService from 'src/redux/services/customer.services';
 
-import type { CustomerDocument } from 'src/types/customer-documents.types';
-import {
-  CUSTOMER_DOCUMENT_DESCRIPTIONS,
-  CUSTOMER_DOCUMENT_LABELS,
-  CUSTOMER_DOCUMENT_TYPE_VALUES,
-  type CustomerDocumentType,
-} from 'src/types/customer-documents.types';
-
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
+
+import {
+  CUSTOMER_DOCUMENT_LABELS,
+  CUSTOMER_DOCUMENT_TYPE_VALUES,
+  CUSTOMER_DOCUMENT_DESCRIPTIONS,
+} from 'src/types/customer-documents.types';
+
 
 // ----------------------------------------------------------------------
 

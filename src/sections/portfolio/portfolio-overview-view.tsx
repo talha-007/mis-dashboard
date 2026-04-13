@@ -73,6 +73,11 @@ export type BankAdminStats = {
   totalPortfolioOutstanding: number;
   totalPrincipalOutstanding: number;
   totalLoanRepayment: number;
+  /** Default / NPL snapshot (from bank-admin stats API) */
+  defaulterBorrowersCount: number;
+  defaultedLoansCount: number;
+  defaultedTotalLoanPrincipal: number;
+  defaultedOutstandingAmount: number;
   // Legacy / optional
   parCount?: number;
 };
@@ -125,7 +130,6 @@ export function PortfolioOverviewView() {
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
   const [bankAdminStats, setBankAdminStats] = useState<BankAdminStats | null>(null);
   const [bankAdminAdditionalStats, setBankAdminAdditionalStats] = useState<BankAdminAdditionalStats | null>(null);
-    useState<BankAdminAdditionalStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [additionalStatsLoading, setAdditionalStatsLoading] = useState(false);
   const [graphsData, setGraphsData] = useState<BankAdminGraphsData | null>(null);
@@ -192,6 +196,16 @@ export function PortfolioOverviewView() {
         totalPortfolioOutstanding: Number(stats.totalPortfolioOutstanding ?? 0),
         totalPrincipalOutstanding: Number(stats.totalPrincipalOutstanding ?? 0),
         totalLoanRepayment: Number(stats.totalLoanRepayment ?? 0),
+        defaulterBorrowersCount: Number(
+          stats.defaulterBorrowersCount ?? stats.defaulter_borrowers_count ?? 0
+        ),
+        defaultedLoansCount: Number(stats.defaultedLoansCount ?? stats.defaulted_loans_count ?? 0),
+        defaultedTotalLoanPrincipal: Number(
+          stats.defaultedTotalLoanPrincipal ?? stats.defaulted_total_loan_principal ?? 0
+        ),
+        defaultedOutstandingAmount: Number(
+          stats.defaultedOutstandingAmount ?? stats.defaulted_outstanding_amount ?? 0
+        ),
       });
     } catch {
       setBankAdminStats(null);
@@ -558,20 +572,38 @@ export function PortfolioOverviewView() {
                 sx={{ mb: 2 }}
               >
                 <Typography variant="subtitle1">Quick Stats</Typography>
-                {bankAdminAdditionalStats && !additionalStatsLoading && (
-                  <Stack direction="row" spacing={1.5}>
-                    <RiskBadge
-                      label="High Risk"
-                      value={fNumber(bankAdminAdditionalStats.highRiskBorrowers)}
-                      icon="solar:shield-warning-bold-duotone"
-                    />
-                    <RiskBadge
-                      label="Near Default"
-                      value={fNumber(bankAdminAdditionalStats.loansNearDefault)}
-                      icon="solar:bell-bing-bold-duotone"
-                    />
+                {(bankAdminAdditionalStats && !additionalStatsLoading) || bankAdminStats ? (
+                  <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+                    {bankAdminAdditionalStats && !additionalStatsLoading && (
+                      <>
+                        <RiskBadge
+                          label="High Risk"
+                          value={fNumber(bankAdminAdditionalStats.highRiskBorrowers)}
+                          icon="solar:shield-warning-bold-duotone"
+                        />
+                        <RiskBadge
+                          label="Near Default"
+                          value={fNumber(bankAdminAdditionalStats.loansNearDefault)}
+                          icon="solar:bell-bing-bold-duotone"
+                        />
+                      </>
+                    )}
+                    {bankAdminStats && (
+                      <>
+                        <RiskBadge
+                          label="Defaulters"
+                          value={fNumber(bankAdminStats.defaulterBorrowersCount)}
+                          icon="solar:user-minus-bold-duotone"
+                        />
+                        <RiskBadge
+                          label="Defaulted loans"
+                          value={fNumber(bankAdminStats.defaultedLoansCount)}
+                          icon="solar:document-text-bold-duotone"
+                        />
+                      </>
+                    )}
                   </Stack>
-                )}
+                ) : null}
               </Stack>
               <Grid container spacing={0}>
                 {[
@@ -602,6 +634,22 @@ export function PortfolioOverviewView() {
                   { label: 'Recovery Rate', value: formatPercent(bankAdminStats.recoveryRate) },
                   { label: 'Total Repayments', value: fCurrency(bankAdminStats.totalLoanRepayment) },
                   { label: 'Audit Readiness', value: `${bankAdminStats.auditReadiness}%` },
+                  {
+                    label: 'Defaulter borrowers',
+                    value: fNumber(bankAdminStats.defaulterBorrowersCount),
+                  },
+                  {
+                    label: 'Defaulted loans',
+                    value: fNumber(bankAdminStats.defaultedLoansCount),
+                  },
+                  {
+                    label: 'Defaulted loan principal',
+                    value: fCurrency(bankAdminStats.defaultedTotalLoanPrincipal),
+                  },
+                  {
+                    label: 'Defaulted outstanding',
+                    value: fCurrency(bankAdminStats.defaultedOutstandingAmount),
+                  },
                 ].map((item) => (
                   <Grid key={item.label} size={{ xs: 6, sm: 4, md: 3, lg: 2 }}>
                     <Box

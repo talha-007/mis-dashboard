@@ -39,6 +39,9 @@ const deleteLoanApplication = (id: string) =>
 const updateLoanApplicationStatus = (id: string, data: any) =>
   callAPi.put(`/api/v1/bankAdmin/loan-applications/${id}/status`, data);
 
+const reschedulePaymentPlan = (id: string, data: Record<string, unknown>) =>
+  callAPi.post(`/api/v1/bankAdmin/loan-applications/${id}/reschedule-payment-plan`, data);
+
 // --- Assessments ---
 const getAssessments = (params?: any) => callAPi.get('/api/v1/bankAdmin/assessments', { params });
 
@@ -211,6 +214,7 @@ const bankAdminService = {
   getLoanApplicationById,
   updateLoanApplication,
   updateLoanApplicationStatus,
+  reschedulePaymentPlan,
   deleteLoanApplication,
   getAssessments,
   getBankQuestions,

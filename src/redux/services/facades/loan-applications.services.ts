@@ -24,6 +24,9 @@ const deleteById = (id: string) => bankAdminService.deleteLoanApplication(id);
 const updateStatus = (id: string, data: any) =>
   bankAdminService.updateLoanApplicationStatus(id, data);
 
+const reschedulePaymentPlan = (id: string, data: Record<string, unknown>) =>
+  bankAdminService.reschedulePaymentPlan(id, data);
+
 const getDueInstallment = () => bankAdminService.getDueInstallment();
 
 const payInstallment = (installmentId: string) => bankAdminService.payInstallment(installmentId);
@@ -38,6 +41,7 @@ const loanApplicationService = {
   update,
   deleteById,
   updateStatus,
+  reschedulePaymentPlan,
   getCustomerLoanApplications,
   getDueInstallment,
   payInstallment,

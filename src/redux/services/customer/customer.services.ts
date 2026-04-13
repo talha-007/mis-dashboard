@@ -1,4 +1,4 @@
-import { callAPi } from '../http-common';
+import { callAPi, callAPiMultiPart } from '../http-common';
 
 /**
  * Customer Service
@@ -39,6 +39,18 @@ const getStats = () => callAPi.get('/api/v1/stats/customer');
 // Expected endpoint: /api/v1/assessments/my-rating
 const getMyCreditRating = () => callAPi.get('/api/v1/assessments/my-rating');
 
+// --- Documents (customer token): multipart field `file` + `document_type` ---
+const uploadDocument = (file: File, documentType: string) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('document_type', documentType);
+  return callAPiMultiPart.post('/api/v1/customers/documents/upload', formData);
+};
+
+const listDocuments = () => callAPi.get('/api/v1/customers/documents');
+
+const deleteDocument = (id: string) => callAPi.delete(`/api/v1/customers/documents/${id}`);
+
 const customerService = {
   register,
   login,
@@ -53,6 +65,9 @@ const customerService = {
   submitAssessmentAnswers,
   getStats,
   getMyCreditRating,
+  uploadDocument,
+  listDocuments,
+  deleteDocument,
 };
 
 export default customerService;

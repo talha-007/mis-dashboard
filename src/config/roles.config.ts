@@ -99,6 +99,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     '/',
     '/dashboard',
     '/employee/recovery-dashboard',
+    '/employee/recovery-stats',
     '/users-management',
     '/users-management/add',
     '/users-management/edit/:userId',

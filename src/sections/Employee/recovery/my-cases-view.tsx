@@ -95,12 +95,11 @@ function statusColor(
 ): 'default' | 'warning' | 'success' | 'error' | 'info' | 'primary' | 'secondary' {
   if (s === 'open') return 'warning';
   if (s === 'in_progress') return 'info';
-  if (s === 'resolved' || s === 'closed') return 'success';
-  if (s === 'escalated') return 'error';
+  if (s === 'resolved') return 'success';
   return 'default';
 }
 
-const CASE_STATUSES = ['open', 'in_progress', 'resolved', 'closed', 'escalated'];
+const CASE_STATUSES = ['open', 'in_progress', 'resolved'];
 
 // ----------------------------------------------------------------------
 

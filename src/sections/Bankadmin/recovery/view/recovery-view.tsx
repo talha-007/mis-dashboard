@@ -418,6 +418,8 @@ function RecoveryCasesTab() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [filterName, setFilterName] = useState('');
+  const debouncedFilterName = useDebounce(filterName, 400);
 
   // View case dialog
   const [viewDialog, setViewDialog] = useState<{ open: boolean; caseData: RecoveryCase | null }>({
@@ -474,6 +476,7 @@ function RecoveryCasesTab() {
       setError(null);
       const params: any = { page: page + 1, limit: rowsPerPage };
       if (statusFilter !== 'all') params.status = statusFilter;
+      if (debouncedFilterName.trim()) params.search = debouncedFilterName.trim();
       const res = await bankAdminService.getRecoveryCases(params);
       const raw = res.data?.data ?? res.data;
       // recovery-overview returns { installments, pagination, summary }
@@ -486,7 +489,7 @@ function RecoveryCasesTab() {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, statusFilter]);
+  }, [page, rowsPerPage, statusFilter, debouncedFilterName]);
 
   useEffect(() => {
     fetchCases();
@@ -612,6 +615,16 @@ function RecoveryCasesTab() {
       </Stack>
 
       <Card>
+        <RecoveryTableToolbar
+          numSelected={0}
+          filterName={filterName}
+          onFilterName={(e: React.ChangeEvent<HTMLInputElement>) => {
+            setFilterName(e.target.value);
+            setPage(0);
+          }}
+          onReload={fetchCases}
+        />
+
         {/* Status filter tabs */}
         {/* <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
           <Tabs

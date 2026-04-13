@@ -1,8 +1,8 @@
 import type { BankAssessment, AssessmentSubmitAnswer } from 'src/types/assessment.types';
 
 import { callAPi } from '../http-common';
-import bankAdminService from '../bank-admin/bank-admin.services';
 import customerService from '../customer/customer.services';
+import bankAdminService from '../bank-admin/bank-admin.services';
 
 function mapToBankAssessment(raw: any): BankAssessment {
   const questions: BankAssessment['questions'] = (raw?.questions ?? []).map(

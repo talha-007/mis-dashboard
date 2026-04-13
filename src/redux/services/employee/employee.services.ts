@@ -1,4 +1,5 @@
 import type { AssessmentSubmitAnswer } from 'src/types/assessment.types';
+import type { RecoveryStatsQuery } from 'src/types/employee-recovery-stats.types';
 
 import { callAPi } from '../http-common';
 
@@ -17,6 +18,10 @@ const addMyCaseNote = (id: string, data: any) =>
 
 const updateMyCaseStatus = (id: string, data: any) =>
   callAPi.put(`/api/v1/employee/my-cases/${id}/status`, data);
+
+/** Recovery performance stats (UTC calendar ranges; week = Mon–Sun UTC) */
+const getRecoveryStats = (params: RecoveryStatsQuery) =>
+  callAPi.get('/api/v1/employee/recovery-stats', { params });
 
 // --- Customers ---
 const createCustomer = (data: any) => callAPi.post('/api/v1/employee/customers', data);
@@ -46,6 +51,7 @@ const employeeService = {
   getMyCaseById,
   addMyCaseNote,
   updateMyCaseStatus,
+  getRecoveryStats,
   createCustomer,
   listCustomers,
   getCustomerById,

@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
-import { useCallback, useEffect, useState } from 'react';
 import { Form, Formik } from 'formik';
 import { toast } from 'react-toastify';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -14,8 +14,8 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import LoadingButton from '@mui/lab/LoadingButton';
+import InputAdornment from '@mui/material/InputAdornment';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import bankAdminService from 'src/redux/services/bank-admin.services';
@@ -190,9 +190,11 @@ export function EmployeeFormView() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    if (!isEdit || !id) return;
+    if (!isEdit || !id) {
+      return undefined;
+    }
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       try {
         setLoading(true);
         const res = await bankAdminService.getEmployeeById(id);
@@ -234,7 +236,8 @@ export function EmployeeFormView() {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    };
+    void load();
     return () => {
       cancelled = true;
     };

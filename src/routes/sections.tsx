@@ -52,6 +52,7 @@ export const PayoffOfferPage = lazy(() => import('src/pages/customer/payoff-offe
 
 // Employee / Recovery Officer
 export const RecoveryDashboardPage = lazy(() => import('src/pages/employee/recovery-dashboard'));
+export const RecoveryStatsPage = lazy(() => import('src/pages/employee/recovery-stats'));
 
 // Auth (single sign-in page for all roles)
 export const SignInPage = lazy(() => import('src/pages/auth/sign-in'));
@@ -165,6 +166,14 @@ export const routesSection: RouteObject[] = [
         element: (
           <MultiRoleGuard allowedRoles={[UserRole.RECOVERY_OFFICER]}>
             <RecoveryDashboardPage />
+          </MultiRoleGuard>
+        ),
+      },
+      {
+        path: 'employee/recovery-stats',
+        element: (
+          <MultiRoleGuard allowedRoles={[UserRole.RECOVERY_OFFICER]}>
+            <RecoveryStatsPage />
           </MultiRoleGuard>
         ),
       },

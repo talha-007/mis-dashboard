@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
-import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -191,7 +191,7 @@ export function EmployeeView() {
                           row={row}
                           selected={table.selected.includes(row._id)}
                           onSelectRow={() => table.onSelectRow(row._id)}
-                          onEdit={(row) => navigate(`/employees/edit/${row._id}`)}
+                          onEdit={(employee) => navigate(`/employees/edit/${employee._id}`)}
                           onDelete={handleDeleteClick}
                         />
                       ))

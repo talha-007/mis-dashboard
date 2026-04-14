@@ -1,5 +1,3 @@
-import type { MouseEvent } from 'react';
-
 import { useState, useCallback } from 'react';
 
 import Popover from '@mui/material/Popover';
@@ -46,10 +44,6 @@ type PaymentTableRowProps = {
 
 export function PaymentTableRow({ row, selected }: PaymentTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
-
-  const handleOpenPopover = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-    setOpenPopover(event.currentTarget);
-  }, []);
 
   const handleClosePopover = useCallback(() => {
     setOpenPopover(null);

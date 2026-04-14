@@ -23,9 +23,24 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { TableNoData } from '../table-no-data';
-import { PaymentTableRow } from '../payment-table-row';
 import { PaymentTableHead } from '../payment-table-head';
 import { PaymentTableToolbar } from '../payment-table-toolbar';
+import { PaymentTableRow, type PaymentProps } from '../payment-table-row';
+
+const VALID_PAYMENT_TYPES = [
+  'loan_disbursement',
+  'loan_repayment',
+  'loan_refund',
+  'borrower_recovery',
+  'borrower_fee',
+  'borrower_penalty',
+  'borrower_commission',
+  'fee',
+  'penalty',
+  'commission',
+  'refund',
+  'other',
+] as const;
 
 // ----------------------------------------------------------------------
 
@@ -34,35 +49,19 @@ export function PaymentView() {
 
   const [filterName, setFilterName] = useState('');
   const debouncedFilterName = useDebounce(filterName, 400);
-  type PaymentRow = import('../payment-table-row').PaymentProps;
-  const [payments, setPayments] = useState<PaymentRow[]>([]);
+  const [payments, setPayments] = useState<PaymentProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [paymentType, setPaymentType] = useState<
-    'all' | 'loan_transactions' | 'recovery' | 'penalty' | 'fee'
-  >('all');
+  /** Tabs filter is commented out below; keep `'all'` until filters are re-enabled. */
+  const paymentType = 'all' as const;
   const [summary, setSummary] = useState<any>(null);
 
   // Map API response to PaymentProps type
   // API structure: { id, amount, customerName, date, description, paymentType, status, subType, type }
-  const validPaymentTypes = [
-    'loan_disbursement',
-    'loan_repayment',
-    'loan_refund',
-    'borrower_recovery',
-    'borrower_fee',
-    'borrower_penalty',
-    'borrower_commission',
-    'fee',
-    'penalty',
-    'commission',
-    'refund',
-    'other',
-  ] as const;
-  const mapApiToPayment = useCallback((item: any): import('../payment-table-row').PaymentProps => {
+  const mapApiToPayment = useCallback((item: any): PaymentProps => {
     const rawType = item.paymentType || item.subType || item.type || 'other';
-    const resolvedType = validPaymentTypes.includes(rawType) ? rawType : 'other';
+    const resolvedType = VALID_PAYMENT_TYPES.includes(rawType) ? rawType : 'other';
     return {
       id: item.id || item._id || '',
       paymentId: item.paymentId || item.transactionId || '',
@@ -71,7 +70,7 @@ export function PaymentView() {
       amount: Number(item.amount || 0),
       status: item.status || 'pending',
       paymentType: resolvedType,
-    } as import('../payment-table-row').PaymentProps;
+    };
   }, []);
 
   // Fetch payments from API
@@ -152,17 +151,6 @@ export function PaymentView() {
   // Client-side filtering removed since we're using server-side search
   const dataFiltered = payments;
   const notFound = !dataFiltered.length && !!debouncedFilterName && !loading;
-
-  const handlePaymentTypeChange = useCallback(
-    (
-      _event: React.SyntheticEvent,
-      newValue: 'all' | 'loan_transactions' | 'recovery' | 'penalty' | 'fee'
-    ) => {
-      setPaymentType(newValue);
-      table.onResetPage();
-    },
-    [table]
-  );
 
   return (
     <DashboardContent>

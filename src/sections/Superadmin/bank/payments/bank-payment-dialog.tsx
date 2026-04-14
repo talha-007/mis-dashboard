@@ -64,7 +64,6 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
   const [bankCode, setBankCode] = useState('');
   const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
   const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionDetails | null>(null);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     paymentMethod: 'bank_transfer',
@@ -79,7 +78,6 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
       setBankCode('');
       setBankDetails(null);
       setSubscriptionDetails(null);
-      setPaymentId(null);
       setFormData({
         paymentMethod: 'bank_transfer',
         paymentDate: new Date().toISOString().split('T')[0],
@@ -219,7 +217,6 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
       const recordedPaymentId = payment?.paymentId || payment?._id || payment?.id;
 
       if (recordedPaymentId) {
-        setPaymentId(recordedPaymentId);
         // Automatically download invoice
         try {
           await downloadInvoice(recordedPaymentId);

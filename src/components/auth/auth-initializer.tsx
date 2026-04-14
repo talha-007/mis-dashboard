@@ -19,7 +19,7 @@ interface AuthInitializerProps {
 
 export function AuthInitializer({ children }: AuthInitializerProps) {
   const dispatch = useAppDispatch();
-  const { isInitialized, isLoading } = useAppSelector((state) => state.auth);
+  const { isInitialized } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if (!isInitialized) {

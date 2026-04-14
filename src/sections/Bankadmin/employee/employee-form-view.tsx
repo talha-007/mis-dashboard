@@ -1,8 +1,8 @@
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { toast } from 'react-toastify';
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -132,7 +132,9 @@ function buildSchema(isEdit: boolean) {
         'At least 8 characters',
         (v) => !v || !String(v).trim() || String(v).length >= 8
       ),
-      confirmPassword: Yup.string().test('match', 'Passwords must match', function (v) {
+      confirmPassword: Yup.string().test('match', 'Passwords must match', function confirmPasswordMatches(
+        v
+      ) {
         const pwd = this.parent.password;
         if (!pwd || !String(pwd).trim()) return true;
         return v === pwd;

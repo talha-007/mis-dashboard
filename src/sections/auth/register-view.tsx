@@ -7,6 +7,7 @@ import type { RegisterData } from 'src/types/auth.types';
 
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
+import { omit } from 'es-toolkit/object';
 import { memo, useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -482,7 +483,10 @@ export function RegisterView() {
   };
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    const { confirmPassword: _, ...payload } = values;
+    const payload = omit(values, ['confirmPassword'] as const) as Omit<
+      RegisterFormValues,
+      'confirmPassword'
+    >;
     const toSend: RegisterData = { ...payload, bankSlug: bankSlug ?? payload.bankSlug };
     try {
       await register(toSend);

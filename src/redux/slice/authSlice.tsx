@@ -9,9 +9,9 @@ import {
   setBankData,
   getBankData,
   setAuthToken,
-  setAuthSessionTokens,
   getAuthToken,
   clearAuthToken,
+  setAuthSessionTokens,
 } from 'src/utils/auth-storage';
 
 import { UserRole, ROLE_PERMISSIONS } from 'src/types/auth.types';

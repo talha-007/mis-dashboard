@@ -33,11 +33,6 @@ function mapApiToApplication(item: Record<string, unknown>): CustomerLoanApplica
   const loanAmount = Number(item.loanAmount ?? item.amount ?? 0);
   const installmentAmount = Number(item.installmentAmount ?? 0);
 
-  // Extract bank info if available (could be object or just ID)
-  const bank = item.bank || item.bankId;
-  const bankName =
-    typeof bank === 'object' && bank !== null ? String((bank as any).name ?? '') : '';
-
   return {
     id,
     customerName: String(item.customerName ?? item.name ?? ''),
@@ -109,15 +104,6 @@ export function ApplyLoanView() {
   useEffect(() => {
     fetchApplications();
   }, [fetchApplications]);
-
-  const handleDelete = useCallback(async (id: string) => {
-    try {
-      await loanApplicationService.deleteById(id);
-      setApplications((prev) => prev.filter((app) => app.id !== id));
-    } catch {
-      setApplications((prev) => prev.filter((app) => app.id !== id));
-    }
-  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {

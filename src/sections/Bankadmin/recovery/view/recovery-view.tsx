@@ -413,7 +413,8 @@ function RecoveryCasesTab() {
   const [cases, setCases] = useState<RecoveryCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  /** Reserved for status tabs when re-enabled (see commented Tabs below). */
+  const statusFilter = 'all' as const;
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);

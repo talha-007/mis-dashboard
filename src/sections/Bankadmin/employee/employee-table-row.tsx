@@ -63,12 +63,12 @@ export function EmployeeTableRow({
   const handleEdit = useCallback(() => {
     handleClosePopover();
     onEdit?.(row);
-  }, [row, onEdit]);
+  }, [row, onEdit, handleClosePopover]);
 
   const handleDelete = useCallback(() => {
     handleClosePopover();
     onDelete?.(row._id);
-  }, [row._id, onDelete]);
+  }, [row._id, onDelete, handleClosePopover]);
 
   return (
     <>

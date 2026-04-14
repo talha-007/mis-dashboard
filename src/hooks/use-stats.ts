@@ -3,18 +3,16 @@
  * Custom hook for accessing real-time stats
  */
 
-import { useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 
-import { useAppDispatch } from 'src/store';
 // TODO: Add stats slice when needed
 // import { clearMetric, clearAllMetrics } from 'src/redux/slice/statsSlice';
 
 export const useStats = () => {
-  const dispatch = useAppDispatch();
   // TODO: Add stats slice to store
   // const { metrics, analytics, isLoading, lastUpdate } = useAppSelector((state) => state.stats);
-  const metrics: Record<string, any> = {};
-  const analytics: Record<string, any> = {};
+  const metrics = useMemo(() => ({} as Record<string, any>), []);
+  const analytics = useMemo(() => ({} as Record<string, any>), []);
   const isLoading = false;
   const lastUpdate: string | null = null;
 

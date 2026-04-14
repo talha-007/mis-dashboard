@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSocket } from 'src/hooks/useSocket';
 
 export const useNotifications = () => {
-  const { on, off } = useSocket();
+  const { on } = useSocket();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 

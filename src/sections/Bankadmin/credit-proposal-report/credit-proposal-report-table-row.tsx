@@ -1,6 +1,4 @@
-import type { CreditProposalReport, CreditProposalReportStatus } from 'src/types/assessment.types';
-
-import { useState, useCallback } from 'react';
+import type { CreditProposalReport } from 'src/types/assessment.types';
 
 import Stack from '@mui/material/Stack';
 import TableRow from '@mui/material/TableRow';
@@ -27,31 +25,8 @@ export function CreditProposalReportTableRow({
   onApprove,
   onReject,
 }: CreditProposalReportTableRowProps) {
-  const [processing, setProcessing] = useState(false);
-  const isPending = row.status === 'pending';
-
-  const handleApprove = useCallback(async () => {
-    setProcessing(true);
-    await onApprove(row._id);
-    setProcessing(false);
-  }, [row._id, onApprove]);
-
-  const handleReject = useCallback(async () => {
-    setProcessing(true);
-    await onReject(row._id);
-    setProcessing(false);
-  }, [row._id, onReject]);
-
-  const getStatusColor = (status: CreditProposalReportStatus) => {
-    switch (status) {
-      case 'approved':
-        return 'success';
-      case 'rejected':
-        return 'error';
-      default:
-        return 'info';
-    }
-  };
+  void onApprove;
+  void onReject;
 
   return (
     <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>

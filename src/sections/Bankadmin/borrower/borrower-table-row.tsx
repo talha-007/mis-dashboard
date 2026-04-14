@@ -61,19 +61,19 @@ export function BorrowerTableRow({
   const handleEdit = useCallback(() => {
     handleClosePopover();
     navigate(`/borrower-management/edit/${row.id}`);
-  }, [row.id, navigate]);
+  }, [row.id, navigate, handleClosePopover]);
 
   const handleView = useCallback(() => {
     handleClosePopover();
     navigate(`/borrower-management/view/${row.id}`);
-  }, [row.id, navigate]);
+  }, [row.id, navigate, handleClosePopover]);
 
   const handleDelete = useCallback(() => {
     handleClosePopover();
     if (onDelete) {
       onDelete(row.id);
     }
-  }, [row.id, onDelete]);
+  }, [row.id, onDelete, handleClosePopover]);
 
   const getStatusColor = () => {
     switch (row.status) {
@@ -89,7 +89,7 @@ export function BorrowerTableRow({
         return 'default';
     }
   };
-  console.log(row);
+
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>

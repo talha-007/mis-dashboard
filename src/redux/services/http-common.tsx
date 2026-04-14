@@ -2,10 +2,10 @@ import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 import {
   getAuthToken,
+  clearAuthToken,
   getRefreshToken,
   isTokenNearExpiry,
   setAuthSessionTokens,
-  clearAuthToken,
 } from 'src/utils/auth-storage';
 
 import ENV from 'src/config/environment';

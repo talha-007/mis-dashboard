@@ -1,3 +1,5 @@
+import type { Installment } from 'src/_mock/_installment';
+
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -35,17 +37,14 @@ export function InstallmentsView() {
   const [filterName, setFilterName] = useState('');
   const debouncedFilterName = useDebounce(filterName, 400);
   const [rowsPerPage, setRowsPerPage] = useState(20);
-  const [installments, setInstallments] = useState<import('src/_mock/_installment').Installment[]>(
-    []
-  );
+  const [installments, setInstallments] = useState<Installment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
 
   // Map API response to Installment type
   const mapApiToInstallment = useCallback(
-    (item: any): import('src/_mock/_installment').Installment => ({
+    (item: any): Installment => ({
       id: String(item.id || item._id || ''),
       month:
         item.month ||
@@ -93,7 +92,6 @@ export function InstallmentsView() {
         // Set pagination info from server response
         const pagination = data?.pagination || {};
         setTotalCount(pagination.total || mapped.length);
-        setTotalPages(pagination.totalPages || 1);
       }
     } catch (err: any) {
       const errorMessage =
@@ -132,7 +130,7 @@ export function InstallmentsView() {
       return;
     }
     setSelected([]);
-  }, []);
+  }, [installments]);
 
   const handleSelectRow = useCallback(
     (id: string) => {

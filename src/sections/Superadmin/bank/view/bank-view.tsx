@@ -131,21 +131,6 @@ export function BankView() {
     setSelectedBank(null);
   };
 
-  const handleUpdateStatus = async (status: string) => {
-    if (!selectedBank) return;
-
-    try {
-      setError(null);
-      await bankService.updateBank(selectedBank.id, { status });
-      setSuccessMessage('Bank status updated successfully');
-      handleCloseStatusDialog();
-      fetchBanks(); // Refresh the list
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || 'Failed to update bank status';
-      setError(errorMsg);
-    }
-  };
-
   const handleDelete = async () => {
     if (!selectedBank) return;
 

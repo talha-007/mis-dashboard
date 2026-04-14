@@ -123,7 +123,6 @@ export type BankAdminGraphsData = {
 // ----------------------------------------------------------------------
 
 export function PortfolioOverviewView() {
-  const theme = useTheme();
   const { user } = useAuth();
   const bank = useAppSelector((state: any) => state.auth?.bank);
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);

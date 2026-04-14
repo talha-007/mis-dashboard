@@ -1,5 +1,4 @@
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -37,7 +36,6 @@ import type { BorrowerProps } from '../borrower-table-row';
 // ----------------------------------------------------------------------
 
 export function BorrowerView() {
-  const navigate = useNavigate();
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
@@ -52,12 +50,7 @@ export function BorrowerView() {
   });
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch borrowers on component mount and when pagination/filter changes
-  useEffect(() => {
-    fetchBorrowers();
-  }, [table.page, table.rowsPerPage, debouncedFilterName]);
-
-  const fetchBorrowers = async () => {
+  const fetchBorrowers = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -111,11 +104,12 @@ export function BorrowerView() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [table.page, table.rowsPerPage, debouncedFilterName]);
 
-  const handleAddBorrower = useCallback(() => {
-    navigate('/borrower-management/add');
-  }, [navigate]);
+  // Fetch borrowers on component mount and when pagination/filter changes
+  useEffect(() => {
+    fetchBorrowers();
+  }, [fetchBorrowers]);
 
   const handleDeleteClick = useCallback((id: string) => {
     setDeleteConfirm({ open: true, id });

@@ -48,7 +48,7 @@ export function CreditProposalReportListView() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState('submittedAt');
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected] = useState<string[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [summary, setSummary] = useState<any>(null);
 
@@ -175,21 +175,6 @@ export function CreditProposalReportListView() {
     },
     [orderBy, order]
   );
-
-  const handleSelectAllRows = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        setSelected(reports.map((r) => r._id));
-        return;
-      }
-      setSelected([]);
-    },
-    [reports]
-  );
-
-  const handleSelectRow = useCallback((id: string) => {
-    setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
-  }, []);
 
   const handleView = useCallback(
     (id: string) => navigate(`/credit-proposal-reports/${id}`),

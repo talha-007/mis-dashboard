@@ -11,6 +11,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { devError } from 'src/utils/logger';
+
 import bankService from 'src/redux/services/bank.services';
 
 import type { BankProps } from './bank-table-row';
@@ -49,7 +51,7 @@ export function BankStatusDialog({ open, onClose, onUpdate, bank }: BankStatusDi
       }
     } catch (err: any) {
       setLoading(false);
-      console.log(err);
+      devError(err);
       toast.error(err.response?.data?.message || err.message || 'Failed to update bank status');
     }
   };

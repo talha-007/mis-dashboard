@@ -10,6 +10,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { useSocket } from 'src/hooks/useSocket';
 
+import { devLog } from 'src/utils/logger';
+
 export const useNotifications = () => {
   const { on } = useSocket();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -60,7 +62,7 @@ export const useNotifications = () => {
   useEffect(() => {
     // User events
     const unsubUserLogin = on<SocketNotification>('user_login', (data: SocketNotification) => {
-      console.log('📢 User login:', data);
+      devLog('📢 User login:', data);
       addNotification({
         id: data.notificationId || data.id || Date.now().toString(),
         type: data.type || 'info',
@@ -76,7 +78,7 @@ export const useNotifications = () => {
     const unsubUserRegistered = on<SocketNotification>(
       'user_registered',
       (data: SocketNotification) => {
-        console.log('📢 User registered:', data);
+        devLog('📢 User registered:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -90,7 +92,7 @@ export const useNotifications = () => {
 
     // Bank events
     const unsubBank = on<SocketNotification>('bank_status_changed', (data: SocketNotification) => {
-      console.log('📢 Bank status changed:', data);
+      devLog('📢 Bank status changed:', data);
       addNotification({
         id: data.notificationId || data.id || Date.now().toString(),
         type: 'status_change',
@@ -112,7 +114,7 @@ export const useNotifications = () => {
     const unsubSubscriptionStatus = on<SocketNotification>(
       'subscription_status_changed',
       (data: SocketNotification) => {
-        console.log('📢 Subscription status changed:', data);
+        devLog('📢 Subscription status changed:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -128,7 +130,7 @@ export const useNotifications = () => {
     const unsubLoanApproved = on<SocketNotification>(
       'loan_approved',
       (data: SocketNotification) => {
-        console.log('📢 Loan approved:', data);
+        devLog('📢 Loan approved:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -143,7 +145,7 @@ export const useNotifications = () => {
     const unsubLoanRejected = on<SocketNotification>(
       'loan_rejected',
       (data: SocketNotification) => {
-        console.log('📢 Loan rejected:', data);
+        devLog('📢 Loan rejected:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -158,7 +160,7 @@ export const useNotifications = () => {
     const unsubNewLoanApplication = on<SocketNotification>(
       'new_loan_application',
       (data: SocketNotification) => {
-        console.log('📢 New loan application:', data);
+        devLog('📢 New loan application:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -174,7 +176,7 @@ export const useNotifications = () => {
     const unsubAssessmentScoreGenerated = on<SocketNotification>(
       'assessment_score_generated',
       (data: SocketNotification) => {
-        console.log('📢 Assessment score generated:', data);
+        devLog('📢 Assessment score generated:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -189,7 +191,7 @@ export const useNotifications = () => {
     const unsubAssessmentSubmitted = on<SocketNotification>(
       'assessment_submitted',
       (data: SocketNotification) => {
-        console.log('📢 Assessment submitted:', data);
+        devLog('📢 Assessment submitted:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -204,7 +206,7 @@ export const useNotifications = () => {
     const unsubNewCustomerRegistered = on<SocketNotification>(
       'new_customer_registered',
       (data: SocketNotification) => {
-        console.log('📢 New customer registered:', data);
+        devLog('📢 New customer registered:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -220,7 +222,7 @@ export const useNotifications = () => {
     const unsubPaymentSuccess = on<SocketNotification>(
       'payment_success',
       (data: SocketNotification) => {
-        console.log('📢 Payment successful:', data);
+        devLog('📢 Payment successful:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -233,7 +235,7 @@ export const useNotifications = () => {
     const unsubPaymentFailed = on<SocketNotification>(
       'payment_failed',
       (data: SocketNotification) => {
-        console.log('📢 Payment failed:', data);
+        devLog('📢 Payment failed:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -246,7 +248,7 @@ export const useNotifications = () => {
     const unsubPaymentOverdue = on<SocketNotification>(
       'payment_overdue',
       (data: SocketNotification) => {
-        console.log('📢 Payment overdue:', data);
+        devLog('📢 Payment overdue:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -259,7 +261,7 @@ export const useNotifications = () => {
     const unsubPaymentReminder = on<SocketNotification>(
       'payment_reminder',
       (data: SocketNotification) => {
-        console.log('📢 Payment reminder:', data);
+        devLog('📢 Payment reminder:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -272,7 +274,7 @@ export const useNotifications = () => {
     const unsubPaymentReceipt = on<SocketNotification>(
       'payment_receipt',
       (data: SocketNotification) => {
-        console.log('📢 Payment receipt:', data);
+        devLog('📢 Payment receipt:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -287,7 +289,7 @@ export const useNotifications = () => {
     const unsubInstallmentOverdue = on<SocketNotification>(
       'installment_overdue',
       (data: SocketNotification) => {
-        console.log('📢 Installment overdue:', data);
+        devLog('📢 Installment overdue:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -302,7 +304,7 @@ export const useNotifications = () => {
     const unsubInstallmentPaid = on<SocketNotification>(
       'installment_paid',
       (data: SocketNotification) => {
-        console.log('📢 Installment paid:', data);
+        devLog('📢 Installment paid:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -317,7 +319,7 @@ export const useNotifications = () => {
     const unsubAccountDefaulted = on<SocketNotification>(
       'account_defaulted',
       (data: SocketNotification) => {
-        console.log('📢 Account defaulted:', data);
+        devLog('📢 Account defaulted:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -332,7 +334,7 @@ export const useNotifications = () => {
     const unsubRecoveryCaseUpdate = on<SocketNotification>(
       'recovery_case_update',
       (data: SocketNotification) => {
-        console.log('📢 Recovery case update:', data);
+        devLog('📢 Recovery case update:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -347,7 +349,7 @@ export const useNotifications = () => {
     const unsubEmployeeCreated = on<SocketNotification>(
       'employee_created',
       (data: SocketNotification) => {
-        console.log('📢 Employee created:', data);
+        devLog('📢 Employee created:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),
@@ -362,7 +364,7 @@ export const useNotifications = () => {
     const unsubRecoveryCaseAssigned = on<SocketNotification>(
       'recovery_case_assigned',
       (data: SocketNotification) => {
-        console.log('📢 Recovery case assigned:', data);
+        devLog('📢 Recovery case assigned:', data);
         addNotification({
           ...data,
           id: data.notificationId || data.id || Date.now().toString(),

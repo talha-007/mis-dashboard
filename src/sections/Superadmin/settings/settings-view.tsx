@@ -17,6 +17,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 
+import { devLog } from 'src/utils/logger';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
@@ -102,7 +104,7 @@ export function SettingsView() {
 
   const handleSave = () => {
     // Save settings to backend
-    console.log('Saving settings:', { systemSettings, bankSettings });
+    devLog('Saving settings:', { systemSettings, bankSettings });
     // Show success message
   };
 

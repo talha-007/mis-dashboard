@@ -33,7 +33,6 @@ export function SubscriptionRequiredView() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const bankId = bank?.id;
-  console.log('bankId', bankId);
 
   const handlePay = async () => {
     if (!bankId) {

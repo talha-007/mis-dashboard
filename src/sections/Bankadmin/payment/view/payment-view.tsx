@@ -108,7 +108,6 @@ export function PaymentView() {
       }
 
       const response = await bankAdminService.getAllPayments(params);
-      console.log(response);
 
       if (response.status === 200) {
         // Extract data from response - payments, pagination, and summary are at response.data level
@@ -147,7 +146,7 @@ export function PaymentView() {
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
-  console.log('payments', payments);
+
   // Client-side filtering removed since we're using server-side search
   const dataFiltered = payments;
   const notFound = !dataFiltered.length && !!debouncedFilterName && !loading;

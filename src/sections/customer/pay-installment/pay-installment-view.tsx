@@ -39,7 +39,6 @@ export function PayInstallmentView() {
       setLoading(true);
       setError(null);
       const response = await loanApplicationService.getDueInstallment();
-      console.log(response);
 
       if (response.status === 200) {
         // dueInstallments is an array - get the first one (or handle multiple)
@@ -95,7 +94,6 @@ export function PayInstallmentView() {
 
       // Service sends installmentId in payload: { installmentId }
       const response = await loanApplicationService.payInstallment(installmentId);
-      console.log(response);
 
       if (response.status === 200) {
         setSuccess(true);

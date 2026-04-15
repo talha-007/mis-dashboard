@@ -111,10 +111,8 @@ export function BankPaymentDialog({ open, onClose, onSuccess }: BankPaymentDialo
           const subResponse = await bankService.getBankSubscriptionDetails(bank._id || bank.id);
           const subData = subResponse.data?.data || subResponse.data;
           setSubscriptionDetails(subData || { nextPaymentAmount: 0 });
-        } catch (err: any) {
+        } catch {
           // If no subscription found, set default
-          console.log(err);
-
           setSubscriptionDetails({ nextPaymentAmount: 0 });
         }
       } else {

@@ -122,7 +122,6 @@ const getInstallmentHistory = (params?: any) =>
 // --- Bank Settings ---
 const getBankSettings = () =>
   callAPi.get('/api/v1/bankAdmin/settings').then((res) => {
-    console.log('res', res);
     const data = res.data?.settings;
     return {
       insuranceRate: Number(data?.insuranceRate ?? 0),

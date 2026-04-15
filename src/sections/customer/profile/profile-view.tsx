@@ -11,6 +11,8 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
+import { devLog } from 'src/utils/logger';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { FormField } from 'src/components/form';
@@ -237,7 +239,7 @@ function ProfileFormFields({
 
 export function ProfileView() {
   const handleSubmit = (values: ProfileFormValues) => {
-    console.log('Profile updated:', values);
+    devLog('Profile updated:', values);
     // TODO: call API (e.g. authService.updateProfile)
   };
 

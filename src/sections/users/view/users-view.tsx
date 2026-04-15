@@ -21,6 +21,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { devWarn } from 'src/utils/logger';
+
 import { useDebounce } from 'src/hooks';
 import { useAppSelector } from 'src/store';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -108,7 +110,7 @@ export function UsersView() {
         // Note: Server uses 1-based, our state uses 0-based
         if (pagination.currentPage && pagination.currentPage !== page + 1) {
           // Only adjust if there's a mismatch (shouldn't happen normally)
-          console.warn('Page mismatch detected');
+          devWarn('Page mismatch detected');
         }
       }
     } catch (err: any) {

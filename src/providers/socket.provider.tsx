@@ -7,6 +7,8 @@ import type { StatsUpdatePayload, NotificationPayload } from 'src/redux/services
 
 import { useMemo, useState, useEffect, useContext, createContext, type ReactNode } from 'react';
 
+import { devLog } from 'src/utils/logger';
+
 import ENV from 'src/config/environment';
 import { useAppSelector } from 'src/store';
 import { SocketEvent, socketService } from 'src/redux/services/socket';
@@ -54,21 +56,21 @@ export function SocketProvider({ children }: SocketProviderProps) {
     // Track connection state
     unsubscribers.push(
       socketService.on('connect', () => {
-        console.log('[Socket] ✅ Connected');
+        devLog('[Socket] ✅ Connected');
         setIsConnected(true);
       })
     );
 
     unsubscribers.push(
       socketService.on('disconnect', () => {
-        console.log('[Socket] ❌ Disconnected');
+        devLog('[Socket] ❌ Disconnected');
         setIsConnected(false);
       })
     );
 
     unsubscribers.push(
       socketService.on('reconnect', () => {
-        console.log('[Socket] 🔄 Reconnected');
+        devLog('[Socket] 🔄 Reconnected');
         setIsConnected(true);
       })
     );
@@ -78,7 +80,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       // Subscribe on initial connect
       unsubscribers.push(
         socketService.on('connect', () => {
-          console.log('[Socket] 📢 Emitting subscribe_notifications for user:', user.id);
+          devLog('[Socket] 📢 Emitting subscribe_notifications for user:', user.id);
           socketService.subscribeToNotifications(user.id);
         })
       );
@@ -86,7 +88,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       // Also subscribe on reconnect
       unsubscribers.push(
         socketService.on('reconnect', () => {
-          console.log('[Socket] 🔄 Reconnected! Resubscribing for user:', user.id);
+          devLog('[Socket] 🔄 Reconnected! Resubscribing for user:', user.id);
           socketService.subscribeToNotifications(user.id);
         })
       );
@@ -96,7 +98,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
     if (ENV.FEATURES.NOTIFICATIONS) {
       unsubscribers.push(
         socketService.on<NotificationPayload>(SocketEvent.NOTIFICATION, (notification) => {
-          console.log('[Socket] 📬 Notification:', notification.title);
+          devLog('[Socket] 📬 Notification:', notification.title);
           // TODO: Dispatch to Redux notifications slice when created
         })
       );
@@ -105,7 +107,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
     // Handle system alerts
     unsubscribers.push(
       socketService.on<any>(SocketEvent.SYSTEM_ALERT, (alert) => {
-        console.log('[Socket] ⚠️ System Alert:', alert.message);
+        devLog('[Socket] ⚠️ System Alert:', alert.message);
         // TODO: Dispatch to Redux notifications slice when created
       })
     );
@@ -114,7 +116,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
     if (ENV.FEATURES.ANALYTICS) {
       unsubscribers.push(
         socketService.on<StatsUpdatePayload>(SocketEvent.STATS_UPDATE, (stats) => {
-          console.log('[Socket] 📊 Stats Update:', stats.metric, '=', stats.value);
+          devLog('[Socket] 📊 Stats Update:', stats.metric, '=', stats.value);
           // TODO: Dispatch to Redux stats slice when created
         })
       );

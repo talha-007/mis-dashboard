@@ -5,6 +5,8 @@
 
 import { io, type Socket } from 'socket.io-client';
 
+import { devLog, devWarn } from 'src/utils/logger';
+
 import ENV from 'src/config/environment';
 
 // Socket Events
@@ -50,15 +52,15 @@ class SocketService {
 
   connect() {
     if (this.socket?.connected) {
-      console.log('[Socket] Already connected');
+      devLog('[Socket] Already connected');
       return;
     }
     if (this.isConnecting) {
-      console.log('[Socket] Already connecting...');
+      devLog('[Socket] Already connecting...');
       return;
     }
     if (!ENV.SOCKET.URL) {
-      console.warn('[Socket] Socket URL not configured');
+      devWarn('[Socket] Socket URL not configured');
       return;
     }
 
@@ -76,17 +78,17 @@ class SocketService {
       });
 
       this.socket.on(SocketEvent.CONNECT, () => {
-        console.log('[Socket] ✅ Connected successfully');
+        devLog('[Socket] ✅ Connected successfully');
         this.isConnecting = false;
       });
       this.socket.on(SocketEvent.DISCONNECT, (reason) => {
-        console.log('[Socket] ❌ Disconnected:', reason);
+        devLog('[Socket] ❌ Disconnected:', reason);
         this.isConnecting = false;
       });
       this.socket.on('connect_error', (error) => {
-        console.warn('[Socket] ⚠️ Connection error:', error.message);
+        devWarn('[Socket] ⚠️ Connection error:', error.message);
       });
-      console.log('[Socket] 🔄 Initiating connection...');
+      devLog('[Socket] 🔄 Initiating connection...');
     } catch (error) {
       console.error('[Socket] 💥 Failed to create socket:', error);
       this.isConnecting = false;
@@ -95,7 +97,7 @@ class SocketService {
 
   disconnect() {
     if (this.socket) {
-      console.log('[Socket] 🔌 Disconnecting...');
+      devLog('[Socket] 🔌 Disconnecting...');
       this.socket.disconnect();
       this.socket = null;
       this.subscribedUserId = null;
@@ -113,7 +115,7 @@ class SocketService {
       this.socket.emit('subscribe_notifications', { userId });
       this.subscribedUserId = userId;
     } else {
-      console.warn('[Socket] Cannot subscribe - socket not connected');
+      devWarn('[Socket] Cannot subscribe - socket not connected');
     }
   }
 
@@ -121,7 +123,7 @@ class SocketService {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
     } else {
-      console.warn('[Socket] Cannot emit - socket not connected:', event);
+      devWarn('[Socket] Cannot emit - socket not connected:', event);
     }
   }
 

@@ -32,8 +32,9 @@ export const ENV = {
     ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
   },
 
-  // Development flags
+  // Development flags (never enable BYPASS_AUTH in production builds)
   DEV: {
+    /** Dangerous if true: must not be wired into ProtectedRoute without extra checks. */
     BYPASS_AUTH: import.meta.env.VITE_BYPASS_AUTH === 'true',
     MOCK_USER: import.meta.env.VITE_MOCK_USER || 'superadmin',
   },

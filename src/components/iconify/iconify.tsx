@@ -6,6 +6,8 @@ import { mergeClasses } from 'minimal-shared/utils';
 
 import { styled } from '@mui/material/styles';
 
+import { devWarn } from 'src/utils/logger';
+
 import { iconifyClasses } from './classes';
 import { allIconNames, registerIcons } from './register-icons';
 
@@ -22,7 +24,7 @@ export function Iconify({ className, icon, width = 20, height, sx, ...other }: I
   const id = useId();
 
   if (!allIconNames.includes(icon as IconifyName)) {
-    console.warn(
+    devWarn(
       [
         `Icon "${icon}" is currently loaded online, which may cause flickering effects.`,
         `To ensure a smoother experience, please register your icon collection for offline use.`,

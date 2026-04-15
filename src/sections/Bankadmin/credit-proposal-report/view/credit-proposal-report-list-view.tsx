@@ -117,7 +117,6 @@ export function CreditProposalReportListView() {
       }
 
       const response = await assessmentService.getCreditProposalReports(params);
-      console.log('response', response);
 
       if (response.status === 200) {
         // Extract data from response - reports, pagination, and summary are at response.data level

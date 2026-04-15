@@ -71,7 +71,6 @@ export function ApplyLoanView() {
     try {
       setLoading(true);
       const res = await loanApplicationService.getCustomerLoanApplications();
-      console.log(res);
 
       if (res.status === 200) {
         // Handle different response structures:

@@ -37,7 +37,6 @@ export function BankSettingsView() {
       setLoading(true);
       setError(null);
       const data = await bankAdminService.getBankSettings();
-      console.log('data', data);
       setSettings({
         insuranceRate: data?.insuranceRate ?? defaultSettings.insuranceRate,
         interestRate: data?.interestRate ?? defaultSettings.interestRate,

@@ -2,6 +2,7 @@ import type { User, RegisterData, LoginCredentials } from 'src/types/auth.types'
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
+import { devError } from 'src/utils/logger';
 import { getCurrentBankSlug } from 'src/utils/bank-context';
 import {
   setUserData,
@@ -448,8 +449,8 @@ export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
     }
 
     return null;
-  } catch (error: any) {
-    console.log(error);
+  } catch (error: unknown) {
+    devError(error);
     return null;
   }
 });

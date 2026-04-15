@@ -30,7 +30,6 @@ export function RoleGuard({
   fallback,
 }: RoleGuardProps) {
   const { user } = useAppSelector((state) => state.auth);
-  console.log('user', user);
 
   // Check role requirement
   if (requiredRole && !hasRole(user, requiredRole)) {

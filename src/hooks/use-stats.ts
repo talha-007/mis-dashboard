@@ -5,6 +5,8 @@
 
 import { useMemo, useCallback } from 'react';
 
+import { devLog } from 'src/utils/logger';
+
 // TODO: Add stats slice when needed
 // import { clearMetric, clearAllMetrics } from 'src/redux/slice/statsSlice';
 
@@ -22,12 +24,12 @@ export const useStats = () => {
 
   const removeMetric = useCallback((metricName: string) => {
     // TODO: Implement when stats slice is added
-    console.log('Clear metric:', metricName);
+    devLog('Clear metric:', metricName);
   }, []);
 
   const clearAll = useCallback(() => {
     // TODO: Implement when stats slice is added
-    console.log('Clear all metrics');
+    devLog('Clear all metrics');
   }, []);
 
   return {

@@ -33,4 +33,18 @@ export default defineConfig({
   },
   server: { port: PORT, host: true },
   preview: { port: PORT, host: true },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('@mui') || id.includes('@emotion')) return 'mui';
+          if (id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
+          if (id.includes('@reduxjs') || id.includes('redux')) return 'redux';
+          if (id.includes('socket.io')) return 'socket-io';
+          return undefined;
+        },
+      },
+    },
+  },
 });

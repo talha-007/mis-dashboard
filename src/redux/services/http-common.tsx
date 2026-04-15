@@ -1,5 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 
+import { devWarn } from 'src/utils/logger';
 import {
   getAuthToken,
   clearAuthToken,
@@ -148,12 +149,12 @@ const responseErrorInterceptor = async (error: any) => {
 
   // 401 Unauthorized - show error toast, don't logout
   if (response?.status === 401) {
-    console.warn('[API] 401 Unauthorized');
+    devWarn('[API] 401 Unauthorized');
   }
 
   // 403 Forbidden - redirect to unauthorized
   if (response?.status === 403) {
-    console.warn('[API] 403 Forbidden - access denied');
+    devWarn('[API] 403 Forbidden - access denied');
 
     // IMPORTANT:
     // When the app boots we call `/api/users/me` (and sometimes `/api/customers/me`)

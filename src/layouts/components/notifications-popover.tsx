@@ -1,5 +1,6 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { toast } from 'react-toastify';
 import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -19,6 +20,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { fToNow } from 'src/utils/format-time';
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import notificationsService from 'src/redux/services/notifications.services';
 
@@ -82,11 +84,7 @@ function notifColor(
 ): 'primary' | 'success' | 'warning' | 'error' | 'info' | 'default' {
   if (type.includes('approved') || type.includes('success') || type.includes('paid'))
     return 'success';
-  if (
-    type.includes('rejected') ||
-    type.includes('failed') ||
-    type.includes('defaulted')
-  )
+  if (type.includes('rejected') || type.includes('failed') || type.includes('defaulted'))
     return 'error';
   if (type.includes('overdue') || type.includes('reminder') || type.includes('warning'))
     return 'warning';
@@ -114,8 +112,8 @@ export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps
       const raw = res.data?.data ?? res.data;
       const list = raw?.notifications ?? raw?.data ?? raw ?? [];
       setNotifications(Array.isArray(list) ? list.map(mapRaw) : []);
-    } catch {
-      // silently fail — keep previous list
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to load notifications'));
     } finally {
       setLoading(false);
     }
@@ -144,9 +142,9 @@ export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps
     setNotifications((prev) => prev.map((n) => (n.id === notifId ? { ...n, isRead: true } : n)));
     try {
       await notificationsService.markAsRead(notifId);
-    } catch {
-      // Revert on failure
+    } catch (err) {
       setNotifications((prev) => prev.map((n) => (n.id === notifId ? { ...n, isRead: false } : n)));
+      toast.error(getApiErrorMessage(err, 'Failed to mark notification as read'));
     }
   }, []);
 
@@ -156,9 +154,9 @@ export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     try {
       await notificationsService.markAllAsRead();
-    } catch {
-      // Re-fetch to restore correct state
+    } catch (err) {
       await fetchNotifications();
+      toast.error(getApiErrorMessage(err, 'Failed to mark all as read'));
     } finally {
       setMarkingAll(false);
     }

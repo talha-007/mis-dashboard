@@ -14,13 +14,14 @@ interface UsersTableToolbarProps {
   onReload?: () => void;
 }
 
-export function UsersTableToolbar({
-  filterName,
-  onFilterName,
-  onReload,
-}: UsersTableToolbarProps) {
+export function UsersTableToolbar({ filterName, onFilterName, onReload }: UsersTableToolbarProps) {
   return (
-    <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ p: 2.5, pr: 1 }} alignItems="center">
+    <Stack
+      spacing={2}
+      direction={{ xs: 'column', sm: 'row' }}
+      sx={{ p: 2.5, pr: 1 }}
+      alignItems="center"
+    >
       <TextField
         fullWidth
         size="small"

@@ -14,6 +14,7 @@ import {
   register,
   userLogin,
   adminLogin,
+  clearError,
   googleLogin,
   getCurrentUser,
   initializeAuth,
@@ -62,6 +63,8 @@ export const useAuth = () => {
 
   const initialize = useCallback(async () => dispatch(initializeAuth()).unwrap(), [dispatch]);
 
+  const handleClearError = useCallback(() => dispatch(clearError()), [dispatch]);
+
   return {
     // State
     user: auth.user,
@@ -81,5 +84,6 @@ export const useAuth = () => {
     logout: handleLogout,
     refreshUser,
     initialize,
+    clearError: handleClearError,
   };
 };

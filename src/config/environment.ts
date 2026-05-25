@@ -20,7 +20,8 @@ export const ENV = {
 
   // App Configuration
   APP: {
-    NAME: import.meta.env.VITE_APP_NAME || 'MIS Dashboard',
+    NAME: import.meta.env.VITE_APP_NAME || 'MIS',
+    TAGLINE: import.meta.env.VITE_APP_TAGLINE || 'Microfinance Intelligent System',
     VERSION: import.meta.env.VITE_APP_VERSION || '1.0.0',
     ENV: import.meta.env.VITE_APP_ENV || 'development',
   },

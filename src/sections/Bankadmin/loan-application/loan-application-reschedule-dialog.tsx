@@ -38,7 +38,8 @@ const MODE_OPTIONS: { value: ReschedulePaymentPlanMode; label: string; helper: s
   {
     value: 'full',
     label: 'Full',
-    helper: 'Rebuild the entire schedule (full tenor). Optional: recalculate from loan amount and bank rates.',
+    helper:
+      'Rebuild the entire schedule (full tenor). Optional: recalculate from loan amount and bank rates.',
   },
   {
     value: 'unpaid_only',
@@ -123,11 +124,11 @@ export function LoanApplicationRescheduleDialog({
   const effectiveInterest =
     interestFromPlan !== null && interestFromPlan !== undefined
       ? interestFromPlan
-      : bankRates?.interest ?? null;
+      : (bankRates?.interest ?? null);
   const effectiveInsurance =
     insuranceFromPlan !== null && insuranceFromPlan !== undefined
       ? insuranceFromPlan
-      : bankRates?.insurance ?? null;
+      : (bankRates?.insurance ?? null);
 
   const estimatedInstallment = useMemo(() => {
     const raw = durationMonths.trim();
@@ -275,8 +276,8 @@ export function LoanApplicationRescheduleDialog({
                 {effectiveInterest != null || effectiveInsurance != null
                   ? 'interest / insurance rates from this application or bank defaults.'
                   : 'equal split (no rates on file).'}{' '}
-                Final schedule is calculated by the server; use “Recalculate from bank rates” in full
-                mode when applicable.
+                Final schedule is calculated by the server; use “Recalculate from bank rates” in
+                full mode when applicable.
               </Typography>
             </Alert>
           )}

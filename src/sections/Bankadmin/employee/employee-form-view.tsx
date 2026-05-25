@@ -102,18 +102,12 @@ const baseFields = {
   email: Yup.string().required('Email is required').email('Enter a valid email').trim(),
   phone: Yup.string()
     .required('Phone number is required')
-    .test(
-      'phone',
-      'Enter a valid mobile number (10–15 digits, optional + and spaces)',
-      (v) => phoneTest(v)
+    .test('phone', 'Enter a valid mobile number (10–15 digits, optional + and spaces)', (v) =>
+      phoneTest(v)
     ),
   cnic: Yup.string()
     .required('CNIC is required')
-    .test(
-      'cnic',
-      'CNIC must be 13 digits in format 12345-1234567-1',
-      (v) => cnicTest(v)
-    ),
+    .test('cnic', 'CNIC must be 13 digits in format 12345-1234567-1', (v) => cnicTest(v)),
   city: Yup.string().trim(),
   region: Yup.string().trim(),
   department: Yup.string().trim(),
@@ -132,13 +126,15 @@ function buildSchema(isEdit: boolean) {
         'At least 8 characters',
         (v) => !v || !String(v).trim() || String(v).length >= 8
       ),
-      confirmPassword: Yup.string().test('match', 'Passwords must match', function confirmPasswordMatches(
-        v
-      ) {
-        const pwd = this.parent.password;
-        if (!pwd || !String(pwd).trim()) return true;
-        return v === pwd;
-      }),
+      confirmPassword: Yup.string().test(
+        'match',
+        'Passwords must match',
+        function confirmPasswordMatches(v) {
+          const pwd = this.parent.password;
+          if (!pwd || !String(pwd).trim()) return true;
+          return v === pwd;
+        }
+      ),
     });
   }
   return Yup.object({
@@ -245,37 +241,34 @@ export function EmployeeFormView() {
     };
   }, [id, isEdit, navigate]);
 
-  const buildPayload = useCallback(
-    (values: EmployeeFormValues) => {
-      const name = `${values.firstName.trim()} ${values.lastName.trim()}`.trim();
-      const cnicDigits = values.cnic.replace(/\D/g, '');
-      const cnicFormatted =
-        cnicDigits.length === 13
-          ? `${cnicDigits.slice(0, 5)}-${cnicDigits.slice(5, 12)}-${cnicDigits.slice(12, 13)}`
-          : values.cnic.trim() || undefined;
+  const buildPayload = useCallback((values: EmployeeFormValues) => {
+    const name = `${values.firstName.trim()} ${values.lastName.trim()}`.trim();
+    const cnicDigits = values.cnic.replace(/\D/g, '');
+    const cnicFormatted =
+      cnicDigits.length === 13
+        ? `${cnicDigits.slice(0, 5)}-${cnicDigits.slice(5, 12)}-${cnicDigits.slice(12, 13)}`
+        : values.cnic.trim() || undefined;
 
-      const base: Record<string, unknown> = {
-        name,
-        firstName: values.firstName.trim(),
-        lastName: values.lastName.trim(),
-        email: values.email.trim(),
-        phone: values.phone.trim(),
-        cnic: cnicFormatted,
-        city: values.city.trim() || undefined,
-        region: values.region.trim() || undefined,
-        department: values.department.trim() || undefined,
-        designation: values.designation.trim() || undefined,
-        jobRole: values.jobRole,
-        employeeCode: values.employeeCode.trim() || undefined,
-        notes: values.notes.trim() || undefined,
-      };
-      if (values.password.trim()) {
-        base.password = values.password.trim();
-      }
-      return base;
-    },
-    []
-  );
+    const base: Record<string, unknown> = {
+      name,
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
+      email: values.email.trim(),
+      phone: values.phone.trim(),
+      cnic: cnicFormatted,
+      city: values.city.trim() || undefined,
+      region: values.region.trim() || undefined,
+      department: values.department.trim() || undefined,
+      designation: values.designation.trim() || undefined,
+      jobRole: values.jobRole,
+      employeeCode: values.employeeCode.trim() || undefined,
+      notes: values.notes.trim() || undefined,
+    };
+    if (values.password.trim()) {
+      base.password = values.password.trim();
+    }
+    return base;
+  }, []);
 
   if (loading) {
     return (
@@ -290,7 +283,13 @@ export function EmployeeFormView() {
   return (
     <DashboardContent>
       <Stack spacing={3}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
+          gap={2}
+        >
           <Typography variant="h4">{isEdit ? 'Edit employee' : 'Add employee'}</Typography>
           <Button
             variant="outlined"
@@ -302,8 +301,8 @@ export function EmployeeFormView() {
         </Stack>
 
         <Typography variant="body2" color="text.secondary">
-          Enter the employee&apos;s details. Recovery and loan staff can be assigned cases from recovery
-          workflows.
+          Enter the employee&apos;s details. Recovery and loan staff can be assigned cases from
+          recovery workflows.
         </Typography>
 
         <Formik
@@ -555,7 +554,9 @@ export function EmployeeFormView() {
                                 >
                                   <Iconify
                                     icon={
-                                      showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'
+                                      showConfirmPassword
+                                        ? 'solar:eye-bold'
+                                        : 'solar:eye-closed-bold'
                                     }
                                     width={20}
                                   />
@@ -625,7 +626,9 @@ export function EmployeeFormView() {
                                 >
                                   <Iconify
                                     icon={
-                                      showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'
+                                      showConfirmPassword
+                                        ? 'solar:eye-bold'
+                                        : 'solar:eye-closed-bold'
                                     }
                                     width={20}
                                   />
@@ -651,7 +654,11 @@ export function EmployeeFormView() {
                   />
 
                   <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ pt: 2 }}>
-                    <Button variant="outlined" color="inherit" onClick={() => navigate('/employees')}>
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      onClick={() => navigate('/employees')}
+                    >
                       Cancel
                     </Button>
                     <LoadingButton

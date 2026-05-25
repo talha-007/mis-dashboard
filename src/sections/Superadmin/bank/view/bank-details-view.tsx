@@ -8,6 +8,7 @@ import { varAlpha } from 'minimal-shared/utils';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
@@ -151,10 +152,12 @@ export type BankDetailsResponse = {
 type BankDetailsViewProps = {
   bank: BankDetailsResponse | null;
   loading?: boolean;
+  error?: string | null;
   onEdit?: () => void;
+  onRetry?: () => void;
 };
 
-export function BankDetailsView({ bank, loading, onEdit }: BankDetailsViewProps) {
+export function BankDetailsView({ bank, loading, error, onEdit, onRetry }: BankDetailsViewProps) {
   const router = useRouter();
 
   if (loading) {
@@ -182,7 +185,23 @@ export function BankDetailsView({ bank, loading, onEdit }: BankDetailsViewProps)
     return (
       <DashboardContent>
         <Container maxWidth="lg">
-          <Typography color="text.secondary">Bank not found.</Typography>
+          {error ? (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              action={
+                onRetry ? (
+                  <Button color="inherit" size="small" onClick={onRetry}>
+                    Retry
+                  </Button>
+                ) : undefined
+              }
+            >
+              {error}
+            </Alert>
+          ) : (
+            <Typography color="text.secondary">Bank not found.</Typography>
+          )}
           <Button sx={{ mt: 2 }} onClick={() => router.push('/bank-management')}>
             Back to Bank Management
           </Button>

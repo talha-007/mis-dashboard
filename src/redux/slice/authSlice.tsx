@@ -3,6 +3,7 @@ import type { User, RegisterData, LoginCredentials } from 'src/types/auth.types'
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 
 import { devError } from 'src/utils/logger';
+import { getApiErrorMessage } from 'src/utils/api-error';
 import { getCurrentBankSlug } from 'src/utils/bank-context';
 import {
   setUserData,
@@ -168,9 +169,7 @@ export const fetchMe = createAsyncThunk('auth/fetchMe', async (_, { rejectWithVa
     }
     return rejectWithValue('Failed to fetch profile');
   } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message ?? error.message ?? 'Failed to fetch profile'
-    );
+    return rejectWithValue(getApiErrorMessage(error, 'Failed to fetch profile'));
   }
 });
 
@@ -206,9 +205,7 @@ export const superAdminLogin = createAsyncThunk(
       setUserData(user);
       return { user, bank, token: data.token };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message || 'Super Admin login failed'
-      );
+      return rejectWithValue(getApiErrorMessage(error, 'Super Admin login failed'));
     }
   }
 );
@@ -245,9 +242,7 @@ export const adminLogin = createAsyncThunk(
       setUserData(user);
       return { user, bank, token: data.token };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message || 'Admin login failed'
-      );
+      return rejectWithValue(getApiErrorMessage(error, 'Admin login failed'));
     }
   }
 );
@@ -267,7 +262,7 @@ export const userLogin = createAsyncThunk(
       if (user) setUserData(user);
       return { user, token: data.token };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || error.message || 'User login failed');
+      return rejectWithValue(getApiErrorMessage(error, 'User login failed'));
     }
   }
 );
@@ -329,7 +324,7 @@ export const login = createAsyncThunk(
       setUserData(user);
       return { user, bank, token: data.token };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || error.message || 'Login failed');
+      return rejectWithValue(getApiErrorMessage(error, 'Login failed'));
     }
   }
 );
@@ -348,16 +343,15 @@ export const googleLogin = createAsyncThunk(
       try {
         const meRes = await authService.getMe();
         const meData = meRes.data?.data ?? meRes.data;
-        if (meData) user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank, meData.customer);
+        if (meData)
+          user = mergeMeIntoUser(user, meData.user ?? meData, meData.bank, meData.customer);
       } catch {
         // keep login user if /me fails
       }
       setUserData(user);
       return { user, token: resp.token };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message || 'Google login failed'
-      );
+      return rejectWithValue(getApiErrorMessage(error, 'Google login failed'));
     }
   }
 );
@@ -389,9 +383,7 @@ export const register = createAsyncThunk(
         token: responseData.token,
       };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message || 'Registration failed'
-      );
+      return rejectWithValue(getApiErrorMessage(error, 'Registration failed'));
     }
   }
 );
@@ -406,7 +398,7 @@ export const logout = createAsyncThunk(
     } catch (error: any) {
       // Even if API call fails, clear local data
       clearAuthToken();
-      return rejectWithValue(error.message || 'Logout failed');
+      return rejectWithValue(getApiErrorMessage(error, 'Logout failed'));
     }
   }
 );
@@ -420,7 +412,7 @@ export const getCurrentUser = createAsyncThunk(
       setUserData(data);
       return data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to get user');
+      return rejectWithValue(getApiErrorMessage(error, 'Failed to get user'));
     }
   }
 );

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
@@ -17,6 +18,8 @@ import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
+
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import loanApplicationService from 'src/redux/services/loan-applications';
@@ -66,10 +69,12 @@ export function ApplyLoanView() {
   const router = useRouter();
   const [applications, setApplications] = useState<CustomerLoanApplication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await loanApplicationService.getCustomerLoanApplications();
 
       if (res.status === 200) {
@@ -92,8 +97,8 @@ export function ApplyLoanView() {
 
         setApplications(mapped.length ? mapped : []);
       }
-    } catch (error) {
-      console.error('Error fetching loan applications:', error);
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Failed to load loan applications'));
       setApplications([]);
     } finally {
       setLoading(false);
@@ -123,6 +128,19 @@ export function ApplyLoanView() {
     <DashboardContent>
       <Container maxWidth="xl">
         <Stack spacing={3}>
+          {error && (
+            <Alert
+              severity="error"
+              action={
+                <Button color="inherit" size="small" onClick={fetchApplications}>
+                  Retry
+                </Button>
+              }
+              onClose={() => setError(null)}
+            >
+              {error}
+            </Alert>
+          )}
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h4">Apply for Loan</Typography>
             <Button

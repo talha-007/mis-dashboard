@@ -38,6 +38,51 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
 
 let refreshInProgress: Promise<string | null> | null = null;
 
+/** Auth flows where 401/403 are expected — never hard-redirect the page. */
+const PUBLIC_AUTH_URL_PATTERNS = [
+  '/api/auth/login',
+  '/api/auth/forgot-password',
+  '/api/auth/verify-otp',
+  '/api/auth/reset-password',
+  '/api/auth/refresh-token',
+  '/api/customers/login',
+  '/api/customers/register',
+  '/api/customers/google-login',
+  '/api/v1/bankAdmin/banks/login',
+  '/api/v1/bankAdmin/banks/google-login',
+  '/api/v1/superadmin-login',
+  '/api/borrowers/login',
+  '/api/borrowers/register',
+  '/api/borrowers/forgot-password',
+  '/api/borrowers/verify-otp',
+] as const;
+
+const BANK_AUTH_URL_PATTERN =
+  /\/api\/banks\/[^/]+\/(login|forgot-password|verify-otp|reset-password)/;
+
+const isPublicAuthRequest = (config?: InternalAxiosRequestConfig): boolean => {
+  if (!config) return false;
+  if ((config as RetryableRequestConfig)._skipAuthRefresh) return true;
+
+  const url = config.url ?? '';
+  return (
+    PUBLIC_AUTH_URL_PATTERNS.some((pattern) => url.includes(pattern)) ||
+    BANK_AUTH_URL_PATTERN.test(url)
+  );
+};
+
+const isAuthRoute = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const path = window.location.pathname;
+  return (
+    path.startsWith('/sign-in') ||
+    path.startsWith('/register') ||
+    path.startsWith('/forgot-password') ||
+    path.startsWith('/reset-password') ||
+    path.startsWith('/verify-otp')
+  );
+};
+
 const resolveLoginPathByRole = () => {
   try {
     const raw = localStorage.getItem('userData');
@@ -54,7 +99,8 @@ const resolveLoginPathByRole = () => {
 const clearSessionAndRedirect = () => {
   try {
     clearAuthToken();
-    if (typeof window !== 'undefined') {
+    // Already on a sign-in page — clearing storage is enough; avoid a full reload.
+    if (typeof window !== 'undefined' && !isAuthRoute()) {
       window.location.href = resolveLoginPathByRole();
     }
   } catch {
@@ -127,12 +173,16 @@ const requestInterceptor = async (config: InternalAxiosRequestConfig) => {
 
 const requestErrorInterceptor = (error: any) => Promise.reject(error);
 
-// Response interceptor - handle errors with toast notifications
+// Response interceptor — session refresh, guarded redirects; errors propagate to callers
 const responseErrorInterceptor = async (error: any) => {
   const { response } = error;
   const originalRequest = error?.config as RetryableRequestConfig | undefined;
 
   if (response?.status === 401 && originalRequest && !originalRequest._retry) {
+    if (isPublicAuthRequest(originalRequest)) {
+      return Promise.reject(error);
+    }
+
     originalRequest._retry = true;
     const refreshedToken = await getFreshAccessToken();
     if (refreshedToken) {
@@ -169,7 +219,9 @@ const responseErrorInterceptor = async (error: any) => {
       url.includes('/api/customers/me') ||
       url.includes('/api/v1/me');
 
-    if (!isMeEndpoint && typeof window !== 'undefined') {
+    const isPublicAuth = isPublicAuthRequest(response.config);
+
+    if (!isMeEndpoint && !isPublicAuth && typeof window !== 'undefined') {
       window.location.href = '/unauthorized';
     }
   }

@@ -1,14 +1,16 @@
-import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import { CONFIG } from 'src/config-global';
 import { useAppSelector } from 'src/store';
@@ -104,10 +106,8 @@ export default function Page() {
           : await usersService.get(userId);
         const data = response.data?.data ?? response.data;
         setUserData(data?.user ?? data);
-      } catch (err: any) {
-        const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load user';
-        setError(errorMessage);
-        toast.error(errorMessage);
+      } catch (err: unknown) {
+        setError(getApiErrorMessage(err, 'Failed to load user'));
       } finally {
         setIsLoading(false);
       }
@@ -141,13 +141,11 @@ export default function Page() {
       <>
         <title>{`User Details - ${CONFIG.appName}`}</title>
         <DashboardContent>
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Typography color="error">{error || 'Failed to load user data'}</Typography>
-            <Button
-              variant="contained"
-              onClick={() => navigate('/users-management')}
-              sx={{ mt: 2 }}
-            >
+          <Box sx={{ p: 3 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error || 'Failed to load user data'}
+            </Alert>
+            <Button variant="contained" onClick={() => navigate('/users-management')}>
               Back to Users
             </Button>
           </Box>

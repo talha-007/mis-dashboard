@@ -5,7 +5,14 @@ type Props = {
   onClose: () => void;
   onSuccess?: () => void;
   customerId: string;
-  customer?: { name?: string; lastname?: string; cnic?: string; city?: string; region?: string; bankSlug?: string };
+  customer?: {
+    name?: string;
+    lastname?: string;
+    cnic?: string;
+    city?: string;
+    region?: string;
+    bankSlug?: string;
+  };
 };
 
 /** Placeholder: wire employee loan flow when implemented. */

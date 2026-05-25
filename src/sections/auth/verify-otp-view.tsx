@@ -18,6 +18,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
+import { getApiErrorMessage } from 'src/utils/api-error';
+
 import authService from 'src/redux/services/auth.services';
 
 import { Iconify } from 'src/components/iconify';
@@ -36,6 +38,7 @@ export function VerifyOtpView() {
   const [success, setSuccess] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
@@ -69,17 +72,22 @@ export function VerifyOtpView() {
           1000
         );
       }
-    } catch (err: any) {
-      setStatus({ submitError: err?.message || 'Invalid or expired OTP. Please try again.' });
+    } catch (err: unknown) {
+      setStatus({
+        submitError: getApiErrorMessage(err, 'Invalid or expired OTP. Please try again.'),
+      });
     }
   };
 
   const handleResend = async () => {
     setResendLoading(true);
+    setResendError(null);
     try {
       await authService.requestPasswordReset({ email });
       setCountdown(60);
       setResendDisabled(true);
+    } catch (err: unknown) {
+      setResendError(getApiErrorMessage(err, 'Failed to resend code. Please try again.'));
     } finally {
       setResendLoading(false);
     }
@@ -280,6 +288,16 @@ export function VerifyOtpView() {
                       </Stack>
                     )}
                   </Button>
+
+                  {resendError && (
+                    <Alert
+                      severity="error"
+                      sx={{ borderRadius: 2 }}
+                      onClose={() => setResendError(null)}
+                    >
+                      {resendError}
+                    </Alert>
+                  )}
 
                   {/* Resend */}
                   <Box

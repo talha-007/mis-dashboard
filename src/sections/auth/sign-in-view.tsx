@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -18,6 +18,7 @@ import { useRouter } from 'src/routes/hooks';
 import { getUserHomePath } from 'src/utils/role-home-path';
 
 import { useAuth } from 'src/hooks';
+import { CONFIG } from 'src/config-global';
 
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
@@ -52,10 +53,14 @@ const FEATURES = [
 export function SignInView() {
   const theme = useTheme();
   const router = useRouter();
-  const { isLoading, error, login } = useAuth();
+  const { isLoading, error, login, clearError } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleSignIn = useCallback(
     async (e: React.FormEvent) => {
@@ -148,7 +153,7 @@ export function SignInView() {
             portfolio smarter.
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.75, mb: 4, maxWidth: 280 }}>
-            Complete MIS platform built for modern microfinance institutions.
+            {CONFIG.appTagline} — built for modern microfinance institutions.
           </Typography>
 
           {/* Feature list */}
@@ -185,7 +190,7 @@ export function SignInView() {
 
         {/* Footer note */}
         <Typography variant="caption" sx={{ opacity: 0.4, position: 'relative', zIndex: 1 }}>
-          © {new Date().getFullYear()} MIS Dashboard. All rights reserved.
+          © {new Date().getFullYear()} {CONFIG.appName} — {CONFIG.appTagline}. All rights reserved.
         </Typography>
       </Box>
 

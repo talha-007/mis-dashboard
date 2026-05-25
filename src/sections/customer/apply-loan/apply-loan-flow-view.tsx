@@ -135,10 +135,7 @@ function AssessmentStepContent({
       );
 
       const bankSlugForSubmit =
-        (user as { bankSlug?: string })?.bankSlug ??
-        bank?.slug ??
-        getBankSlugFromStorage() ??
-        '';
+        (user as { bankSlug?: string })?.bankSlug ?? bank?.slug ?? getBankSlugFromStorage() ?? '';
       const submitPayload = {
         bankSlug: bankSlugForSubmit,
         answers,

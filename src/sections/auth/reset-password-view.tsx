@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -20,6 +21,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter, useSearchParams } from 'src/routes/hooks';
+
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import { useAppSelector } from 'src/store';
 import authService from 'src/redux/services/auth.services';
@@ -51,11 +54,13 @@ export function ResetPasswordView() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (values: { newPassword: string; confirmPassword: string }) => {
+    setSubmitError(null);
     try {
       if (!otpFromParams) {
-        toast.error('OTP is required. Please go back and verify your OTP again.');
+        setSubmitError('OTP is required. Please go back and verify your OTP again.');
         return;
       }
       await authService.resetPassword({
@@ -65,10 +70,10 @@ export function ResetPasswordView() {
       });
       toast.success('Password reset successfully! Redirecting…');
       setTimeout(() => router.push(signInPath), 2000);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to reset password';
+    } catch (err: unknown) {
+      const msg = getApiErrorMessage(err, 'Failed to reset password');
+      setSubmitError(msg);
       toast.error(msg);
-      throw err;
     }
   };
 
@@ -163,6 +168,15 @@ export function ResetPasswordView() {
           {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
             <Form>
               <Stack spacing={2.5}>
+                {submitError && (
+                  <Alert
+                    severity="error"
+                    sx={{ borderRadius: 2 }}
+                    onClose={() => setSubmitError(null)}
+                  >
+                    {submitError}
+                  </Alert>
+                )}
                 <TextField
                   fullWidth
                   name="newPassword"

@@ -123,14 +123,17 @@ export function InstallmentsView() {
     [order, orderBy]
   );
 
-  const handleSelectAllRows = useCallback((checked: boolean) => {
-    if (checked) {
-      const newSelecteds = installments.map((n) => n.id);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  }, [installments]);
+  const handleSelectAllRows = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        const newSelecteds = installments.map((n) => n.id);
+        setSelected(newSelecteds);
+        return;
+      }
+      setSelected([]);
+    },
+    [installments]
+  );
 
   const handleSelectRow = useCallback(
     (id: string) => {

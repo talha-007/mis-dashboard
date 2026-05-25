@@ -20,6 +20,7 @@ import { useParams, useNavigate } from 'src/routes/hooks';
 
 import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import assessmentService from 'src/redux/services/assessment.services';
@@ -42,8 +43,8 @@ export function CreditProposalReportDetailView() {
       setError(null);
       const res = await assessmentService.getCreditProposalReportById(id);
       setReport(res.data ?? null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load report');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Failed to load report'));
       setReport(null);
     } finally {
       setLoading(false);
@@ -60,8 +61,8 @@ export function CreditProposalReportDetailView() {
       setProcessing(true);
       await assessmentService.approveLoanApplication(id);
       setReport((prev) => (prev ? { ...prev, status: 'approved' } : null));
-    } catch (err: any) {
-      setError(err.message || 'Failed to approve');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Failed to approve'));
     } finally {
       setProcessing(false);
     }
@@ -73,8 +74,8 @@ export function CreditProposalReportDetailView() {
       setProcessing(true);
       await assessmentService.rejectLoanApplication(id);
       setReport((prev) => (prev ? { ...prev, status: 'rejected' } : null));
-    } catch (err: any) {
-      setError(err.message || 'Failed to reject');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Failed to reject'));
     } finally {
       setProcessing(false);
     }

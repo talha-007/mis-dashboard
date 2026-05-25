@@ -3,7 +3,6 @@
  */
 
 import { Form, Formik } from 'formik';
-import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
@@ -36,9 +35,13 @@ const textFieldSx = { '& .MuiOutlinedInput-root': { borderRadius: 2 } };
 export function SignInAdminView() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { loginAdmin, isLoading, error } = useAuth();
+  const { loginAdmin, isLoading, error, clearError } = useAuth();
   const { bankSlug, initializeBankContext } = useBankContext();
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   useEffect(() => {
     if (bankSlug) initializeBankContext();
@@ -55,8 +58,7 @@ export function SignInAdminView() {
         const userObj = (response as any).user || (response as any).bank;
         router.push(getUserHomePath(userObj));
       }
-    } catch (err: any) {
-      toast.error(err?.message || 'Login failed. Please try again.');
+    } catch {
       dispatch(setLoggingIn(false));
     }
   };

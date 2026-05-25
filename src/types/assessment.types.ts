@@ -58,7 +58,7 @@ export function buildAssessmentSubmitAnswers(
     const amountStr = fieldValues[f._id]?.trim();
     if (!amountStr) return;
     const text = f.allowFreeText
-      ? freeTextValues[getFreeTextStorageKey(f._id)]?.trim() ?? ''
+      ? (freeTextValues[getFreeTextStorageKey(f._id)]?.trim() ?? '')
       : '';
     items.push({
       fieldKey: f.fieldKey,

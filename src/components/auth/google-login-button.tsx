@@ -5,10 +5,13 @@
 
 import type { ButtonProps } from '@mui/material';
 
+import { useState } from 'react';
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
-import { Button } from '@mui/material';
+import { Alert, Button } from '@mui/material';
+
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import { useAuth } from 'src/hooks';
 
@@ -35,7 +38,7 @@ const getFirebaseApp = () => {
 
 interface GoogleLoginButtonProps extends Omit<ButtonProps, 'onClick'> {
   onSuccess?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 export function GoogleLoginButton({
@@ -44,9 +47,13 @@ export function GoogleLoginButton({
   children,
   ...buttonProps
 }: GoogleLoginButtonProps) {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, error: authError } = useAuth();
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const displayError = localError || authError;
 
   const handleClick = async () => {
+    setLocalError(null);
     try {
       const app = getFirebaseApp();
       const auth = getAuth(app);
@@ -58,22 +65,30 @@ export function GoogleLoginButton({
       await loginWithGoogle(idToken);
       onSuccess?.();
     } catch (error) {
-      console.error('Google login failed:', error);
+      const message = getApiErrorMessage(error, 'Google login failed');
+      setLocalError(message);
       onError?.(error);
     }
   };
 
   return (
-    <Button
-      fullWidth
-      size="large"
-      variant="outlined"
-      color="inherit"
-      startIcon={<Iconify icon="eva:google-fill" width={24} />}
-      onClick={handleClick}
-      {...buttonProps}
-    >
-      {children || 'Continue with Google'}
-    </Button>
+    <>
+      {displayError && (
+        <Alert severity="error" sx={{ borderRadius: 2, mb: 2 }} onClose={() => setLocalError(null)}>
+          {displayError}
+        </Alert>
+      )}
+      <Button
+        fullWidth
+        size="large"
+        variant="outlined"
+        color="inherit"
+        startIcon={<Iconify icon="eva:google-fill" width={24} />}
+        onClick={handleClick}
+        {...buttonProps}
+      >
+        {children || 'Continue with Google'}
+      </Button>
+    </>
   );
 }

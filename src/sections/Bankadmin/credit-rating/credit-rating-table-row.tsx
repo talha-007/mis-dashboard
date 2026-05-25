@@ -37,7 +37,7 @@ export function CreditRatingTableRow({ row, selected, onSelectRow }: CreditRatin
 
   const handleViewBorrower = () => {
     handleClosePopover();
-    const borrowerId = row.borrower_id ;
+    const borrowerId = row.borrower_id;
     if (borrowerId) {
       router.push(`/borrower-management/view/${borrowerId}`);
     }

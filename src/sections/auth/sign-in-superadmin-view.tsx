@@ -2,8 +2,8 @@
  * Super Admin Sign In View - Formik + Yup validation
  */
 
-import { useState } from 'react';
 import { Form, Formik } from 'formik';
+import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -32,8 +32,12 @@ const textFieldSx = { '& .MuiOutlinedInput-root': { borderRadius: 2 } };
 export function SignInSuperAdminView() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { loginSuperAdmin, isLoading, error } = useAuth();
+  const { loginSuperAdmin, isLoading, error, clearError } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleSubmit = async (values: { email: string; password: string }) => {
     try {
@@ -45,8 +49,7 @@ export function SignInSuperAdminView() {
       await new Promise((r) => setTimeout(r, 50));
       dispatch(setLoggingIn(false));
       router.push(getUserHomePath(response.user));
-    } catch (err) {
-      console.error('Login failed:', err);
+    } catch {
       dispatch(setLoggingIn(false));
     }
   };

@@ -5,6 +5,8 @@
 
 import { useState, useCallback } from 'react';
 
+import { getApiErrorMessage } from 'src/utils/api-error';
+
 interface UseApiOptions {
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
@@ -32,8 +34,8 @@ export const useApi = <T = any>(
         }
 
         return result;
-      } catch (err: any) {
-        const errorMessage = err.message || 'An error occurred';
+      } catch (err: unknown) {
+        const errorMessage = getApiErrorMessage(err, 'An error occurred');
         setError(errorMessage);
 
         if (options?.onError) {

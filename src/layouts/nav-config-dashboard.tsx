@@ -111,12 +111,13 @@ export const recoveryOfficerNavData: NavItem[] = [
     title: 'Recovery stats',
     path: '/employee/recovery-stats',
     icon: navIcon('solar:chart-bold-duotone'),
-  }, {
+  },
+  {
     title: 'My Recovery Cases',
     path: '/employee/recovery-dashboard',
     icon: navIcon('solar:calendar-mark-bold-duotone'),
   },
-  
+
   {
     title: 'Customer Management',
     path: '/users-management',

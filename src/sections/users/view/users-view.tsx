@@ -72,7 +72,14 @@ export function UsersView() {
   const [applyLoanDialog, setApplyLoanDialog] = useState<{
     open: boolean;
     customerId: string;
-    customer?: { name?: string; lastname?: string; cnic?: string; city?: string; region?: string; bankSlug?: string };
+    customer?: {
+      name?: string;
+      lastname?: string;
+      cnic?: string;
+      city?: string;
+      region?: string;
+      bankSlug?: string;
+    };
   }>({ open: false, customerId: '' });
 
   const fetchUsers = useCallback(async () => {
@@ -158,7 +165,17 @@ export function UsersView() {
     setDeleteConfirm({ open: true, id: userId });
   };
 
-  const handleApplyLoan = (customerId: string, customer: { name?: string; lastname?: string; cnic?: string; city?: string; region?: string; bankSlug?: string }) => {
+  const handleApplyLoan = (
+    customerId: string,
+    customer: {
+      name?: string;
+      lastname?: string;
+      cnic?: string;
+      city?: string;
+      region?: string;
+      bankSlug?: string;
+    }
+  ) => {
     setApplyLoanDialog({ open: true, customerId, customer });
   };
 

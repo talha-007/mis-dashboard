@@ -29,6 +29,7 @@ import { useRouter } from 'src/routes/hooks';
 import { useBankContext } from 'src/utils/bank-context';
 
 import { useAuth } from 'src/hooks';
+import { CONFIG } from 'src/config-global';
 
 import { Logo } from 'src/components/logo';
 import { Iconify } from 'src/components/iconify';
@@ -202,7 +203,10 @@ const FormPasswordField = memo(function FormPasswordField({
                 size="small"
                 aria-label="toggle password"
               >
-                <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} width={20} />
+                <Iconify
+                  icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                  width={20}
+                />
               </IconButton>
             </InputAdornment>
           ),
@@ -428,11 +432,9 @@ function RegisterFormFields({
             fontSize: '0.95rem',
             fontWeight: 700,
             textTransform: 'none',
-            boxShadow: (theme) =>
-              `0 8px 24px ${alpha(theme.palette.primary.main, 0.32)}`,
+            boxShadow: (theme) => `0 8px 24px ${alpha(theme.palette.primary.main, 0.32)}`,
             '&:hover': {
-              boxShadow: (theme) =>
-                `0 12px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
+              boxShadow: (theme) => `0 12px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
             },
           }}
         >
@@ -458,12 +460,16 @@ function RegisterFormFields({
 export function RegisterView() {
   const theme = useTheme();
   const router = useRouter();
-  const { register, isLoading, error } = useAuth();
+  const { register, isLoading, error, clearError } = useAuth();
   const { bankSlug, initializeBankContext } = useBankContext();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const toggleShowPassword = useCallback(() => setShowPassword((s) => !s), []);
   const toggleShowConfirmPassword = useCallback(() => setShowConfirmPassword((s) => !s), []);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   useEffect(() => {
     if (bankSlug) {
@@ -491,8 +497,8 @@ export function RegisterView() {
     try {
       await register(toSend);
       router.push('/verify-otp?type=registration');
-    } catch (err) {
-      console.error('Registration failed:', err);
+    } catch {
+      // error handled by Redux
     }
   };
 
@@ -574,7 +580,7 @@ export function RegisterView() {
             portfolio smarter.
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.75, mb: 4, maxWidth: 280 }}>
-            Complete MIS platform built for modern microfinance institutions.
+            {CONFIG.appTagline} — built for modern microfinance institutions.
           </Typography>
 
           <Stack spacing={2.5}>
@@ -609,7 +615,7 @@ export function RegisterView() {
         </Box>
 
         <Typography variant="caption" sx={{ opacity: 0.4, position: 'relative', zIndex: 1 }}>
-          © {new Date().getFullYear()} MIS Dashboard. All rights reserved.
+          © {new Date().getFullYear()} {CONFIG.appName} — {CONFIG.appTagline}. All rights reserved.
         </Typography>
       </Box>
 

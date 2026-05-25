@@ -18,6 +18,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 
+import { getApiErrorMessage } from 'src/utils/api-error';
+
 import authService from 'src/redux/services/auth.services';
 
 import { Iconify } from 'src/components/iconify';
@@ -62,8 +64,10 @@ export function VerifyOtpAdminView() {
       } else {
         setStatus({ submitError: (response as any).data?.message || 'Verification failed' });
       }
-    } catch (err: any) {
-      setStatus({ submitError: err?.message || 'Invalid or expired OTP. Please try again.' });
+    } catch (err: unknown) {
+      setStatus({
+        submitError: getApiErrorMessage(err, 'Invalid or expired OTP. Please try again.'),
+      });
     }
   };
 
@@ -75,8 +79,8 @@ export function VerifyOtpAdminView() {
         setCountdown(60);
         setResendDisabled(true);
       }
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to resend code. Please try again.');
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Failed to resend code. Please try again.'));
     }
   };
 

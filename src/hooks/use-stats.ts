@@ -13,8 +13,8 @@ import { devLog } from 'src/utils/logger';
 export const useStats = () => {
   // TODO: Add stats slice to store
   // const { metrics, analytics, isLoading, lastUpdate } = useAppSelector((state) => state.stats);
-  const metrics = useMemo(() => ({} as Record<string, any>), []);
-  const analytics = useMemo(() => ({} as Record<string, any>), []);
+  const metrics = useMemo(() => ({}) as Record<string, any>, []);
+  const analytics = useMemo(() => ({}) as Record<string, any>, []);
   const isLoading = false;
   const lastUpdate: string | null = null;
 

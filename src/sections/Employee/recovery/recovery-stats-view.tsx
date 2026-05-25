@@ -262,8 +262,7 @@ export function RecoveryStatsView() {
             end: typeof p.end === 'string' ? p.end : undefined,
           });
         }
-        const inner =
-          isPlainObject(raw.stats) && raw.stats !== null ? raw.stats : raw;
+        const inner = isPlainObject(raw.stats) && raw.stats !== null ? raw.stats : raw;
         if (isPlainObject(inner)) {
           setStats(inner as EmployeeRecoveryStatsBody);
         } else {
@@ -302,9 +301,7 @@ export function RecoveryStatsView() {
     if (!start && !end) return null;
     const t = reportingPeriod?.type;
     const typeSuffix =
-      t && typeof t === 'string'
-        ? ` · ${t.charAt(0).toUpperCase() + t.slice(1)}`
-        : '';
+      t && typeof t === 'string' ? ` · ${t.charAt(0).toUpperCase() + t.slice(1)}` : '';
     return `${start ? fDate(start) : '…'} — ${end ? fDate(end) : '…'}${typeSuffix}`;
   }, [reportingPeriod]);
 

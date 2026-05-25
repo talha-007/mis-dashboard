@@ -1,6 +1,6 @@
 import type { Theme, CSSObject } from '@mui/material/styles';
 
-import { useRouteError, isRouteErrorResponse } from 'react-router';
+import { Link, useRouteError, isRouteErrorResponse } from 'react-router';
 
 import GlobalStyles from '@mui/material/GlobalStyles';
 
@@ -14,7 +14,21 @@ export function ErrorBoundary() {
       {inputGlobalStyles()}
 
       <div className={errorBoundaryClasses.root}>
-        <div className={errorBoundaryClasses.container}>{renderErrorMessage(error)}</div>
+        <div className={errorBoundaryClasses.container}>
+          {renderErrorMessage(error)}
+          <div className={errorBoundaryClasses.actions}>
+            <Link to="/" className={errorBoundaryClasses.actionButton}>
+              Go to dashboard
+            </Link>
+            <button
+              type="button"
+              className={errorBoundaryClasses.actionButtonSecondary}
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </button>
+          </div>
+        </div>
       </div>
     </>
   );
@@ -77,6 +91,9 @@ const errorBoundaryClasses = {
   details: 'error-boundary-details',
   message: 'error-boundary-message',
   filePath: 'error-boundary-file-path',
+  actions: 'error-boundary-actions',
+  actionButton: 'error-boundary-action-button',
+  actionButtonSecondary: 'error-boundary-action-button-secondary',
 };
 
 const cssVars: CSSObject = {
@@ -148,6 +165,33 @@ const filePathStyles = (): CSSObject => ({
   color: 'var(--info-color)',
 });
 
+const actionsStyles = (): CSSObject => ({
+  display: 'flex',
+  gap: 12,
+  flexWrap: 'wrap',
+});
+
+const actionButtonStyles = (): CSSObject => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '10px 16px',
+  borderRadius: 8,
+  border: 'none',
+  cursor: 'pointer',
+  textDecoration: 'none',
+  fontWeight: 700,
+  color: '#fff',
+  backgroundColor: 'var(--info-color)',
+});
+
+const actionButtonSecondaryStyles = (): CSSObject => ({
+  ...actionButtonStyles(),
+  color: '#fff',
+  backgroundColor: 'transparent',
+  border: '1px solid var(--info-color)',
+});
+
 const inputGlobalStyles = () => (
   <GlobalStyles
     styles={(theme) => ({
@@ -162,6 +206,9 @@ const inputGlobalStyles = () => (
         [`& .${errorBoundaryClasses.message}`]: messageStyles(theme),
         [`& .${errorBoundaryClasses.filePath}`]: filePathStyles(),
         [`& .${errorBoundaryClasses.details}`]: detailsStyles(),
+        [`& .${errorBoundaryClasses.actions}`]: actionsStyles(),
+        [`& .${errorBoundaryClasses.actionButton}`]: actionButtonStyles(),
+        [`& .${errorBoundaryClasses.actionButtonSecondary}`]: actionButtonSecondaryStyles(),
       },
     })}
   />

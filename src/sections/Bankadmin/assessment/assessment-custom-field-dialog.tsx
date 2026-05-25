@@ -149,7 +149,12 @@ export function AssessmentCustomFieldDialog({
           }
           label="Allow optional text with the amount"
         />
-        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2, pl: 0.5 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          display="block"
+          sx={{ mb: 2, pl: 0.5 }}
+        >
           When on, customers see an extra text field under the amount (same field key in submit).
         </Typography>
         {allowFreeText && (

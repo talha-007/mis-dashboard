@@ -17,6 +17,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { getApiErrorMessage } from 'src/utils/api-error';
+
 import authService from 'src/redux/services/auth.services';
 
 import { Iconify } from 'src/components/iconify';
@@ -39,8 +41,10 @@ export function ForgotPasswordAdminView() {
       setTimeout(() => {
         router.push(`/admin/verify-otp?type=reset&email=${encodeURIComponent(values.email)}`);
       }, 2000);
-    } catch (err: any) {
-      setStatus({ submitError: err?.message || 'Failed to send reset code. Please try again.' });
+    } catch (err: unknown) {
+      setStatus({
+        submitError: getApiErrorMessage(err, 'Failed to send reset code. Please try again.'),
+      });
     }
   };
 

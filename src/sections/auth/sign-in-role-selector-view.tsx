@@ -12,6 +12,8 @@ import Typography from '@mui/material/Typography';
 
 import { useRouter } from 'src/routes/hooks';
 
+import { CONFIG } from 'src/config-global';
+
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -46,10 +48,10 @@ export function SignInRoleSelectorView() {
       {/* Header */}
       <Stack spacing={1.5} alignItems="center" textAlign="center">
         <Typography variant="h4" fontWeight={700}>
-          Welcome to MIS Dashboard
+          Welcome to {CONFIG.appName}
         </Typography>
         <Typography variant="body2" color="text.secondary" maxWidth={400}>
-          Sign in to access your account
+          {CONFIG.appTagline}
         </Typography>
       </Stack>
 

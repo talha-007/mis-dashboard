@@ -18,6 +18,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useParams, useRouter } from 'src/routes/hooks';
 
+import { getApiErrorMessage } from 'src/utils/api-error';
 import { getCurrentBankSlug } from 'src/utils/bank-context';
 import { getBankData, getBankSlugFromStorage } from 'src/utils/auth-storage';
 
@@ -124,6 +125,7 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
   const { user, bank } = useAppSelector((state) => state.auth);
   const [existing, setExisting] = useState<CustomerLoanApplication | null>(null);
   const [loadingEdit, setLoadingEdit] = useState(!!id && id !== 'new');
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [rates, setRates] = useState<{
     interestRate: number | null;
     insuranceRate: number | null;
@@ -154,8 +156,11 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
           bankName: typeof body?.bankName === 'string' ? body.bankName : null,
         });
       })
-      .catch(() => {
-        if (!cancelled) setRates({ interestRate: null, insuranceRate: null, bankName: null });
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(getApiErrorMessage(err, 'Failed to load interest rates'));
+          setRates({ interestRate: null, insuranceRate: null, bankName: null });
+        }
       });
     return () => {
       cancelled = true;
@@ -210,8 +215,11 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
           updatedAt: String(d.updatedAt ?? ''),
         });
       })
-      .catch(() => {
-        if (!cancelled) setExisting(null);
+      .catch((err) => {
+        if (!cancelled) {
+          setLoadError(getApiErrorMessage(err, 'Failed to load loan application'));
+          setExisting(null);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoadingEdit(false);
@@ -337,8 +345,8 @@ export function ApplyLoanFormView({ embedded, assessment_id }: ApplyLoanFormView
     return (
       <DashboardContent>
         <Container maxWidth="md">
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            Application not found or you don&apos;t have access to it.
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {loadError || "Application not found or you don't have access to it."}
           </Alert>
           <Button
             startIcon={<Iconify icon="eva:arrow-back-fill" />}

@@ -36,9 +36,13 @@ const textFieldSx = { '& .MuiOutlinedInput-root': { borderRadius: 2 } };
 export function SignInCustomerView() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { loginUser, isLoading, error } = useAuth();
+  const { loginUser, isLoading, error, clearError } = useAuth();
   const { bankSlug, initializeBankContext } = useBankContext();
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   useEffect(() => {
     if (bankSlug) initializeBankContext();
@@ -54,8 +58,7 @@ export function SignInCustomerView() {
       await new Promise((r) => setTimeout(r, 50));
       dispatch(setLoggingIn(false));
       router.push(getUserHomePath(response.user));
-    } catch (err) {
-      console.error('Login failed:', err);
+    } catch {
       dispatch(setLoggingIn(false));
     }
   };

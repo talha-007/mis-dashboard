@@ -162,7 +162,6 @@ export function EmployeeView() {
                 table.onResetPage();
               }}
               onReload={fetchEmployees}
-             
             />
 
             <Scrollbar>
@@ -292,13 +291,10 @@ function useTable() {
     setPage(newPage);
   }, []);
 
-  const onChangeRowsPerPage = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
-    },
-    []
-  );
+  const onChangeRowsPerPage = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  }, []);
 
   return {
     page,

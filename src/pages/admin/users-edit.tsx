@@ -1,10 +1,11 @@
-import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import { CONFIG } from 'src/config-global';
 import { useAppSelector } from 'src/store';
@@ -38,10 +39,8 @@ export default function Page() {
           : await usersService.get(userId);
         const data = response.data?.data ?? response.data;
         setUserData(data);
-      } catch (err: any) {
-        const errorMessage = err?.response?.data?.message || err?.message || 'Failed to load user';
-        setError(errorMessage);
-        toast.error(errorMessage);
+      } catch (err: unknown) {
+        setError(getApiErrorMessage(err, 'Failed to load user'));
       } finally {
         setIsLoading(false);
       }
@@ -72,8 +71,8 @@ export default function Page() {
     return (
       <>
         <title>{`Edit User - ${CONFIG.appName}`}</title>
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography color="error">{error || 'Failed to load user data'}</Typography>
+        <Box sx={{ p: 3 }}>
+          <Alert severity="error">{error || 'Failed to load user data'}</Alert>
         </Box>
       </>
     );

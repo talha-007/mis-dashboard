@@ -14,6 +14,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
@@ -29,6 +30,7 @@ import TableContainer from '@mui/material/TableContainer';
 import { useAuth } from 'src/hooks/use-auth';
 
 import { fDate } from 'src/utils/format-time';
+import { getApiErrorMessage } from 'src/utils/api-error';
 import { getBankRegisterUrl } from 'src/utils/bank-routes';
 import { fNumber, fCurrency } from 'src/utils/format-number';
 
@@ -128,14 +130,16 @@ export function PortfolioOverviewView() {
   const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
   const [superAdminStats, setSuperAdminStats] = useState<SuperAdminStats | null>(null);
   const [bankAdminStats, setBankAdminStats] = useState<BankAdminStats | null>(null);
-  const [bankAdminAdditionalStats, setBankAdminAdditionalStats] = useState<BankAdminAdditionalStats | null>(null);
+  const [bankAdminAdditionalStats, setBankAdminAdditionalStats] =
+    useState<BankAdminAdditionalStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [additionalStatsLoading, setAdditionalStatsLoading] = useState(false);
   const [graphsData, setGraphsData] = useState<BankAdminGraphsData | null>(null);
   const [graphsLoading, setGraphsLoading] = useState(false);
-  const [statsPeriod, setStatsPeriod] = useState<'default' | 'today' | 'weekly' | 'monthly' | 'yearly'>(
-    'default'
-  );
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [statsPeriod, setStatsPeriod] = useState<
+    'default' | 'today' | 'weekly' | 'monthly' | 'yearly'
+  >('default');
   const [statsStartDate, setStatsStartDate] = useState<string>(
     dayjs().startOf('month').format('YYYY-MM-DD')
   );
@@ -147,6 +151,7 @@ export function PortfolioOverviewView() {
   const fetchSuperAdminStats = useCallback(async () => {
     if (!isSuperAdmin) return;
     setStatsLoading(true);
+    setLoadError(null);
     try {
       const response = await superadminService.getStats();
       if (response.status === 200) {
@@ -159,7 +164,8 @@ export function PortfolioOverviewView() {
           totalRevenue: stats.totalRevenue || 0,
         });
       }
-    } catch {
+    } catch (err) {
+      setLoadError(getApiErrorMessage(err, 'Failed to load dashboard statistics'));
       setSuperAdminStats(null);
     } finally {
       setStatsLoading(false);
@@ -169,6 +175,7 @@ export function PortfolioOverviewView() {
   const fetchBankAdminStats = useCallback(async () => {
     if (!isAdmin) return;
     setStatsLoading(true);
+    setLoadError(null);
     try {
       const params: Record<string, string> = {};
       if (statsUseCustomRange) {
@@ -206,7 +213,8 @@ export function PortfolioOverviewView() {
           stats.defaultedOutstandingAmount ?? stats.defaulted_outstanding_amount ?? 0
         ),
       });
-    } catch {
+    } catch (err) {
+      setLoadError(getApiErrorMessage(err, 'Failed to load dashboard statistics'));
       setBankAdminStats(null);
     } finally {
       setStatsLoading(false);
@@ -216,6 +224,7 @@ export function PortfolioOverviewView() {
   const fetchBankAdminAdditionalStats = useCallback(async () => {
     if (!isAdmin) return;
     setAdditionalStatsLoading(true);
+    setLoadError(null);
     try {
       const response = await bankAdminService.getAdditionalStats();
       if (response.status === 200) {
@@ -229,7 +238,8 @@ export function PortfolioOverviewView() {
           loansNearDefault: stats.loansNearDefault || 0,
         });
       }
-    } catch {
+    } catch (err) {
+      setLoadError(getApiErrorMessage(err, 'Failed to load dashboard statistics'));
       setBankAdminAdditionalStats(null);
     } finally {
       setAdditionalStatsLoading(false);
@@ -239,6 +249,7 @@ export function PortfolioOverviewView() {
   const fetchGraphsData = useCallback(async () => {
     if (!isAdmin) return;
     setGraphsLoading(true);
+    setLoadError(null);
     try {
       const response = await bankAdminService.getGraphsData({ days: 90 });
       if (response.status === 200) {
@@ -269,7 +280,8 @@ export function PortfolioOverviewView() {
           branchExposure: mapBranchExposure(data?.branchExposure ?? data?.branch_exposure ?? []),
         });
       }
-    } catch {
+    } catch (err) {
+      setLoadError(getApiErrorMessage(err, 'Failed to load dashboard charts'));
       setGraphsData(null);
     } finally {
       setGraphsLoading(false);
@@ -343,6 +355,12 @@ export function PortfolioOverviewView() {
         )} */}
       </Box>
 
+      {loadError && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setLoadError(null)}>
+          {loadError}
+        </Alert>
+      )}
+
       {/* Super Admin: Platform stats */}
       {isSuperAdmin && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -402,7 +420,11 @@ export function PortfolioOverviewView() {
             gap={1}
             sx={{ mb: 3, pb: 2, borderBottom: 1, borderColor: 'divider' }}
           >
-            <Iconify icon="solar:calendar-bold-duotone" width={20} sx={{ color: 'text.secondary' }} />
+            <Iconify
+              icon="solar:calendar-bold-duotone"
+              width={20}
+              sx={{ color: 'text.secondary' }}
+            />
             <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
               Period:
             </Typography>
@@ -446,7 +468,10 @@ export function PortfolioOverviewView() {
                   value={statsStartDate}
                   onChange={(e) => setStatsStartDate(e.target.value)}
                   slotProps={{
-                    input: { sx: { fontSize: '0.8125rem', py: 0.75 }, inputProps: { max: statsEndDate } },
+                    input: {
+                      sx: { fontSize: '0.8125rem', py: 0.75 },
+                      inputProps: { max: statsEndDate },
+                    },
                     inputLabel: { shrink: true },
                   }}
                   sx={{ width: 150 }}
@@ -460,7 +485,10 @@ export function PortfolioOverviewView() {
                   value={statsEndDate}
                   onChange={(e) => setStatsEndDate(e.target.value)}
                   slotProps={{
-                    input: { sx: { fontSize: '0.8125rem', py: 0.75 }, inputProps: { min: statsStartDate } },
+                    input: {
+                      sx: { fontSize: '0.8125rem', py: 0.75 },
+                      inputProps: { min: statsStartDate },
+                    },
                     inputLabel: { shrink: true },
                   }}
                   sx={{ width: 150 }}
@@ -631,7 +659,10 @@ export function PortfolioOverviewView() {
                   { label: 'Active Borrowers', value: fNumber(bankAdminStats.activeBorrowers) },
                   { label: 'PAR %', value: formatPercent(bankAdminStats.par) },
                   { label: 'Recovery Rate', value: formatPercent(bankAdminStats.recoveryRate) },
-                  { label: 'Total Repayments', value: fCurrency(bankAdminStats.totalLoanRepayment) },
+                  {
+                    label: 'Total Repayments',
+                    value: fCurrency(bankAdminStats.totalLoanRepayment),
+                  },
                   { label: 'Audit Readiness', value: `${bankAdminStats.auditReadiness}%` },
                   {
                     label: 'Defaulter borrowers',

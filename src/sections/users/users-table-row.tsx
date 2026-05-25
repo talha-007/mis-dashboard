@@ -19,7 +19,17 @@ interface UsersTableRowProps {
   onViewRow?: (id: string) => void;
   onEditRow: (id: string) => void;
   onDeleteRow: (id: string) => void;
-  onApplyLoan?: (id: string, customer: { name?: string; lastname?: string; cnic?: string; city?: string; region?: string; bankSlug?: string }) => void;
+  onApplyLoan?: (
+    id: string,
+    customer: {
+      name?: string;
+      lastname?: string;
+      cnic?: string;
+      city?: string;
+      region?: string;
+      bankSlug?: string;
+    }
+  ) => void;
   showApplyLoan?: boolean;
   bankSlug?: string;
 }

@@ -15,7 +15,6 @@ type EmployeeTableToolbarProps = {
   filterName: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onReload?: () => void;
-  
 };
 
 export function EmployeeTableToolbar({
@@ -23,7 +22,6 @@ export function EmployeeTableToolbar({
   filterName,
   onFilterName,
   onReload,
- 
 }: EmployeeTableToolbarProps) {
   return (
     <Toolbar
@@ -58,7 +56,6 @@ export function EmployeeTableToolbar({
       )}
 
       <Stack direction="row" alignItems="center" spacing={0.5}>
-       
         {onReload && (
           <Tooltip title="Reload">
             <IconButton onClick={onReload} size="small">

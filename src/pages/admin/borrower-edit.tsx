@@ -1,10 +1,11 @@
-import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import borrowerService from 'src/redux/services/borrowServices';
 
@@ -26,6 +27,7 @@ export default function BorrowerEditPage() {
 
       try {
         setIsLoading(true);
+        setError(null);
         const response = await borrowerService.get(id);
         const data = response.data;
 
@@ -38,11 +40,8 @@ export default function BorrowerEditPage() {
           rating: data.rating,
           address: data.address,
         });
-      } catch (err: any) {
-        const errorMessage =
-          err?.response?.data?.message || err?.message || 'Failed to load borrower';
-        setError(errorMessage);
-        toast.error(errorMessage);
+      } catch (err: unknown) {
+        setError(getApiErrorMessage(err, 'Failed to load borrower'));
       } finally {
         setIsLoading(false);
       }
@@ -63,8 +62,8 @@ export default function BorrowerEditPage() {
 
   if (error || !borrowerData) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography color="error">{error || 'Failed to load borrower data'}</Typography>
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error || 'Failed to load borrower data'}</Alert>
       </Box>
     );
   }

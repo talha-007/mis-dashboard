@@ -32,7 +32,16 @@ root.render(
       <AuthInitializer>
         <RouterProvider router={router} />
       </AuthInitializer>
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
     </AppProviders>
   </StrictMode>
 );

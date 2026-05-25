@@ -3,7 +3,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
 import TableRow from '@mui/material/TableRow';
 import Skeleton from '@mui/material/Skeleton';
 import Container from '@mui/material/Container';
@@ -15,6 +17,7 @@ import TableContainer from '@mui/material/TableContainer';
 
 import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
+import { getApiErrorMessage } from 'src/utils/api-error';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import customerService from 'src/redux/services/customer.services';
@@ -38,10 +41,12 @@ type CustomerStats = {
 export function CustomerDashboardView() {
   const [stats, setStats] = useState<CustomerStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await customerService.getStats();
       if (response.status === 200) {
         const data = response.data?.data || response.data;
@@ -49,7 +54,7 @@ export function CustomerDashboardView() {
         setStats(statsData);
       }
     } catch (err) {
-      console.error('Error fetching customer stats:', err);
+      setError(getApiErrorMessage(err, 'Failed to load dashboard data'));
       setStats(null);
     } finally {
       setLoading(false);
@@ -66,6 +71,21 @@ export function CustomerDashboardView() {
         <Typography variant="h4" sx={{ mb: 3 }}>
           Dashboard Overview
         </Typography>
+
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ mb: 3 }}
+            action={
+              <Button color="inherit" size="small" onClick={fetchStats}>
+                Retry
+              </Button>
+            }
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
 
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 3 }}>

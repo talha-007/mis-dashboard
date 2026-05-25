@@ -36,12 +36,10 @@ import {
   CUSTOMER_DOCUMENT_DESCRIPTIONS,
 } from 'src/types/customer-documents.types';
 
-
 // ----------------------------------------------------------------------
 
 /** File picker hint + server-side style checks: only PNG, JPG, JPEG, PDF */
-const ACCEPT_UPLOAD =
-  '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
+const ACCEPT_UPLOAD = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
 
 const ALLOWED_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png']);
 
@@ -93,9 +91,9 @@ export function DocumentsView() {
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
-  const [pendingFiles, setPendingFiles] = useState<Partial<Record<CustomerDocumentType, File | null>>>(
-    {}
-  );
+  const [pendingFiles, setPendingFiles] = useState<
+    Partial<Record<CustomerDocumentType, File | null>>
+  >({});
   const [uploadingSlot, setUploadingSlot] = useState<CustomerDocumentType | null>(null);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -107,9 +105,7 @@ export function DocumentsView() {
       setListError(null);
       const res = await customerService.listDocuments();
       const rawList = extractDocumentsList(res.data);
-      const mapped = Array.isArray(rawList)
-        ? rawList.map(mapApiDocument).filter((d) => d.id)
-        : [];
+      const mapped = Array.isArray(rawList) ? rawList.map(mapApiDocument).filter((d) => d.id) : [];
       setDocuments(mapped);
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to load documents';
@@ -124,7 +120,10 @@ export function DocumentsView() {
     fetchDocuments();
   }, [fetchDocuments]);
 
-  const handleFileSelect = (key: CustomerDocumentType, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (
+    key: CustomerDocumentType,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -277,7 +276,10 @@ export function DocumentsView() {
                     >
                       {file.name}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}
+                    >
                       Ready to upload
                     </Typography>
                   </Box>
@@ -362,8 +364,8 @@ export function DocumentsView() {
         <Stack spacing={3}>
           <Typography variant="h4">Documents</Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Upload the documents requested by your bank. Files are stored securely; download links are
-            time-limited when you open them.
+            Upload the documents requested by your bank. Files are stored securely; download links
+            are time-limited when you open them.
           </Typography>
 
           {listError && (
@@ -499,7 +501,12 @@ export function DocumentsView() {
           <Button onClick={() => setDeleteId(null)} disabled={deleting}>
             Cancel
           </Button>
-          <Button color="error" variant="contained" onClick={handleConfirmDelete} disabled={deleting}>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+            disabled={deleting}
+          >
             {deleting ? 'Deleting…' : 'Delete'}
           </Button>
         </DialogActions>

@@ -23,12 +23,7 @@ type EmployeeTableHeadProps = {
   }[];
 };
 
-export function EmployeeTableHead({
-  order,
-  onSort,
-  orderBy,
-  headLabel,
-}: EmployeeTableHeadProps) {
+export function EmployeeTableHead({ order, onSort, orderBy, headLabel }: EmployeeTableHeadProps) {
   return (
     <TableHead>
       <TableRow>

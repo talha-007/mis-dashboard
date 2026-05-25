@@ -13,6 +13,8 @@ import IconButton from '@mui/material/IconButton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
 
+import { getApiErrorMessage } from 'src/utils/api-error';
+
 import { useAppSelector } from 'src/store';
 import { DashboardContent } from 'src/layouts/dashboard';
 import usersService from 'src/redux/services/users.services';
@@ -157,10 +159,8 @@ export function UsersFormView({ isEdit = false, initialData }: UsersFormViewProp
       }
 
       navigate('/users-management');
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'An error occurred';
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'An error occurred'));
     } finally {
       setIsLoading(false);
     }
@@ -177,16 +177,13 @@ export function UsersFormView({ isEdit = false, initialData }: UsersFormViewProp
     setError(null);
   };
 
-  const handleCnicChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev: FormDataState) => ({
-        ...prev,
-        cnic: sanitizeCnic(e.target.value),
-      }));
-      setError(null);
-    },
-    []
-  );
+  const handleCnicChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev: FormDataState) => ({
+      ...prev,
+      cnic: sanitizeCnic(e.target.value),
+    }));
+    setError(null);
+  }, []);
 
   const handleCancel = () => {
     navigate('/users-management');

@@ -12,6 +12,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
+import { getApiErrorMessage } from 'src/utils/api-error';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 import borrowerService from 'src/redux/services/borrowServices';
 
@@ -234,10 +236,9 @@ export function BorrowerFormView({ isEdit = false, initialData }: BorrowerFormVi
         toast.success('Borrower created successfully!');
       }
       navigate('/borrower-management');
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'An error occurred';
+    } catch (err: unknown) {
+      const errorMessage = getApiErrorMessage(err, 'An error occurred');
       setStatus({ submitError: errorMessage });
-      toast.error(errorMessage);
       throw err;
     }
   };
